@@ -58,11 +58,20 @@ Unity 6 API names in use: `Rigidbody.linearVelocity`, `linearDamping`, `angularD
 
 ## Environment facts
 
-- Unity Hub is a portable extraction at `D:\Program Files\Unity Hub\Unity Hub.exe` (the installer demands UAC, which
-  Claude cannot click; 7-Zip at `D:\DevTools\7-Zip` unpacks NSIS installers). Its editor install path is set to
-  `D:\Program Files\Unity\Hub\Editor` via `"Unity Hub.exe" -- --headless install-path --set`.
-- Editor 6000.3.23f1 (changeset 09d2ecc7fb28) at `D:\Program Files\Unity\Hub\Editor\6000.3.23f1\Editor\Unity.exe`.
-- Licensing: Unity Personal, activated by signing into the Hub with the owner's Google account. Batch-mode builds fail
-  with a licensing error until that is done once.
+- Unity Hub 3.21.1 is a portable extraction at `D:\Program Files\Unity Hub\Unity Hub.exe` (its installer demands UAC,
+  which Claude cannot click; 7-Zip at `D:\DevTools\7-Zip` unpacks the Hub's NSIS installer but NOT the 4 GB editor
+  installer). Headless CLI works: `"Unity Hub.exe" -- --headless install-path --set <dir>`, `editors --add <Unity.exe>`,
+  `editors -i`.
+- Editor 6000.3.23f1 (changeset 09d2ecc7fb28) at `D:\Program Files\Unity\Hub\Editor\6000.3.23f1\Editor\Unity.exe`,
+  registered in the Hub. Installed by `tools\install-unity.ps1`: the installer manifest wants elevation, but running it
+  with `__COMPAT_LAYER=RunAsInvoker` skips UAC and it writes fine to D:. It idles forever after copying its 8 GB
+  (no window, no children): once `Editor\Unity.exe` exists and the folder stops growing, kill the process.
+- Licensing: Unity Personal, activated by signing into the Hub with the owner's Google account and taking the free
+  personal license. Until then `Unity.exe -batchmode` exits with code 198 ("No valid Unity Editor license found")
+  in about one second; `compile-check.ps1` still works because it never starts the editor.
+- Compile check details: engine modules target .NET Standard 2.1 (runtime project is `netstandard2.1`), editor modules
+  are .NET Framework (`net48`); both module sets live in `Editor\Data\Managed\UnityEngine`. uGUI is a source package,
+  so the check references the precompiled `UnityEngine.UI.dll` from `Data\Resources\PackageManager\ProjectTemplates\libcache`.
 - No C++ toolchain on this machine: keep the Standalone scripting backend on Mono. IL2CPP and UWP need Visual Studio.
+- Large heredocs (over roughly 10 KB) fail in the Bash tool on this machine; write source files with the Write tool.
 - Everything on D:, deliverables in English, commit and push on `main` as soon as something works.
