@@ -2,42 +2,67 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Status
+## What this is
 
-As of 2026-09-04 this directory is empty: no source, no README, no git repository, no build
-files. The stack and the scope of the project have not been chosen yet. The sections below that
-depend on a stack are placeholders. Fill them in as soon as the first code lands, in the same
-session that lands it, not afterwards.
+Vacuum Cleaner Simulator 2026: a Goat-Simulator-style physics sandbox where the player is a vacuum cleaner.
+Unity 6000.3.23f1, C#, built-in render pipeline, legacy Input Manager. Targets Steam (Windows 64-bit) first,
+Xbox / Microsoft Store second (see `docs/PUBLISHING.md`). Audience 8+, so no violence, no language.
+Repo: https://github.com/vrixel/VacuumCleanerSimulator2026 (private). The repo root is the Unity project root.
 
-## Standing rules for this project
+## Commands
 
-- All deliverables are written in English: code, comments, UI strings, docs, commit messages.
-  French is only for talking with the owner.
-- Everything lives on D:. Never install programs, models, caches or data on C:.
-- Do not write source files through PowerShell `Get-Content`/`Set-Content`: it re-encodes
-  accented characters and adds a BOM without any compiler noticing. Use the Read/Edit/Write tools
-  or Git Bash heredocs.
-- Anything finished gets committed and pushed right away on `main`, without waiting to be asked.
-  There is no repository yet; creating it is the first thing to do once the stack is picked.
-- Findings, gotchas and decisions go into this file during the work, not at the end.
+```powershell
+powershell -File tools\compile-check.ps1     # compile all scripts against Unity's DLLs with the .NET SDK (seconds, no editor, no license)
+powershell -File tools\build.ps1             # batch-mode Win64 build -> Builds\Win64\VacuumCleanerSimulator2026.exe, log in Builds\build.log
+powershell -File tools\build.ps1 -Run        # same, then launch the exe (player log in Builds\player.log)
+powershell -File tools\run.ps1               # launch the last build
+```
 
-## Toolchains verified on this machine (2026-09-04)
+Builds are local only. There is no GitHub Actions workflow on purpose (Unity in CI burns minutes and needs a license
+server); do not add one. The editor path is resolved in `tools/common.ps1`, override with `$env:VCS_UNITY`.
 
-| Tool | Version | Notes |
-|------|---------|-------|
-| .NET SDK | 10.0.400 | SDK at `D:\Program Files\dotnet\sdk`; bare `dotnet` resolves it correctly |
-| Node | 24.17.0 | pnpm 11.24.0 shims in `DevTools\bin` |
-| Python | 3.13.15 | |
-
-No C++ compiler is installed (Build Tools 2022 without MSVC or Windows SDK).
-
-## Build, run, test
-
-Not defined yet. Once the stack exists, record here: the one command to build, the one to run,
-the one to run the full test suite, and how to run a single test.
+Run `compile-check.ps1` after every code change; it is the fast feedback loop. `build.ps1` is the real check (also
+creates the scene and material assets on first run through `ProjectSetup.Apply`).
 
 ## Architecture
 
-Not defined yet. Once there is more than one module, describe here what a reader would need to
-open several files to understand: the simulation loop, how the environment and the vacuum agent
-are separated, where rendering sits relative to the simulation, and any data formats.
+Everything is created from code at runtime; there are no prefabs, no art, no audio assets. The scene is empty.
+
+- `Bootstrap` (RuntimeInitializeOnLoadMethod) spawns `GameManager`, the single owner of the run: state machine
+  (Title / Playing / Paused), score, combo, power level (1..5, thresholds in `PowerThresholds`), banner queue.
+  All other systems are created by it in `Start` and reached through `GameManager.I`.
+- `LevelBuilder` builds the house from primitives (rooms as Rects, walls with door gaps, furniture, scattered mess)
+  and tracks cleanliness as `MessCleaned / MessTotal`. Rebuilt with a new seed on every `StartGame`.
+- `PropFactory` is the catalogue: `DebrisKind` -> `DebrisSpec` (size class, points, bag volume, mass, counts as mess)
+  and the primitive assembly for each kind. Anything the vacuum can interact with carries a `Debris` component on the
+  rigidbody root. Furniture (size class 3+) also gets `TipOverTracker`; things blown out get `LaunchTracker`.
+- `VacuumController` (rigidbody + sphere collider, camera-relative driving, hop, turbo, spin/speed tracking),
+  `SuctionSystem` (cone of pull, absorb when size class <= power level, bag, blow-out respawns items from `BagItem`
+  records), `VacuumVisuals` (body, eyes, squash).
+- `ObjectiveSystem` is event-string driven: `Report("absorb:Sock")`, `"knock"`, `"launch"`, `"bagfull"`, `"trash"`,
+  `"speed"`, `"spin"`, `"clean100"`. Completion is remembered in PlayerPrefs (`ach_<id>`), progress is per run.
+- UI is uGUI built by `UIFactory` with the built-in `LegacyRuntime.ttf`; `HudController` caches values and only
+  touches Text when something changed. `MenuController` handles title and pause with keyboard, gamepad and mouse.
+- `GameAudio` synthesises every clip at startup (`AudioClip.Create`); `EffectsFactory` configures particle systems.
+- `Palette` caches one material per colour on top of `Resources/Materials/Lit.mat` (Standard shader). That material
+  asset exists so the shader is not stripped from builds; `ProjectSetup` creates it. Never enable shader keywords
+  at runtime (the variant will be missing in the build).
+
+Input: `GameInput` wraps the legacy Input Manager. Axes live in `ProjectSettings/InputManager.asset` (Horizontal,
+Vertical, CamX, CamY, DPadX, DPadY, TriggerL, TriggerR); buttons are read with `KeyCode.JoystickButtonN`
+(Xbox: A=0 B=1 X=2 Y=3 LB=4 RB=5 Back=6 Start=7). Do not add the Input System package: it needs
+`activeInputHandler` in ProjectSettings.asset and an editor restart.
+
+Unity 6 API names in use: `Rigidbody.linearVelocity`, `linearDamping`, `angularDamping`, `PhysicsMaterial`,
+`Object.FindFirstObjectByType`.
+
+## Environment facts
+
+- Unity Hub is a portable extraction at `D:\Program Files\Unity Hub\Unity Hub.exe` (the installer demands UAC, which
+  Claude cannot click; 7-Zip at `D:\DevTools\7-Zip` unpacks NSIS installers). Its editor install path is set to
+  `D:\Program Files\Unity\Hub\Editor` via `"Unity Hub.exe" -- --headless install-path --set`.
+- Editor 6000.3.23f1 (changeset 09d2ecc7fb28) at `D:\Program Files\Unity\Hub\Editor\6000.3.23f1\Editor\Unity.exe`.
+- Licensing: Unity Personal, activated by signing into the Hub with the owner's Google account. Batch-mode builds fail
+  with a licensing error until that is done once.
+- No C++ toolchain on this machine: keep the Standalone scripting backend on Mono. IL2CPP and UWP need Visual Studio.
+- Everything on D:, deliverables in English, commit and push on `main` as soon as something works.
