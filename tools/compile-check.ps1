@@ -2,51 +2,51 @@
 # Catches compile errors in seconds without opening the editor (no license needed).
 # Usage:  powershell -File tools\compile-check.ps1
 # Output: tools\.check\ (gitignored)
+#
+# References: Editor\Data\Managed\UnityEngine\UnityEngine*.dll (runtime) plus UnityEditor*.dll from the same
+# folder (editor scripts), and the precompiled UnityEngine.UI.dll that Unity keeps in its project-template cache.
 
 . "$PSScriptRoot\common.ps1"
 
-$managed = Join-Path $UnityRoot "Data\Managed"
-$engineDir = Join-Path $managed "UnityEngine"
+$managedEngine = Join-Path $UnityRoot "Data\Managed\UnityEngine"
 $check = Join-Path $RepoRoot "tools\.check"
 New-Item -ItemType Directory -Force $check | Out-Null
 
-if (-not (Test-Path $engineDir)) {
-    Write-Host "UnityEngine assemblies not found under $engineDir"
+if (-not (Test-Path $managedEngine)) {
+    Write-Host "UnityEngine assemblies not found under $managedEngine"
     exit 2
 }
 
-# uGUI ships as a built-in package with the editor; its runtime sources are compiled alongside our scripts.
-$uguiRoot = Join-Path $UnityRoot "Data\Resources\PackageManager\BuiltInPackages\com.unity.ugui"
-if (-not (Test-Path $uguiRoot)) {
-    $cached = Get-ChildItem (Join-Path $RepoRoot "Library\PackageCache") -Directory -Filter "com.unity.ugui@*" -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($cached) { $uguiRoot = $cached.FullName }
+$uiDll = Get-ChildItem (Join-Path $UnityRoot "Data\Resources\PackageManager\ProjectTemplates\libcache") -Recurse -Filter "UnityEngine.UI.dll" -ErrorAction SilentlyContinue |
+    Select-Object -First 1 -ExpandProperty FullName
+if (-not $uiDll) {
+    $uiDll = Get-ChildItem (Join-Path $RepoRoot "Library\ScriptAssemblies") -Filter "UnityEngine.UI.dll" -ErrorAction SilentlyContinue |
+        Select-Object -First 1 -ExpandProperty FullName
 }
-$uguiRuntime = Join-Path $uguiRoot "Runtime\UGUI"
-if (-not (Test-Path $uguiRuntime)) { $uguiRuntime = Join-Path $uguiRoot "Runtime" }
-Write-Host "uGUI sources: $uguiRuntime"
+if (-not $uiDll) {
+    Write-Host "UnityEngine.UI.dll not found (template cache or Library\ScriptAssemblies)."
+    exit 2
+}
+Write-Host "UnityEngine.UI: $uiDll"
+
+$engineRefs = Get-ChildItem $managedEngine -Filter "UnityEngine*.dll" | Select-Object -ExpandProperty FullName
+$editorRefs = Get-ChildItem $managedEngine -Filter "UnityEditor*.dll" | Select-Object -ExpandProperty FullName
 
 function New-Csproj {
-    param($Path, $AssemblyName, [string[]]$CompileGlobs, [string[]]$ReferenceDirs, [string[]]$ReferenceFiles)
+    param($Path, $AssemblyName, [string[]]$CompileGlobs, [string[]]$References, [string]$ExtraDefines, [string]$Tfm)
     $refs = @()
-    foreach ($dir in $ReferenceDirs) {
-        if (Test-Path $dir) {
-            foreach ($dll in Get-ChildItem $dir -Filter "*.dll") {
-                $refs += "    <Reference Include=`"$($dll.BaseName)`"><HintPath>$($dll.FullName)</HintPath><Private>false</Private></Reference>"
-            }
-        }
-    }
-    foreach ($f in $ReferenceFiles) {
-        if (Test-Path $f) {
-            $name = [System.IO.Path]::GetFileNameWithoutExtension($f)
-            $refs += "    <Reference Include=`"$name`"><HintPath>$f</HintPath><Private>false</Private></Reference>"
-        }
+    foreach ($f in $References) {
+        $name = [System.IO.Path]::GetFileNameWithoutExtension($f)
+        $refs += "    <Reference Include=`"$name`"><HintPath>$f</HintPath><Private>false</Private></Reference>"
     }
     $compiles = @()
     foreach ($g in $CompileGlobs) { $compiles += "    <Compile Include=`"$g`" />" }
+    $defines = "UNITY_5_3_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2018_1_OR_NEWER;UNITY_2019_1_OR_NEWER;UNITY_2020_1_OR_NEWER;UNITY_2021_1_OR_NEWER;UNITY_2022_1_OR_NEWER;UNITY_2023_1_OR_NEWER;UNITY_6000_0_OR_NEWER;UNITY_STANDALONE;UNITY_STANDALONE_WIN;ENABLE_LEGACY_INPUT_MANAGER;UNITY_UGUI"
+    if ($ExtraDefines) { $defines += ";" + $ExtraDefines }
     $xml = @"
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>$Tfm</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <AssemblyName>$AssemblyName</AssemblyName>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -54,9 +54,8 @@ function New-Csproj {
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningLevel>2</WarningLevel>
     <NoWarn>CS0618;CS0649;CS0108;CS0414;CS0169;CS1591;CS0109;CS0162;CS0219;CS8632;MSB3277;MSB3270</NoWarn>
-    <DefineConstants>UNITY_5_3_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2018_1_OR_NEWER;UNITY_2019_1_OR_NEWER;UNITY_2020_1_OR_NEWER;UNITY_2021_1_OR_NEWER;UNITY_2022_1_OR_NEWER;UNITY_2023_1_OR_NEWER;UNITY_6000_0_OR_NEWER;UNITY_STANDALONE;UNITY_STANDALONE_WIN;ENABLE_LEGACY_INPUT_MANAGER;UNITY_UGUI</DefineConstants>
+    <DefineConstants>$defines</DefineConstants>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputType>Library</OutputType>
   </PropertyGroup>
@@ -71,25 +70,23 @@ $($refs -join "`n")
     Set-Content -Path $Path -Value $xml -Encoding UTF8
 }
 
-$editorRefs = @()
-$editorDll = Join-Path $managed "UnityEditor.dll"
-if (Test-Path $editorDll) { $editorRefs += $editorDll }
-$editorDir = Join-Path $managed "UnityEditor"
-
 New-Csproj -Path (Join-Path $check "Runtime.csproj") -AssemblyName "Assembly-CSharp" `
-    -CompileGlobs @("$RepoRoot\Assets\Scripts\**\*.cs", "$uguiRuntime\**\*.cs") `
-    -ReferenceDirs @($engineDir) -ReferenceFiles @()
+    -CompileGlobs @("$RepoRoot\Assets\Scripts\**\*.cs") `
+    -References ($engineRefs + @($uiDll)) -ExtraDefines "" -Tfm "netstandard2.1"
 
+# Engine modules target .NET Standard 2.1; the editor modules are .NET Framework, so the editor project stays on net48.
 New-Csproj -Path (Join-Path $check "Editor.csproj") -AssemblyName "Assembly-CSharp-Editor" `
     -CompileGlobs @("$RepoRoot\Assets\Editor\**\*.cs") `
-    -ReferenceDirs @($engineDir, $editorDir) -ReferenceFiles $editorRefs
+    -References ($engineRefs + $editorRefs + @($uiDll)) -ExtraDefines "UNITY_EDITOR;UNITY_EDITOR_WIN;UNITY_EDITOR_64" -Tfm "net48"
 
 $failed = $false
 foreach ($proj in @("Runtime.csproj", "Editor.csproj")) {
     Write-Host ""
     Write-Host "=== $proj ==="
-    & dotnet build (Join-Path $check $proj) -nologo -v q -p:UseSharedCompilation=false 2>&1 | Where-Object { $_ -notmatch "warning" }
-    if ($LASTEXITCODE -ne 0) { $failed = $true }
+    $out = & dotnet build (Join-Path $check $proj) -nologo -v q -p:UseSharedCompilation=false 2>&1
+    $code = $LASTEXITCODE
+    $out | Where-Object { $_ -match "error|Error\(s\)|Warning\(s\)" } | Select-Object -Unique | ForEach-Object { Write-Host $_ }
+    if ($code -ne 0) { $failed = $true; Write-Host "FAILED (exit $code)" } else { Write-Host "ok" }
 }
 Write-Host ""
 if ($failed) { Write-Host "COMPILE CHECK FAILED"; exit 1 }
