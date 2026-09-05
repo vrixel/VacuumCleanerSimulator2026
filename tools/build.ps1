@@ -14,8 +14,11 @@ Write-Host "Building with $UnityExe"
 Write-Host "Log: $log"
 $sw = [System.Diagnostics.Stopwatch]::StartNew()
 # Unity.exe is a GUI-subsystem executable: PowerShell's call operator would return immediately, so wait explicitly.
-$unityArgs = @("-batchmode", "-nographics", "-quit", "-projectPath", "`"$RepoRoot`"", "-executeMethod", "VCS.Editor.BuildScript.BuildWindows64", "-logFile", "`"$log`"")
-$proc = Start-Process -FilePath $UnityExe -ArgumentList $unityArgs -PassThru -Wait
+# Do NOT use Start-Process -Wait: it also waits for every descendant (shader compiler, package manager, import
+# workers), which linger for ~10 minutes after Unity itself has exited. WaitForExit() waits for Unity.exe only.
+$unityArgs = @("-batchmode", "-nographics", "-quit", "-timestamps", "-projectPath", "`"$RepoRoot`"", "-executeMethod", "VCS.Editor.BuildScript.BuildWindows64", "-logFile", "`"$log`"")
+$proc = Start-Process -FilePath $UnityExe -ArgumentList $unityArgs -PassThru
+$proc.WaitForExit()
 $code = $proc.ExitCode
 $sw.Stop()
 

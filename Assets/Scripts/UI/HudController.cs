@@ -68,12 +68,12 @@ namespace VCS.UI
                 new Vector2(0f, 0f), new Vector2(1f, 0.45f), new Vector2(20f, 10f), new Vector2(-20f, 0f));
 
             hintText = UIFactory.Text(t, "Hint", "", 24, new Color(1f, 1f, 1f, 0.92f), TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-900f, 150f), new Vector2(900f, 200f));
+                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-900f, 215f), new Vector2(900f, 265f));
             hintGroup = hintText.gameObject.AddComponent<CanvasGroup>();
             hintGroup.alpha = 0f;
 
             binPrompt = UIFactory.Text(t, "BinPrompt", "Press F / X to empty the bag into the bin", 32, accent, TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-600f, 220f), new Vector2(600f, 270f));
+                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-600f, 280f), new Vector2(600f, 330f));
             binGroup = binPrompt.gameObject.AddComponent<CanvasGroup>();
             binGroup.alpha = 0f;
         }

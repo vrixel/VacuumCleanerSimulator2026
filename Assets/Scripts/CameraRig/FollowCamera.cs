@@ -12,7 +12,7 @@ namespace VCS.CameraRig
         bool orbit;
         Vector3 orbitCenter;
         float orbitRadius, orbitHeight, orbitAngle;
-        float yaw, pitch = 34f, distance = 9f, shake;
+        float yaw, pitch = 42f, distance = 9f, shake;
         Vector3 vel;
 
         public static FollowCamera Create()
@@ -36,7 +36,7 @@ namespace VCS.CameraRig
             target = t;
             orbit = false;
             yaw = 0f;
-            pitch = 34f;
+            pitch = 42f;
             vel = Vector3.zero;
             transform.position = Desired();
             transform.LookAt(t.position + Vector3.up * 0.6f);
@@ -81,7 +81,7 @@ namespace VCS.CameraRig
                 var stick = GameInput.LookStick;
                 var mouse = GameInput.LookMouse;
                 yaw += stick.x * 160f * Time.deltaTime + mouse.x * 2.5f;
-                pitch = Mathf.Clamp(pitch - stick.y * 100f * Time.deltaTime - mouse.y * 2f, 18f, 65f);
+                pitch = Mathf.Clamp(pitch - stick.y * 100f * Time.deltaTime - mouse.y * 2f, 22f, 70f);
             }
 
             float wantedFov = playing && gm.Player != null && gm.Player.Turbo ? 72f : 60f;

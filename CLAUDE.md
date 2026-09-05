@@ -82,6 +82,9 @@ Unity 6 API names in use: `Rigidbody.linearVelocity`, `linearDamping`, `angularD
   so managed stripping is set to Disabled in `ProjectSetup`; with stripping on, the build dies in the
   "ManagedStripped" Bee step with "The system cannot find the path specified".
 - `Unity.exe` is a GUI-subsystem executable: PowerShell's `&` returns immediately. `build.ps1` uses
-  `Start-Process -Wait -PassThru` to get the real exit code.
+  `Start-Process -PassThru` then `WaitForExit()` on that process only. `Start-Process -Wait` would also wait for
+  Unity's descendants (shader compiler, package manager, import workers), which idle for ~10 minutes after the
+  editor has exited: that turned a 15-second batch build into an 11-minute one.
+- A warm batch build is about 15 s of editor time (Unity's `-timestamps` log shows it); the player build step is 6 s.
 - Large heredocs (over roughly 10 KB) fail in the Bash tool on this machine; write source files with the Write tool.
 - Everything on D:, deliverables in English, commit and push on `main` as soon as something works.

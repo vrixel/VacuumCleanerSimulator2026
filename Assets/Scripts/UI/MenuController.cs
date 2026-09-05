@@ -121,7 +121,7 @@ namespace VCS.UI
             {
                 titleRect.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * 2f) * 2f);
                 titleRect.localScale = Vector3.one * (1f + 0.03f * Mathf.Sin(t * 3f));
-                titlePrompt.color = new Color(1f, 1f, 1f, 0.6f + 0.4f * Mathf.Sin(t * 4f));
+                titlePrompt.color = new Color(1f, 1f, 1f, 0.85f + 0.15f * Mathf.Sin(t * 4f));
                 if (GameInput.ConfirmDown) OnTitleStart?.Invoke();
             }
             else if (pauseVisible)
