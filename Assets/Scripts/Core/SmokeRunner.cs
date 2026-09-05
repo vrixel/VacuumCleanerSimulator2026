@@ -89,6 +89,15 @@ namespace VCS.Core
                 yield return Capture("smoke-powder.png");
                 gm.Cam.SetView(42f, 9f);
             }
+            if (gm.Player != null && gm.Player.Cord != null && !gm.Player.Cord.Plugged && gm.Level.Sockets.Count > 0)
+            {
+                // The drive above can use the whole cable and pop the plug; park next to the first socket to replug.
+                var sk = gm.Level.Sockets[0];
+                gm.Player.Rb.position = sk.transform.position + sk.transform.forward * 0.9f + Vector3.up * 0.3f;
+                gm.Player.Rb.linearVelocity = Vector3.zero;
+                yield return new WaitForSecondsRealtime(0.6f);
+                Debug.Log("[VCS] Cord: replugged for the end-of-cord phase: " + gm.Player.Cord.Plugged);
+            }
             if (gm.Player != null && gm.Player.Cord != null && gm.Player.Cord.Plugged)
             {
                 // End of the cord: shorten it, drive away from the socket until it is taut, keep pulling until the

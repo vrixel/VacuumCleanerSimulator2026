@@ -5,8 +5,8 @@ using VCS.World;
 namespace VCS.Player
 {
     /// <summary>
-    /// Second generation of the garage (art direction settled 2026-09-05 from docs/concepts): angular faceted
-    /// shells instead of smooth blobs, grooves and panel seams, bolted panels, desaturated real-product colours,
+    /// Second generation of the garage (art direction settled 2026-09-05 from docs/concepts, curved where the real
+    /// product is curved: discs, drums, bins stay round): faceted panels where a panel is a panel, grooves and panel seams, bolted panels, desaturated real-product colours,
     /// translucent bins, emissive LEDs and small displays. Same local space and anchors as VacuumModels
     /// (origin on the floor, +z forward, metres) so the nozzles, cords and cockpit stay valid.
     /// </summary>
@@ -72,7 +72,7 @@ namespace VCS.Player
         {
             float R = dia * 0.5f, hw = width * 0.5f;
             Rev(g, new[] { P(R * 0.55f, -hw), P(R, -hw), P(R, -hw * 0.25f), P(R - 0.006f, -hw * 0.2f), P(R - 0.006f, hw * 0.2f), P(R, hw * 0.25f), P(R, hw), P(R * 0.55f, hw) }, tyre, pos, "Tyre", 24, WheelRot, false);
-            RevF(g, new[] { P(0f, -hw - 0.002f), P(R * 0.56f, -hw - 0.002f), P(R * 0.56f, hw + 0.002f), P(0f, hw + 0.002f) }, hub, pos, "Hub", 8, WheelRot);
+            Rev(g, new[] { P(0f, -hw - 0.002f), P(R * 0.56f, -hw - 0.002f), P(R * 0.56f, hw + 0.002f), P(0f, hw + 0.002f) }, hub, pos, "Hub", 20, WheelRot);
             RevF(g, new[] { P(0f, -hw - 0.005f), P(R * 0.18f, -hw - 0.005f), P(R * 0.18f, hw + 0.005f), P(0f, hw + 0.005f) }, Rubber, pos, "HubCentre", 8, WheelRot);
         }
 
@@ -201,19 +201,14 @@ namespace VCS.Player
         public static void Roomboo(Transform g, VacuumSpec s)
         {
             var body = Graphite;
-            RevF(g, new[] { P(0f, 0.012f), P(0.40f, 0.012f), P(0.44f, 0.05f), P(0.44f, 0.085f), P(0.41f, 0.105f), P(0f, 0.105f) }, body, Vector3.zero, "Body", 8);
-            RevF(g, new[] { P(0f, 0.105f), P(0.36f, 0.105f), P(0.36f, 0.118f), P(0f, 0.118f) }, Steel, Vector3.zero, "TopPlate", 8);
+            Rev(g, new[] { P(0f, 0.012f), P(0.40f, 0.012f), P(0.44f, 0.05f), P(0.44f, 0.085f), P(0.41f, 0.105f), P(0f, 0.105f) }, body, Vector3.zero, "Body", 48);
+            Rev(g, new[] { P(0f, 0.105f), P(0.36f, 0.105f), P(0.36f, 0.118f), P(0f, 0.118f) }, Steel, Vector3.zero, "TopPlate", 48);
             Box(g, new Vector3(0f, 0.119f, 0f), new Vector3(0.74f, 0.002f, 0.006f), Rubber, "PlateSeam");
             Torus(g, new Vector3(0f, 0.119f, 0f), Quaternion.identity, 0.15f, 0.006f, Palette.Led(Teal), "LightRing", 32);
-            RevF(g, new[] { P(0f, 0.118f), P(0.07f, 0.118f), P(0.07f, 0.15f), P(0.05f, 0.156f), P(0f, 0.156f) }, body, Vector3.zero, "Turret", 8);
+            Rev(g, new[] { P(0f, 0.118f), P(0.07f, 0.118f), P(0.07f, 0.15f), P(0.05f, 0.156f), P(0f, 0.156f) }, body, Vector3.zero, "Turret", 24);
             Sph(g, new Vector3(0f, 0.16f, 0f), 0.05f, Palette.Glossy(new Color(0.04f, 0.05f, 0.06f)), "TurretDome");
-            for (int i = 0; i < 8; i++)
-            {
-                float a = (i + 0.5f) * 45f * Mathf.Deg2Rad;
-                var pos = new Vector3(Mathf.Cos(a) * 0.45f, 0.065f, Mathf.Sin(a) * 0.45f);
-                var rot = Quaternion.LookRotation(new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)), Vector3.up);
-                Box(g, pos, new Vector3(0.30f, 0.045f, 0.022f), Rubber, "BumperSegment", rot);
-            }
+            Torus(g, new Vector3(0f, 0.065f, 0f), Quaternion.identity, 0.445f, 0.024f, Rubber, "Bumper", 48);
+            Torus(g, new Vector3(0f, 0.065f, 0f), Quaternion.identity, 0.470f, 0.004f, Gunmetal, "BumperGroove", 48);
             Ring(g, Vector3.zero, 0.442f, 0.095f, 7, new Vector3(0.03f, 0.008f, 0.01f), 200f, 340f);
             Led(g, new Vector3(0f, 0.10f, 0.412f), new Vector3(0.18f, 0.006f, 0.01f), Teal);
             Sph(g, new Vector3(0f, 0.115f, 0.30f), 0.05f, Rubber, "Sensor");
@@ -240,14 +235,14 @@ namespace VCS.Player
                 float r = 0.19f * Mathf.Cos(a) * (i == 6 ? 0.96f : 1f);
                 ball.Add(new Vector2(r, 0.19f + 0.19f * Mathf.Sin(a)));
             }
-            RevF(g, ball.ToArray(), Graphite, new Vector3(0f, 0f, 0.06f), "Ball", 12);
+            Rev(g, ball.ToArray(), Graphite, new Vector3(0f, 0f, 0.06f), "Ball", 32);
             Torus(g, new Vector3(0f, 0.19f, 0.06f), WheelRot, 0.19f, 0.01f, purple, "BallBand");
-            RevF(g, new[] { P(0f, -0.015f), P(0.07f, -0.015f), P(0.07f, 0.015f), P(0f, 0.015f) }, Steel, new Vector3(0.19f, 0.19f, 0.06f), "Hubcap", 8, WheelRot);
-            RevF(g, new[] { P(0f, -0.015f), P(0.07f, -0.015f), P(0.07f, 0.015f), P(0f, 0.015f) }, Steel, new Vector3(-0.19f, 0.19f, 0.06f), "Hubcap", 8, WheelRot);
-            RevF(g, new[] { P(0f, 0.30f), P(0.09f, 0.30f), P(0.09f, 0.36f), P(0f, 0.36f) }, Rubber, new Vector3(0f, 0f, -0.02f), "Motor", 10);
+            Rev(g, new[] { P(0f, -0.004f), P(0.05f, -0.004f), P(0.05f, 0.006f), P(0f, 0.006f) }, Steel, new Vector3(0.19f, 0.19f, 0.06f), "Hubcap", 20, WheelRot);
+            Rev(g, new[] { P(0f, -0.006f), P(0.05f, -0.006f), P(0.05f, 0.004f), P(0f, 0.004f) }, Steel, new Vector3(-0.19f, 0.19f, 0.06f), "Hubcap", 20, WheelRot);
+            Rev(g, new[] { P(0f, 0.30f), P(0.09f, 0.30f), P(0.09f, 0.36f), P(0f, 0.36f) }, Rubber, new Vector3(0f, 0f, -0.02f), "Motor", 24);
             Ring(g, new Vector3(0f, 0f, -0.02f), 0.092f, 0.33f, 10, new Vector3(0.022f, 0.02f, 0.008f), 0f, 360f);
-            RevF(g, new[] { P(0f, 0.36f), P(0.11f, 0.36f), P(0.11f, 0.70f), P(0f, 0.70f) }, glass, new Vector3(0f, 0f, -0.02f), "Bin", 10);
-            RevF(g, new[] { P(0f, 0.37f), P(0.045f, 0.37f), P(0.045f, 0.68f), P(0f, 0.68f) }, purple, new Vector3(0f, 0f, -0.02f), "CycloneCore", 8);
+            Rev(g, new[] { P(0f, 0.36f), P(0.11f, 0.36f), P(0.11f, 0.70f), P(0f, 0.70f) }, glass, new Vector3(0f, 0f, -0.02f), "Bin", 32);
+            Rev(g, new[] { P(0f, 0.37f), P(0.045f, 0.37f), P(0.045f, 0.68f), P(0f, 0.68f) }, purple, new Vector3(0f, 0f, -0.02f), "CycloneCore", 16);
             for (int i = 0; i < 8; i++)
             {
                 float a = i * 45f * Mathf.Deg2Rad;
@@ -255,7 +250,7 @@ namespace VCS.Player
                 var rot = Quaternion.LookRotation(new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)), Vector3.up);
                 Box(g, pos, new Vector3(0.004f, 0.26f, 0.055f), purple, "Fin", rot);
             }
-            RevF(g, new[] { P(0.11f, 0.70f), P(0.13f, 0.72f), P(0.13f, 0.80f), P(0.09f, 0.90f), P(0.05f, 0.95f), P(0f, 0.95f) }, purple, new Vector3(0f, 0f, -0.02f), "Cyclone", 10);
+            Rev(g, new[] { P(0.11f, 0.70f), P(0.13f, 0.72f), P(0.13f, 0.80f), P(0.09f, 0.90f), P(0.05f, 0.95f), P(0f, 0.95f) }, purple, new Vector3(0f, 0f, -0.02f), "Cyclone", 32);
             Torus(g, new Vector3(0f, 0.705f, -0.02f), Quaternion.identity, 0.125f, 0.004f, Rubber, "CapSeam", 20);
             RBox(g, 0.18f, 0.40f, 0.12f, 0.015f, Graphite, new Vector3(0f, 0.32f, -0.19f), "Spine");
             Display(g, new Vector3(0f, 0.60f, -0.249f), Quaternion.Euler(0f, 180f, 0f), 0.09f, 0.045f, Teal);
@@ -272,10 +267,9 @@ namespace VCS.Player
             var red = Palette.Plastic(new Color(0.60f, 0.12f, 0.10f));
             var lid = Palette.Mat(new Color(0.13f, 0.13f, 0.15f), 0.6f, 0.5f);
             var hoseM = Palette.Plastic(new Color(0.36f, 0.37f, 0.39f));
-            RevF(g, new[] { P(0f, 0f), P(0.25f, 0f), P(0.25f, 0.06f), P(0.24f, 0.06f) }, Rubber, Vector3.zero, "Base", 12);
-            RevF(g, new[] { P(0f, 0.06f), P(0.245f, 0.06f), P(0.245f, 0.38f), P(0f, 0.38f) }, red, Vector3.zero, "Drum", 12);
-            Seams(g, Vector3.zero, 0.246f, 0.08f, 0.36f, 12, Rubber);
-            RevF(g, new[] { P(0.245f, 0.38f), P(0.262f, 0.40f), P(0.262f, 0.47f), P(0.22f, 0.52f), P(0.12f, 0.555f), P(0f, 0.565f) }, lid, Vector3.zero, "Lid", 12);
+            Rev(g, new[] { P(0f, 0f), P(0.25f, 0f), P(0.25f, 0.06f), P(0.24f, 0.06f) }, Rubber, Vector3.zero, "Base", 40);
+            Rev(g, new[] { P(0f, 0.06f), P(0.245f, 0.06f), P(0.245f, 0.15f), P(0.238f, 0.155f), P(0.238f, 0.17f), P(0.245f, 0.175f), P(0.245f, 0.30f), P(0.238f, 0.305f), P(0.238f, 0.32f), P(0.245f, 0.325f), P(0.245f, 0.38f), P(0f, 0.38f) }, red, Vector3.zero, "Drum", 40);
+            Rev(g, new[] { P(0.245f, 0.38f), P(0.262f, 0.40f), P(0.262f, 0.47f), P(0.22f, 0.52f), P(0.12f, 0.555f), P(0f, 0.565f) }, lid, Vector3.zero, "Lid", 40);
             Torus(g, new Vector3(0f, 0.385f, 0f), Quaternion.identity, 0.25f, 0.005f, Rubber, "LidSeam", 24);
             ScrewRing(g, new Vector3(0f, 0.44f, 0f), 0.263f, 12, 0.26f);
             Box(g, new Vector3(0.26f, 0.41f, 0f), new Vector3(0.03f, 0.06f, 0.05f), Steel, "Latch");
@@ -315,8 +309,8 @@ namespace VCS.Player
             Rev(g, new[] { P(0f, -0.13f), P(0.03f, -0.13f), P(0.03f, 0.13f), P(0f, 0.13f) }, blue, new Vector3(0f, 0.035f, 0.47f), "Roller", 16, WheelRot);
             Led(g, new Vector3(0f, 0.045f, 0.501f), new Vector3(0.26f, 0.008f, 0.006f), CoolWhite);
             Slots(g, new Vector3(0f, 0.066f, 0.38f), Quaternion.Euler(90f, 0f, 0f), 5, 0.045f, new Vector3(0.03f, 0.01f, 0.01f));
-            RevF(g, new[] { P(0f, -0.015f), P(0.03f, -0.015f), P(0.03f, 0.015f), P(0f, 0.015f) }, Steel, new Vector3(0.155f, 0.035f, 0.47f), "Hubcap", 8, WheelRot);
-            RevF(g, new[] { P(0f, -0.015f), P(0.03f, -0.015f), P(0.03f, 0.015f), P(0f, 0.015f) }, Steel, new Vector3(-0.155f, 0.035f, 0.47f), "Hubcap", 8, WheelRot);
+            Rev(g, new[] { P(0f, -0.006f), P(0.025f, -0.006f), P(0.025f, 0.006f), P(0f, 0.006f) }, Steel, new Vector3(0.155f, 0.035f, 0.47f), "Hubcap", 16, WheelRot);
+            Rev(g, new[] { P(0f, -0.006f), P(0.025f, -0.006f), P(0.025f, 0.006f), P(0f, 0.006f) }, Steel, new Vector3(-0.155f, 0.035f, 0.47f), "Hubcap", 16, WheelRot);
             TubeAlong(g, new[] { new Vector3(0f, 0.05f, 0.40f), new Vector3(0f, 0.45f, 0.18f), new Vector3(0f, 0.85f, -0.02f) }, 0.018f, Steel, "Wand");
 
             var unit = new GameObject("Unit").transform;
@@ -330,9 +324,9 @@ namespace VCS.Player
             Display(unit, new Vector3(0f, -0.10f, 0.061f), Quaternion.identity, 0.07f, 0.03f, cyan);
             RBox(unit, 0.10f, 0.05f, 0.16f, 0.01f, Rubber, new Vector3(0f, -0.25f, -0.03f), "Battery");
             for (int i = 0; i < 3; i++) Led(unit, new Vector3(-0.02f + i * 0.02f, -0.224f, 0.03f), new Vector3(0.008f, 0.004f, 0.008f), GreenLed);
-            RevF(unit, new[] { P(0f, 0.02f), P(0.065f, 0.02f), P(0.065f, 0.26f), P(0.05f, 0.30f), P(0f, 0.30f) }, glass, Vector3.zero, "Bin", 10);
-            RevF(unit, new[] { P(0f, 0.03f), P(0.03f, 0.03f), P(0.03f, 0.27f), P(0f, 0.27f) }, Gunmetal, Vector3.zero, "Core", 8);
-            RevF(unit, new[] { P(0.03f, 0.30f), P(0.03f, 0.36f), P(0f, 0.36f) }, Graphite, Vector3.zero, "Cap", 8);
+            Rev(unit, new[] { P(0f, 0.02f), P(0.065f, 0.02f), P(0.065f, 0.26f), P(0.05f, 0.30f), P(0f, 0.30f) }, glass, Vector3.zero, "Bin", 24);
+            Rev(unit, new[] { P(0f, 0.03f), P(0.03f, 0.03f), P(0.03f, 0.27f), P(0f, 0.27f) }, Gunmetal, Vector3.zero, "Core", 16);
+            Rev(unit, new[] { P(0.03f, 0.30f), P(0.03f, 0.36f), P(0f, 0.36f) }, Graphite, Vector3.zero, "Cap", 16);
             TubeAlong(g, new[] { new Vector3(0f, 0.88f, -0.10f), new Vector3(0f, 1.02f, -0.22f), new Vector3(0f, 0.92f, -0.34f), new Vector3(0f, 0.78f, -0.28f), new Vector3(0f, 0.80f, -0.12f) }, 0.016f, Rubber, "Handle");
             Led(g, new Vector3(0f, 0.86f, -0.16f), new Vector3(0.028f, 0.045f, 0.02f), cyan);
         }
@@ -357,7 +351,7 @@ namespace VCS.Player
             light.color = new Color(1f, 0.92f, 0.7f);
             Screw(g, new Vector3(0.17f, 0.11f, 0.435f), Quaternion.identity);
             Screw(g, new Vector3(-0.17f, 0.11f, 0.435f), Quaternion.identity);
-            RevF(g, new[] { P(0f, 0.12f), P(0.16f, 0.12f), P(0.16f, 0.20f), P(0.15f, 0.28f), P(0.11f, 0.34f), P(0f, 0.36f) }, green, new Vector3(0f, 0f, 0.02f), "Motor", 10);
+            Rev(g, new[] { P(0f, 0.12f), P(0.16f, 0.12f), P(0.16f, 0.20f), P(0.15f, 0.28f), P(0.11f, 0.34f), P(0f, 0.36f) }, green, new Vector3(0f, 0f, 0.02f), "Motor", 32);
             Ring(g, new Vector3(0f, 0f, 0.02f), 0.162f, 0.19f, 12, new Vector3(0.024f, 0.035f, 0.008f), 20f, 160f);
             Torus(g, new Vector3(0f, 0.125f, 0.02f), Quaternion.identity, 0.163f, 0.006f, Steel, "Trim", 24);
             Torus(g, new Vector3(0f, 0.285f, 0.02f), Quaternion.identity, 0.148f, 0.004f, Rubber, "CowlSeam", 24);
@@ -393,7 +387,7 @@ namespace VCS.Player
                 profile.Add(P(0.19f, z)); profile.Add(P(0.178f, z + 0.008f)); profile.Add(P(0.178f, z + 0.02f)); profile.Add(P(0.19f, z + 0.028f));
             }
             profile.Add(P(0.19f, 0.15f)); profile.Add(P(0.16f, 0.25f)); profile.Add(P(0.10f, 0.30f)); profile.Add(P(0f, 0.30f));
-            var body = RevF(g, profile.ToArray(), navy, new Vector3(0f, 0.17f, 0f), "Body", 12, Quaternion.Euler(90f, 0f, 0f));
+            var body = Rev(g, profile.ToArray(), navy, new Vector3(0f, 0.17f, 0f), "Body", 36, Quaternion.Euler(90f, 0f, 0f));
             body.transform.localScale = new Vector3(1.25f, 1f, 0.8f);
             Torus(g, new Vector3(0f, 0.17f, -0.29f), Quaternion.Euler(90f, 0f, 0f), 0.13f, 0.02f, Rubber, "Bumper");
             for (int side = -1; side <= 1; side += 2)
@@ -404,8 +398,8 @@ namespace VCS.Player
                 Box(g, new Vector3(x, 0.135f, 0.20f), new Vector3(0.012f, 0.03f, 0.10f), red, "Stripe");
             }
             TubeAlong(g, new[] { new Vector3(0f, 0.30f, 0.10f), new Vector3(0f, 0.40f, 0.03f), new Vector3(0f, 0.40f, -0.09f), new Vector3(0f, 0.30f, -0.16f) }, 0.014f, Rubber, "Handle");
-            RevF(g, new[] { P(0f, 0f), P(0.03f, 0f), P(0.03f, 0.012f), P(0f, 0.012f) }, Steel, new Vector3(-0.09f, 0.315f, -0.14f), "CordButton", 8);
-            RevF(g, new[] { P(0f, 0f), P(0.035f, 0f), P(0.035f, 0.02f), P(0.02f, 0.02f), P(0.02f, 0.03f), P(0f, 0.03f) }, grey, new Vector3(0.09f, 0.31f, -0.12f), "SilenceDial", 10);
+            Rev(g, new[] { P(0f, 0f), P(0.03f, 0f), P(0.03f, 0.012f), P(0f, 0.012f) }, Steel, new Vector3(-0.09f, 0.315f, -0.14f), "CordButton", 16);
+            Rev(g, new[] { P(0f, 0f), P(0.035f, 0f), P(0.035f, 0.02f), P(0.02f, 0.02f), P(0.02f, 0.03f), P(0f, 0.03f) }, grey, new Vector3(0.09f, 0.31f, -0.12f), "SilenceDial", 20);
             Display(g, new Vector3(0f, 0.327f, -0.20f), Quaternion.Euler(70f, 0f, 0f), 0.07f, 0.028f, Teal);
             Ring(g, new Vector3(0f, 0.17f, -0.22f), 0.20f, 0.03f, 5, new Vector3(0.02f, 0.014f, 0.01f), 200f, 250f);
             Ring(g, new Vector3(0f, 0.17f, -0.22f), 0.20f, 0.03f, 5, new Vector3(0.02f, 0.014f, 0.01f), 290f, 340f);
@@ -426,7 +420,7 @@ namespace VCS.Player
             var yellow = Palette.Plastic(new Color(0.80f, 0.60f, 0.10f));
             var head = Palette.Plastic(new Color(0.10f, 0.10f, 0.11f));
             var gray = Palette.Plastic(new Color(0.30f, 0.31f, 0.33f));
-            RevF(g, new[] { P(0f, 0.03f), P(0.32f, 0.03f), P(0.33f, 0.12f), P(0.30f, 0.12f) }, Rubber, Vector3.zero, "CasterBase", 16);
+            Rev(g, new[] { P(0f, 0.03f), P(0.32f, 0.03f), P(0.33f, 0.12f), P(0.30f, 0.12f) }, Rubber, Vector3.zero, "CasterBase", 40);
             var drum = new List<Vector2> { P(0f, 0.12f), P(0.30f, 0.12f) };
             for (int i = 0; i < 4; i++)
             {
@@ -434,10 +428,10 @@ namespace VCS.Player
                 drum.Add(P(0.30f, y)); drum.Add(P(0.28f, y + 0.012f)); drum.Add(P(0.28f, y + 0.045f)); drum.Add(P(0.30f, y + 0.057f));
             }
             drum.Add(P(0.30f, 0.50f)); drum.Add(P(0f, 0.50f));
-            RevF(g, drum.ToArray(), yellow, Vector3.zero, "Drum", 16);
-            RevF(g, new[] { P(0.30f, 0.50f), P(0.325f, 0.52f), P(0.325f, 0.60f), P(0.28f, 0.64f), P(0.20f, 0.68f), P(0.17f, 0.74f), P(0.10f, 0.76f), P(0f, 0.76f) }, head, Vector3.zero, "Head", 16);
+            Rev(g, drum.ToArray(), yellow, Vector3.zero, "Drum", 40);
+            Rev(g, new[] { P(0.30f, 0.50f), P(0.325f, 0.52f), P(0.325f, 0.60f), P(0.28f, 0.64f), P(0.20f, 0.68f), P(0.17f, 0.74f), P(0.10f, 0.76f), P(0f, 0.76f) }, head, Vector3.zero, "Head", 40);
             Ring(g, Vector3.zero, 0.31f, 0.62f, 16, new Vector3(0.05f, 0.03f, 0.01f), 0f, 360f);
-            RevF(g, new[] { P(0.10f, 0.76f), P(0.10f, 0.79f), P(0f, 0.79f) }, Steel, Vector3.zero, "VentCap", 8);
+            Rev(g, new[] { P(0.10f, 0.76f), P(0.10f, 0.79f), P(0f, 0.79f) }, Steel, Vector3.zero, "VentCap", 20);
             Torus(g, new Vector3(0f, 0.505f, 0f), Quaternion.identity, 0.312f, 0.005f, Rubber, "HeadSeam", 32);
             Box(g, new Vector3(0.315f, 0.50f, 0f), new Vector3(0.04f, 0.09f, 0.06f), Steel, "Latch");
             Box(g, new Vector3(-0.315f, 0.50f, 0f), new Vector3(0.04f, 0.09f, 0.06f), Steel, "Latch");
