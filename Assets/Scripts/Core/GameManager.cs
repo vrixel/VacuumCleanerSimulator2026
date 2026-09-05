@@ -24,6 +24,9 @@ namespace VCS.Core
 
         public static GameManager I { get; private set; }
 
+        /// <summary>Set by <see cref="SmokeRunner"/>: never grab the mouse cursor during an automated run.</summary>
+        public static bool SmokeMode;
+
         public GameState State { get; private set; } = GameState.Title;
         public int Score { get; private set; }
         public int PowerLevel { get; private set; } = 1;
@@ -81,6 +84,7 @@ namespace VCS.Core
             EnterTitle();
             Debug.Log("[VCS] " + GameName + " v" + Version + " ready: " + Level.MessTotal + " pieces of mess, "
                       + Objectives.All.Count + " achievements, best score " + BestScore);
+            SmokeRunner.TryStart(this);
         }
 
         void EnterTitle()
@@ -116,8 +120,8 @@ namespace VCS.Core
             Hud.ShowHint("WASD / left stick: drive     SPACE / A: hop     SHIFT / RB: turbo     E / B: blow     F / X: empty bag at the bin     ESC / Start: pause", 14f);
             State = GameState.Playing;
             Time.timeScale = 1f;
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            Cursor.lockState = SmokeMode ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = SmokeMode;
             Audio.PlayStart();
             Debug.Log("[VCS] Run started, seed " + seed + ", mess " + Level.MessTotal);
         }
@@ -139,8 +143,8 @@ namespace VCS.Core
             State = GameState.Playing;
             Time.timeScale = 1f;
             Menu.HideAll();
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            Cursor.lockState = SmokeMode ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = SmokeMode;
         }
 
         void OnPauseMenu(int index)

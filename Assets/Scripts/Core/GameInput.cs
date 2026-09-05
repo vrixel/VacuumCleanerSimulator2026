@@ -8,10 +8,14 @@ namespace VCS.Core
     /// </summary>
     public static class GameInput
     {
+        /// <summary>When set, replaces the stick/keys for driving (used by the smoke test).</summary>
+        public static Vector2? MoveOverride;
+
         public static Vector2 Move
         {
             get
             {
+                if (MoveOverride.HasValue) return MoveOverride.Value;
                 var v = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
                 return v.sqrMagnitude > 1f ? v.normalized : v;
             }

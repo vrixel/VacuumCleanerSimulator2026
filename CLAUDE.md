@@ -16,7 +16,12 @@ powershell -File tools\compile-check.ps1     # compile all scripts against Unity
 powershell -File tools\build.ps1             # batch-mode Win64 build -> Builds\Win64\VacuumCleanerSimulator2026.exe, log in Builds\build.log
 powershell -File tools\build.ps1 -Run        # same, then launch the exe (player log in Builds\player.log)
 powershell -File tools\run.ps1               # launch the last build
+powershell -File tools\smoke-test.ps1        # automated run of the build: self-screenshots (Builds\smoke-*.png), drives, logs "[VCS] Smoke result", quits
 ```
+
+The smoke test runs the player with `-smoke <dir>` (see `SmokeRunner`): it never injects keystrokes or steals focus,
+so it is safe while the owner is using the PC. Look at the two PNGs it produces; the log scan alone only proves the
+game did not throw. The player log line `d3d12: failed to query info queue interface` is benign.
 
 Builds are local only. There is no GitHub Actions workflow on purpose (Unity in CI burns minutes and needs a license
 server); do not add one. The editor path is resolved in `tools/common.ps1`, override with `$env:VCS_UNITY`.
