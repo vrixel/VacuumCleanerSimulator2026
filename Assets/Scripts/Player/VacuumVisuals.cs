@@ -6,6 +6,9 @@ namespace VCS.Player
     /// <summary>The vacuum body from the catalogue, with googly eyes that look where you drive, bob, tilt and squash.</summary>
     public class VacuumVisuals : MonoBehaviour
     {
+        /// <summary>Realistic look (2026-09-05): machines without googly eyes, grained materials, real lighting.</summary>
+        public const bool RealisticLook = true;
+
         Transform group;
         Transform leftEye;
         Transform rightEye;
@@ -25,7 +28,8 @@ namespace VCS.Player
             group.SetParent(root.transform, false);
             v.group = group;
             spec.Build(group, spec);
-            AddEyes(group, spec, out v.leftEye, out v.rightEye);
+            VacuumDetails.Add(group, spec);
+            if (!RealisticLook) AddEyes(group, spec, out v.leftEye, out v.rightEye);
             return v;
         }
 
@@ -69,8 +73,8 @@ namespace VCS.Player
             Vector3 look = vac != null ? transform.InverseTransformDirection(vac.MoveDir) : Vector3.zero;
             if (look.sqrMagnitude < 0.01f) look = Vector3.forward;
             var target = Quaternion.LookRotation((look + Vector3.forward * 0.6f).normalized, Vector3.up);
-            leftEye.localRotation = Quaternion.Slerp(leftEye.localRotation, target, dt * 10f);
-            rightEye.localRotation = Quaternion.Slerp(rightEye.localRotation, target, dt * 10f);
+            if (leftEye != null) leftEye.localRotation = Quaternion.Slerp(leftEye.localRotation, target, dt * 10f);
+            if (rightEye != null) rightEye.localRotation = Quaternion.Slerp(rightEye.localRotation, target, dt * 10f);
         }
     }
 }

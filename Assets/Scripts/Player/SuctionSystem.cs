@@ -113,6 +113,18 @@ namespace VCS.Player
             float absorb = AbsorbRadius;
             float pull = PullByPower[PowerLevel] * (spec != null ? spec.PullMult : 1f);
             int maxClass = PowerLevel + SizeBonus;
+
+            // Cocoa powder on the floor: the nozzle clears a disc wherever it passes.
+            if (!BagFull && vac.Grounded && gm.Level != null && gm.Level.Powder != null)
+            {
+                float sqm = gm.Level.Powder.Vacuum(np + nf * 0.05f, 0.28f + 0.03f * PowerLevel);
+                if (sqm > 0f)
+                {
+                    BagFill += sqm * 1.5f;
+                    gm.OnPowderCleaned(sqm, np);
+                    if (BagFill >= BagCapacity && !BagFull) { BagFull = true; gm.OnBagFull(); }
+                }
+            }
             int n = Physics.OverlapSphereNonAlloc(np, radius, buffer, ~0, QueryTriggerInteraction.Ignore);
             seen.Clear();
             int pulled = 0;

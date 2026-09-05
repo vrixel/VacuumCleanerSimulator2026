@@ -18,7 +18,7 @@ namespace VCS.Core
     public class GameManager : MonoBehaviour
     {
         public const string GameName = "Vacuum Cleaner Simulator 2026";
-        public const string Version = "0.1.0";
+        public const string Version = "0.2.0";
         public const int MaxPower = 5;
         public static readonly int[] PowerThresholds = { 0, 300, 1000, 2500, 5000 };
 
@@ -67,6 +67,13 @@ namespace VCS.Core
             DontDestroyOnLoad(gameObject);
             Physics.gravity = new Vector3(0f, -16f, 0f);
             QualitySettings.vSyncCount = 1;
+            QualitySettings.shadows = ShadowQuality.All;
+            QualitySettings.shadowResolution = ShadowResolution.VeryHigh;
+            QualitySettings.shadowDistance = 45f;
+            QualitySettings.shadowCascades = 2;
+            QualitySettings.antiAliasing = 4;
+            QualitySettings.anisotropicFiltering = AnisotropicFiltering.ForceEnable;
+            QualitySettings.realtimeReflectionProbes = true;
         }
 
         void Start()
@@ -108,6 +115,8 @@ namespace VCS.Core
         {
             Score = 0; PowerLevel = 1; ComboCount = 0; ComboTimeLeft = 0f; PlayTime = 0f;
             spotlessShown = false;
+            catHissShown = false;
+            powderScore = 0f; powderReported = 0f;
             banners.Clear(); bannerTimer = 0f;
             Objectives.ResetProgress();
             seed++;
@@ -264,6 +273,38 @@ namespace VCS.Core
             {
                 Fx.Sparkle(d.transform.position, 20);
                 Cam.Shake(0.15f + d.SizeClass * 0.05f);
+            }
+        }
+
+        float powderScore, powderReported, powderPuffAt;
+        bool catHissShown;
+
+        /// <summary>Square metres of cocoa powder just cleared under the nozzle.</summary>
+        public void OnPowderCleaned(float sqm, Vector3 at)
+        {
+            powderScore += sqm * 40f;
+            int pts = Mathf.FloorToInt(powderScore);
+            if (pts > 0) { powderScore -= pts; AddScore(pts); }
+            powderReported += sqm;
+            int whole = Mathf.FloorToInt(powderReported);
+            if (whole > 0) { powderReported -= whole; Objectives.Report("powder", whole); Telemetry.OnItemIngested(1); }
+            if (Time.time > powderPuffAt)
+            {
+                powderPuffAt = Time.time + 0.12f;
+                Fx.Puff(at + Vector3.up * 0.08f, PowderSystem.Cocoa, 3);
+            }
+        }
+
+        public void OnCatScared(Cat cat, bool bumped)
+        {
+            AddScore(bumped ? 50 : 30);
+            Objectives.Report("cat");
+            if (bumped) { Audio.PlayYowl(); Cam.Shake(0.12f); } else Audio.PlayMeow();
+            Fx.Puff(cat.transform.position + Vector3.up * 0.3f, Cat.Fur, bumped ? 12 : 6);
+            if (bumped && !catHissShown)
+            {
+                catHissShown = true;
+                ShowBanner("HISSSS", "You ran into the cat. It will remember this", 2f);
             }
         }
 

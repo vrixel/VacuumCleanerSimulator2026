@@ -42,6 +42,8 @@ namespace VCS.World
         public Transform Root { get; private set; }
         public int MessTotal { get; private set; }
         public int MessCleaned { get; private set; }
+        public PowderSystem Powder { get; private set; }
+        public Cat Cat { get; private set; }
         public Vector3 PlayerSpawn { get; private set; }
         public Vector3 HouseCenter { get; private set; }
         public TrashCan Bin { get; private set; }
@@ -128,7 +130,32 @@ namespace VCS.World
             BuildFurniture();
             BuildSockets();
             BuildMess();
+            BuildPowder();
+            BuildCat();
             BuildLighting();
+        }
+
+        void BuildPowder()
+        {
+            var rects = new List<Rect>();
+            foreach (var r in rooms) rects.Add(r.Area);
+            Powder = PowderSystem.Build(this, Root, rects, rng);
+            MessTotal += Powder.Units;
+        }
+
+        void BuildCat()
+        {
+            Cat = Cat.Spawn(this, Root, new Vector3(6f, 0.3f, 5f));
+        }
+
+        /// <summary>A random point on a room floor, at least margin metres from its walls.</summary>
+        public Vector3 RandomFloorPoint(float margin)
+        {
+            if (rooms.Count == 0) return HouseCenter;
+            var r = rooms[rng.Next(rooms.Count)].Area;
+            float x = r.xMin + margin + (float)rng.NextDouble() * Mathf.Max(0.1f, r.width - 2f * margin);
+            float z = r.yMin + margin + (float)rng.NextDouble() * Mathf.Max(0.1f, r.height - 2f * margin);
+            return new Vector3(x, 0f, z);
         }
 
         // One socket per room; the first one is where a corded vacuum starts plugged in (hall, east wall).
@@ -362,10 +389,28 @@ namespace VCS.World
             sun.color = new Color(1f, 0.96f, 0.88f);
             sun.intensity = 1.15f;
             sun.shadows = LightShadows.Soft;
-            sun.shadowStrength = 0.65f;
-            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.55f, 0.58f, 0.66f);
+            sun.shadowStrength = 0.72f;
+            sun.shadowBias = 0.02f;
+            sun.shadowNormalBias = 0.3f;
+            // Sky, horizon and ground ambient instead of one flat colour, and a reflection probe of the house so
+            // glossy plastics and chrome mirror the rooms around them.
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = new Color(0.62f, 0.68f, 0.80f);
+            RenderSettings.ambientEquatorColor = new Color(0.56f, 0.53f, 0.49f);
+            RenderSettings.ambientGroundColor = new Color(0.30f, 0.27f, 0.24f);
             RenderSettings.fog = false;
+            var probeGo = new GameObject("ReflectionProbe");
+            probeGo.transform.SetParent(Root, false);
+            probeGo.transform.position = HouseCenter + Vector3.up * 1.4f;
+            var probe = probeGo.AddComponent<ReflectionProbe>();
+            probe.mode = UnityEngine.Rendering.ReflectionProbeMode.Realtime;
+            probe.refreshMode = UnityEngine.Rendering.ReflectionProbeRefreshMode.ViaScripting;
+            probe.timeSlicingMode = UnityEngine.Rendering.ReflectionProbeTimeSlicingMode.NoTimeSlicing;
+            probe.resolution = 128;
+            probe.size = new Vector3(60f, 14f, 60f);
+            probe.boxProjection = true;
+            probe.cullingMask = ~(1 << 8);
+            probe.RenderProbe();
         }
     }
 }

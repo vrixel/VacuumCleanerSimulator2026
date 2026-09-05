@@ -54,6 +54,13 @@ namespace VCS.CameraRig
 
         public void Shake(float amount) { shake = Mathf.Max(shake, amount); }
 
+        /// <summary>Camera angle and distance (the smoke test looks straight down to photograph the powder trail).</summary>
+        public void SetView(float pitchDeg, float dist)
+        {
+            pitch = Mathf.Clamp(pitchDeg, 22f, 89f);
+            distance = dist;
+        }
+
         Vector3 Desired()
         {
             var rot = Quaternion.Euler(pitch, yaw, 0f);

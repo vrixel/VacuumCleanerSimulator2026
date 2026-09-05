@@ -20,7 +20,7 @@ namespace VCS.Editor
         {
             PlayerSettings.productName = "Vacuum Cleaner Simulator 2026";
             PlayerSettings.companyName = "Cosnuau";
-            PlayerSettings.bundleVersion = "0.1.1";
+            PlayerSettings.bundleVersion = "0.2.0";
             PlayerSettings.colorSpace = ColorSpace.Linear;
             PlayerSettings.fullScreenMode = FullScreenMode.FullScreenWindow;
             PlayerSettings.resizableWindow = true;
@@ -75,6 +75,29 @@ namespace VCS.Editor
             EnsureMaterial("Assets/Resources/Materials/Particle.mat", "Legacy Shaders/Particles/Alpha Blended", m =>
             {
                 m.SetColor("_TintColor", new Color(0.5f, 0.5f, 0.5f, 0.5f));
+            });
+            // Standard in Fade mode (the powder layers): the keyword must live in an asset or the variant is stripped.
+            EnsureMaterial("Assets/Resources/Materials/Fade.mat", "Standard", m =>
+            {
+                m.SetFloat("_Mode", 2f);
+                m.SetOverrideTag("RenderType", "Transparent");
+                m.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                m.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                m.SetInt("_ZWrite", 0);
+                m.DisableKeyword("_ALPHATEST_ON");
+                m.EnableKeyword("_ALPHABLEND_ON");
+                m.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                m.renderQueue = 3000;
+                m.SetFloat("_Glossiness", 0.05f);
+                m.SetFloat("_Metallic", 0f);
+            });
+            // Standard with a normal map (every plastic, rubber, fabric and metal): same reason.
+            EnsureMaterial("Assets/Resources/Materials/LitBump.mat", "Standard", m =>
+            {
+                m.EnableKeyword("_NORMALMAP");
+                m.SetFloat("_BumpScale", 0.5f);
+                m.SetFloat("_Glossiness", 0.5f);
+                m.SetFloat("_Metallic", 0f);
             });
         }
 

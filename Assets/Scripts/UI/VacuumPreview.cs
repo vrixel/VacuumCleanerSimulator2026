@@ -71,7 +71,8 @@ namespace VCS.UI
             model.SetParent(stage, false);
             model.localRotation = Quaternion.Euler(0f, angle, 0f);
             s.Build(model, s);
-            VacuumVisuals.AddEyes(model, s, out _, out _);
+            VacuumDetails.Add(model, s);
+            if (!VacuumVisuals.RealisticLook) VacuumVisuals.AddEyes(model, s, out _, out _);
             Frame();
             cam.enabled = true;
         }

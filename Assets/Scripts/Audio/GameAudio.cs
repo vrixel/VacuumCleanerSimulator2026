@@ -11,7 +11,7 @@ namespace VCS.Audio
         const int Rate = 44100;
 
         AudioSource hum, sfx, ui, music;
-        AudioClip pop, gulp, boing, whoosh, ding, levelUp, clunk, bagFull, start, fanfare;
+        AudioClip pop, gulp, boing, whoosh, ding, levelUp, clunk, bagFull, start, fanfare, meow;
         AudioClip popReal, bagAlarmReal;
         float humVolTarget;
         float humPitchTarget = 0.85f;
@@ -71,6 +71,7 @@ namespace VCS.Audio
             bagFull = Arpeggio("bagfull", new[] { 392f, 349.23f, 311.13f }, 0.16f, 0.4f, 7f, 0.4f);
             start = Arpeggio("start", new[] { 392f, 523.25f, 659.25f, 783.99f }, 0.09f, 0.5f, 8f, 0.4f);
             fanfare = Arpeggio("fanfare", new[] { 523.25f, 659.25f, 783.99f, 1046.5f, 783.99f, 1046.5f, 1318.5f }, 0.12f, 0.9f, 4f, 0.45f);
+            meow = Meow("meow", 0.5f, 520f, 880f, 440f, 0.5f);
         }
 
         static AudioClip Make(string name, float[] data)
@@ -97,6 +98,26 @@ namespace VCS.Audio
                 d[i] = saw * 0.16f + s2 * 0.08f + lp * 0.35f;
             }
             return Make("hum", d);
+        }
+
+        // A cat: pitch rises then falls, 7 Hz vibrato, a few harmonics so it is not a sine, soft attack.
+        static AudioClip Meow(string name, float dur, float f0, float f1, float f2, float amp)
+        {
+            int n = (int)(dur * Rate);
+            var d = new float[n];
+            double phase = 0;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                float u = t / dur;
+                float f = u < 0.4f ? Mathf.Lerp(f0, f1, u / 0.4f) : Mathf.Lerp(f1, f2, (u - 0.4f) / 0.6f);
+                f *= 1f + 0.03f * Mathf.Sin(2f * Mathf.PI * 7f * t);
+                phase += 2.0 * System.Math.PI * f / Rate;
+                float s = (float)(System.Math.Sin(phase) + 0.5 * System.Math.Sin(2 * phase) + 0.25 * System.Math.Sin(3 * phase) + 0.12 * System.Math.Sin(4 * phase));
+                float env = Mathf.Min(1f, t * 30f) * (u < 0.65f ? 1f : Mathf.Clamp01((1f - u) / 0.35f));
+                d[i] = s * env * amp * 0.45f;
+            }
+            return Make(name, d);
         }
 
         static AudioClip Sweep(string name, float dur, float f0, float f1, float decay, float amp, float noise)
@@ -235,6 +256,8 @@ namespace VCS.Audio
         }
 
         public void PlayBoing() { sfx.pitch = Random.Range(0.95f, 1.1f); sfx.PlayOneShot(boing, 0.5f); }
+        public void PlayMeow() { sfx.pitch = Random.Range(0.9f, 1.15f); sfx.PlayOneShot(meow, 0.6f); }
+        public void PlayYowl() { sfx.pitch = 0.72f; sfx.PlayOneShot(meow, 0.9f); }
         public void PlayClick() { ui.pitch = 1.35f; ui.PlayOneShot(pop, 0.35f); }
         /// <summary>One tooth of the cord reel: a tiny click, pitch jittered so the run sounds mechanical.</summary>
         public void PlayRatchet() { sfx.pitch = Random.Range(1.6f, 2.1f); sfx.PlayOneShot(clunk, 0.18f); }

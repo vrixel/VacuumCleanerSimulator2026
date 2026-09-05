@@ -78,11 +78,68 @@ namespace VCS.World
             return m;
         }
 
-        public static Material Plastic(Color c) => Mat(c, 0f, 0.55f);
-        public static Material Glossy(Color c) => Mat(c, 0.2f, 0.8f);
-        public static Material Rubber(Color c) => Mat(c, 0f, 0.15f);
-        public static Material Fabric(Color c) => Mat(c, 0f, 0.05f);
-        public static Material Chrome => Mat(new Color(0.9f, 0.9f, 0.93f), 0.95f, 0.85f);
+        static Material fadeBase, bumpBase;
+        static readonly Dictionary<string, Material> cacheBump = new Dictionary<string, Material>();
+
+        // Resources/Materials/LitBump.mat carries the _NORMALMAP keyword so that shader variant ships in builds.
+        static Material BumpBase()
+        {
+            if (bumpBase != null) return bumpBase;
+            bumpBase = Resources.Load<Material>("Materials/LitBump");
+            if (bumpBase == null)
+            {
+                bumpBase = new Material(LitBase());
+                bumpBase.EnableKeyword("_NORMALMAP");
+            }
+            return bumpBase;
+        }
+
+        /// <summary>A fresh transparent (Fade mode) Standard material; the caller owns it and sets its texture.</summary>
+        public static Material Fade()
+        {
+            if (fadeBase == null)
+            {
+                fadeBase = Resources.Load<Material>("Materials/Fade");
+                if (fadeBase == null)
+                {
+                    fadeBase = new Material(Shader.Find("Standard"));
+                    fadeBase.SetFloat("_Mode", 2f);
+                    fadeBase.SetOverrideTag("RenderType", "Transparent");
+                    fadeBase.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                    fadeBase.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                    fadeBase.SetInt("_ZWrite", 0);
+                    fadeBase.EnableKeyword("_ALPHABLEND_ON");
+                    fadeBase.renderQueue = 3000;
+                    fadeBase.SetFloat("_Glossiness", 0.05f);
+                }
+            }
+            return new Material(fadeBase);
+        }
+
+        /// <summary>Lit material with a tiled procedural normal map (see ProceduralTextures), cached by value.</summary>
+        public static Material Bump(Color c, Texture2D normal, float bumpScale, float metallic, float smoothness, float tiling)
+        {
+            string key = ColorUtility.ToHtmlStringRGBA(c) + "|" + normal.name + "|" + bumpScale.ToString("F2") + "|" + metallic.ToString("F2") + "|" + smoothness.ToString("F2") + "|" + tiling.ToString("F1");
+            if (cacheBump.TryGetValue(key, out var m) && m != null) return m;
+            m = new Material(BumpBase());
+            m.color = c;
+            m.SetFloat("_Metallic", metallic);
+            m.SetFloat("_Glossiness", smoothness);
+            m.SetTexture("_BumpMap", normal);
+            m.SetFloat("_BumpScale", bumpScale);
+            m.mainTextureScale = new Vector2(tiling, tiling);
+            m.name = "Bump " + key;
+            cacheBump[key] = m;
+            return m;
+        }
+
+        // The material families every prop and vacuum is built from. Real surfaces: fine grain on plastics, soft
+        // lumps on rubber, a weave on fabric, brushed streaks on metal.
+        public static Material Plastic(Color c) => Bump(c, ProceduralTextures.PlasticGrain, 0.35f, 0f, 0.55f, 3f);
+        public static Material Glossy(Color c) => Bump(c, ProceduralTextures.PlasticGrain, 0.12f, 0.1f, 0.85f, 3f);
+        public static Material Rubber(Color c) => Bump(c, ProceduralTextures.RubberGrain, 0.7f, 0f, 0.2f, 4f);
+        public static Material Fabric(Color c) => Bump(c, ProceduralTextures.Weave, 0.9f, 0f, 0.08f, 6f);
+        public static Material Chrome => Bump(new Color(0.9f, 0.9f, 0.93f), ProceduralTextures.Brushed, 0.3f, 0.95f, 0.8f, 2f);
 
         public static Material Particle
         {

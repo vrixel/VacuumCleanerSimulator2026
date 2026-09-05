@@ -58,6 +58,37 @@ namespace VCS.Core
             yield return new WaitForSecondsRealtime(2f);
             GameInput.MoveOverride = Vector2.zero;
             yield return Capture("smoke-game.png");
+
+            // The cat: drive at it for a few seconds, it should bolt; shoot it while it runs and log its state.
+            if (gm.Level != null && gm.Level.Cat != null && gm.Player != null)
+            {
+                var cat = gm.Level.Cat;
+                float tc = 0f;
+                bool shot = false;
+                while (tc < 6f)
+                {
+                    Vector3 to = cat.transform.position - gm.Player.transform.position;
+                    to.y = 0f;
+                    var camT = Camera.main != null ? Camera.main.transform : null;
+                    Vector3 fwd = camT != null ? Vector3.ProjectOnPlane(camT.forward, Vector3.up).normalized : Vector3.forward;
+                    Vector3 right = Vector3.Cross(Vector3.up, fwd);
+                    Vector3 dir = to.sqrMagnitude > 0.01f ? to.normalized : Vector3.forward;
+                    GameInput.MoveOverride = new Vector2(Vector3.Dot(dir, right), Vector3.Dot(dir, fwd));
+                    yield return new WaitForSecondsRealtime(0.1f);
+                    tc += 0.1f;
+                    if (!shot && to.magnitude < 4.5f) { shot = true; yield return Capture("smoke-cat.png"); }
+                }
+                GameInput.MoveOverride = Vector2.zero;
+                Debug.Log("[VCS] Cat: distance " + Vector3.Distance(cat.transform.position, gm.Player.transform.position).ToString("0.0")
+                          + " m, state " + cat.State + ", speed " + cat.Speed.ToString("0.0") + " m/s, at " + cat.transform.position
+                          + ", powder cleaned " + (gm.Level.Powder != null ? gm.Level.Powder.CleanedSqm.ToString("0.00") : "-") + " m2 of "
+                          + (gm.Level.Powder != null ? gm.Level.Powder.TotalSqm.ToString("0.0") : "-"));
+                // Straight down over the vacuum: the cleared path through the powder should read as a trail.
+                gm.Cam.SetView(80f, 11f);
+                yield return new WaitForSecondsRealtime(0.6f);
+                yield return Capture("smoke-powder.png");
+                gm.Cam.SetView(42f, 9f);
+            }
             if (gm.Player != null && gm.Player.Cord != null && gm.Player.Cord.Plugged)
             {
                 // End of the cord: shorten it, drive away from the socket until it is taut, keep pulling until the

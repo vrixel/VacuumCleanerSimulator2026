@@ -251,6 +251,7 @@ namespace VCS.World
             m.SetTriangles(t, 0);
             if (n != null && n.Count == v.Count) m.SetNormals(n);
             else m.RecalculateNormals();
+            m.RecalculateTangents();   // the normal-mapped materials need them
             m.RecalculateBounds();
             return m;
         }

@@ -52,7 +52,7 @@ namespace VCS.Player
             c.line = go.AddComponent<LineRenderer>();
             c.line.useWorldSpace = true;
             c.line.widthMultiplier = 0.035f;
-            c.line.sharedMaterial = Palette.Rubber(new Color(0.12f, 0.12f, 0.13f));
+            c.line.sharedMaterial = Palette.Mat(new Color(0.12f, 0.12f, 0.13f), 0f, 0.15f);   // no tangents on a LineRenderer: flat rubber
             c.line.numCornerVertices = 4;
             c.line.numCapVertices = 3;
             c.line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;

@@ -53,6 +53,8 @@ namespace VCS.Objectives
             Add("eater", "Big Eater", "Eat 200 things", "absorb:any", 200, 300);
             Add("cordwhip", "Cord Whip", "Rewind 80 m of cord", "rewind", 80, 200);
             Add("plugyank", "Wall Puller", "Pull the plug out of the wall", "yank", 1, 100);
+            Add("catchaser", "Cat Chaser", "Scare the cat 8 times", "cat", 8, 150);
+            Add("cocoa", "Cocoa Trail", "Vacuum 30 square metres of cocoa powder", "powder", 30, 200);
             Add("longreach", "Long Reach", "Find the end of the cord", "taut", 1, 150);
             Add("plughopper", "Plug Hopper", "Use 4 different sockets", "plug", 4, 200);
             Add("spotless", "Spotless", "Clean 100% of the house", "clean100", 1, 1000);
