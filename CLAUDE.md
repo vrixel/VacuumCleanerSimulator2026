@@ -90,9 +90,15 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
 - The HUD (`HudController`) is spread around the screen: score block top-left, power strip top-centre, timer and
   `RadarView` top-right (a top-down camera into a masked RawImage; markers are quads on layer 8 that the main and
   preview cameras cull), vertical meters left, mission log right, `Cockpit` at the bottom.
-- The cord (`PowerCord`, corded vacuums only): a breadcrumb trail from the `WallSocket` to the vacuum drawn with
-  a LineRenderer, an 18 m limit that yanks the vacuum back, `Rewind()` (R / Y, and automatically on Spotless)
-  reels it in with a ratchet and knocks light debris on the way. Unplugged means `VacuumController.Powered` is
+- The cord (`PowerCord`, corded vacuums only) is a rope from the `WallSocket` to the vacuum drawn with a
+  LineRenderer: trail points are added as you drive, and `Tighten` removes every point whose shortcut is clear
+  (raycast at 18 cm, ignoring the vacuum and debris under 5 kg), so the dragged part straightens behind you and
+  the whole cord pulls tight around corners once 80 % of `MaxLength` (22 m, static so the smoke test can shorten
+  it) is out. `Length` is therefore the real rope length, never the distance driven (that was the 2026-09-05
+  zigzag bug: taut everywhere after 45 m of driving, yanked back every step). At the end it is a leash (outward
+  velocity removed, overshoot taken back); pulling on it for 0.9 s more pops the plug out (`YankPlug`, event
+  `yank`) and the cord reels itself in. `Rewind()` (R / Y, and automatically on Spotless) reels it in with a
+  ratchet and knocks light debris on the way. Unplugged means `VacuumController.Powered` is
   false: no suction, telemetry drops, the CORD lamp and status show it; driving within 1.4 m of any socket
   plugs back in. Sockets are built in `LevelBuilder.BuildSockets`, one per room, the hall one first.
 - `GameAudio` synthesises every clip at startup (`AudioClip.Create`); `EffectsFactory` configures particle systems.
@@ -145,5 +151,8 @@ Unity 6 API names in use: `Rigidbody.linearVelocity`, `linearDamping`, `angularD
   `public/assets/emblems/d8.png` (from `mk_emblem`, 192 px pure black on transparency). The register only shows
   mysterious black engravings; the game keeps its own cartoon style. Deploy = push to that repo's `main` touching
   `public/**` (CI syncs to S3 and invalidates CloudFront).
-- Microsoft Store and Steam need the owner's accounts and fees (Partner Center, Steamworks); `docs/STORE.md` has the
-  listing copy, the asset table and the step lists. MSIX packaging needs the Windows SDK, not installed.
+- Microsoft Store: the owner's Partner Center account (already used for another game) covers PC games at no extra
+  cost; `docs/STORE.md` has the listing copy, the asset table and the step lists. `python tools\msix.py` packages
+  `Builds\Win64` as an unsigned MSIX (full-trust desktop app) with `makeappx.exe` from the
+  Microsoft.Windows.SDK.BuildTools NuGet package extracted under `D:\DevTools\WindowsSDK-BuildTools` (no admin);
+  the identity values come from Partner Center > Product identity. Steam is parked (100 USD per game).

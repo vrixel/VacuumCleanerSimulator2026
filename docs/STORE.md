@@ -64,8 +64,9 @@ Generated with kie.ai from `tools/assets/kie_assets.py` and cut to store sizes b
 1. Owner: sign in to the existing Partner Center developer account (no new fee; PC games use the same account
    and the same dashboard as apps, category Games).
 2. Owner: reserve the name "Vacuum Cleaner Simulator 2026" in Partner Center.
-3. Package the Win64 build as MSIX with the identity from Partner Center. Needs the Windows SDK (`makeappx`,
-   `signtool`) or the MSIX Packaging Tool; neither is installed on this machine yet.
+3. Package the Win64 build as MSIX with the identity from Partner Center (Product management > Product identity):
+   `python tools\msix.py --identity-name <Package/Identity/Name> --publisher "<Package/Identity/Publisher>" --publisher-display <PublisherDisplayName>`. Uses makeappx.exe from the Microsoft.Windows.SDK.BuildTools
+   NuGet package under `D:\DevTools\WindowsSDK-BuildTools`; the package is unsigned, the Store signs it.
 4. Upload the MSIX, fill the listing with the copy above, the 300 x 300 icon and the 1920 x 1080 screenshots.
 5. Xbox consoles need a UWP build (IL2CPP, Visual Studio with C++ UWP tools) through the Xbox Live Creators
    Program, or ID@Xbox with the GDK. Not part of the first release.
