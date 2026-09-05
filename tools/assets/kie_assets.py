@@ -68,6 +68,26 @@ FULL_EDIT = ("Fill the inside of this exact container to the brim with grey hous
 PANEL = ("Seamless texture of a dark brushed aluminium instrument panel with a subtle carbon-fibre weave, a few small "
          "hex screws, matte, photorealistic, evenly lit, very dark overall. No objects, no gauges, no text, no logos.")
 
+# HUD plates: opaque frames on black. The interior of each frame is a flat black screen so dynamic text and
+# instruments can be drawn over it; the outside is keyed to transparent. Bold arcade cabinet meets flight deck.
+HUD_STYLE = ("Bold 1990s arcade racing cabinet meets modern flight-simulator cockpit. Chunky bevelled dark charcoal "
+             "metal frame with brushed steel edges and hex screws, sharp diagonal cuts, a thin bright safety-yellow "
+             "accent line and a thin electric-blue accent line, high contrast, clean and crisp, flat front view, no "
+             "perspective, evenly lit. The inside of the frame is a perfectly flat matte black screen, completely "
+             "empty. Nothing lit, no glow, no reflections on the screen. ")
+HUD_PLATES = {
+    "frame_square": "A square instrument screen frame for a game HUD. " + HUD_STYLE + NO_TEXT,
+    "frame_wide": "A wide horizontal instrument screen frame for a game HUD, twice as wide as it is tall. " + HUD_STYLE + NO_TEXT,
+    "frame_tall": "A tall vertical instrument screen frame for a game HUD, twice as tall as it is wide. " + HUD_STYLE + NO_TEXT,
+    "plate_score": "A wide arcade scoreboard plate for a game HUD, three times as wide as it is tall, bold chunky frame with a "
+                   "yellow and black hazard-stripe accent along the bottom edge. " + HUD_STYLE + NO_TEXT,
+    "plate_banner": "A very wide announcement banner plate for a game HUD, five times as wide as it is tall, bold arcade style "
+                    "with diagonal chevron cuts at both ends and yellow and blue accent stripes. " + HUD_STYLE + NO_TEXT,
+    "dash_strip": "A very wide instrument dashboard strip for a game HUD, six times as wide as it is tall, dark brushed "
+                  "metal with carbon-fibre inlays, a bevelled top edge, hex screws, and several empty flat black "
+                  "rectangular screen areas separated by steel ribs. " + HUD_STYLE + NO_TEXT,
+}
+
 MUSIC = {
     "title": "Quirky upbeat jazzy theme for a silly video game about a vacuum cleaner, instrumental, kazoo, tuba, ukulele and brushed drums, cheerful and mischievous, 95 bpm, loopable, no vocals",
     "game": "Energetic playful funk with chiptune touches for a comedy physics game, instrumental, bouncy bass, clavinet, hand claps, 120 bpm, loopable, no vocals",
@@ -122,19 +142,24 @@ def key_background(im):
     return Image.fromarray(rgba, "RGBA"), bg
 
 
-def process_image(src, dst, size, key=True):
+def process_image(src, dst, size, key=True, square=True):
     from PIL import Image
     im = Image.open(src).convert("RGB")
     w, h = im.size
-    side = min(w, h)
-    im = im.crop(((w - side) // 2, (h - side) // 2, (w - side) // 2 + side, (h - side) // 2 + side))
-    im = im.resize((size, size), Image.LANCZOS)
+    if square:
+        side = min(w, h)
+        im = im.crop(((w - side) // 2, (h - side) // 2, (w - side) // 2 + side, (h - side) // 2 + side))
+        im = im.resize((size, size), Image.LANCZOS)
+    else:
+        # keep the aspect the model chose (it decides from the subject), bound the long side
+        scale = size / max(w, h)
+        im = im.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
     if key:
         im, bg = key_background(im)
         log(f"   background keyed: rgb({int(bg[0])},{int(bg[1])},{int(bg[2])})")
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     im.save(dst, "PNG", optimize=True)
-    log(f"   -> {os.path.relpath(dst, ROOT)} {size}x{size}")
+    log(f"   -> {os.path.relpath(dst, ROOT)} {im.size[0]}x{im.size[1]}")
 
 
 def contact_sheet(items, dst, cell=256):
@@ -183,12 +208,12 @@ class Campaign:
         self.spent_log = []
 
     # ---------------------------------------------------------------- images
-    def image(self, id_, prompt, dst, size, model=IMAGE_MODEL, base=None, key=True):
+    def image(self, id_, prompt, dst, size, model=IMAGE_MODEL, base=None, key=True, square=True):
         raw = os.path.join(RAW, id_ + ".png")
         if self.reprocess:
             if ok_file(raw):
                 log(f"[{id_}] reprocessing from raw")
-                process_image(raw, dst, size, key)
+                process_image(raw, dst, size, key, square)
             else:
                 log(f"[{id_}] no raw file, cannot reprocess")
             return
@@ -201,7 +226,7 @@ class Campaign:
         if not ok_file(raw) or self.force:
             log(f"[{id_}] generating with {model}")
             self.k.generate(prompt, raw, model=model, image=base, ratio="1:1", output_format="png", force=True)
-        process_image(raw, dst, size, key)
+        process_image(raw, dst, size, key, square)
 
     # ----------------------------------------------------------------- audio
     def _audio_task(self, path, body):
@@ -311,6 +336,8 @@ def plan(only):
         items.append(("edit", f"{cid}_full", dict(prompt=FULL_EDIT, base_id=f"{cid}_empty",
                                                   dst=os.path.join(RES, "UI", "Containers", f"{cid}_full.png"), size=512)))
     items.append(("image", "panel", dict(prompt=PANEL, dst=os.path.join(RES, "UI", "panel.png"), size=1024, key=False)))
+    for pid, prompt in HUD_PLATES.items():
+        items.append(("image", pid, dict(prompt=prompt, dst=os.path.join(RES, "UI", "Hud", f"{pid}.png"), size=1024, square=False)))
     for mid, prompt in MUSIC.items():
         items.append(("music", f"music_{mid}", dict(prompt=prompt, dst=os.path.join(RES, "Audio", "Music", f"{mid}.mp3"))))
     for sid, spec in SOUNDS.items():
@@ -363,7 +390,7 @@ def main():
     def do_image(it):
         _, id_, s = it
         try:
-            c.image(id_, s["prompt"], s["dst"], s["size"], key=s.get("key", True))
+            c.image(id_, s["prompt"], s["dst"], s["size"], key=s.get("key", True), square=s.get("square", True))
             return id_, None
         except Exception as e:  # noqa: BLE001
             return id_, str(e)

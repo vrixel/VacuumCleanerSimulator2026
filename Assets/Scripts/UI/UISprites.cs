@@ -78,6 +78,75 @@ namespace VCS.UI
 
         public static Sprite Bar => hbar != null ? hbar : hbar = Make("bar", 8, 8, (x, y) => Color.white, new Vector2(0.5f, 0.5f));
 
+        static Sprite bulb, bevel, vgrad, sparkle, chevron;
+
+        /// <summary>A marquee light bulb: bright centre, soft rim, thin dark edge. Tint it for on and off states.</summary>
+        public static Sprite Bulb => bulb != null ? bulb : bulb = Make("bulb", 48, (x, y) =>
+        {
+            float d = Dist(x, y, 48);
+            if (d > 1f) return new Color(1f, 1f, 1f, 0f);
+            float core = Mathf.Clamp01(1f - d * 1.35f);
+            float v = 0.55f + 0.45f * core * core;
+            float a = Mathf.Clamp01((1f - d) * 12f);
+            return new Color(v, v, v, a);
+        });
+
+        /// <summary>Nine-sliced bevel frame: dark outer lip, bright ridge, dark inner lip, transparent middle. Tint gold.</summary>
+        public static Sprite Bevel
+        {
+            get
+            {
+                if (bevel != null) return bevel;
+                const int n = 48;
+                var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+                var px = new Color[n * n];
+                for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    int edge = Mathf.Min(Mathf.Min(x, n - 1 - x), Mathf.Min(y, n - 1 - y));
+                    Color c;
+                    if (edge >= 12) c = new Color(0f, 0f, 0f, 0f);
+                    else if (edge <= 1) c = new Color(0.25f, 0.18f, 0.02f, 1f);
+                    else if (edge <= 4) c = new Color(1f, 0.95f, 0.65f, 1f);
+                    else if (edge <= 7) c = new Color(0.85f, 0.65f, 0.12f, 1f);
+                    else if (edge <= 9) c = new Color(0.5f, 0.36f, 0.05f, 1f);
+                    else c = new Color(0.12f, 0.08f, 0.02f, 1f);
+                    px[y * n + x] = c;
+                }
+                tex.SetPixels(px);
+                tex.Apply();
+                bevel = Sprite.Create(tex, new Rect(0f, 0f, n, n), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(14f, 14f, 14f, 14f));
+                bevel.name = "bevel";
+                return bevel;
+            }
+        }
+
+        /// <summary>Vertical gradient, opaque at the top fading to 35 percent at the bottom. Tint it for panel glass.</summary>
+        public static Sprite VGradient => vgrad != null ? vgrad : vgrad = Make("vgrad", 4, 64, (x, y) =>
+        {
+            float v = y / 63f;
+            return new Color(1f, 1f, 1f, 0.35f + 0.65f * v);
+        }, new Vector2(0.5f, 0.5f));
+
+        /// <summary>Four-point star for sparkles.</summary>
+        public static Sprite Sparkle => sparkle != null ? sparkle : sparkle = Make("sparkle", 64, (x, y) =>
+        {
+            float dx = Mathf.Abs(x + 0.5f - 32f) / 32f, dy = Mathf.Abs(y + 0.5f - 32f) / 32f;
+            float a = Mathf.Clamp01(1f - (dx + dy) * 1.05f);
+            a = a * a * a;
+            float d = Dist(x, y, 64);
+            a += Mathf.Clamp01(1f - d * 4f) * 0.8f;
+            return new Color(1f, 1f, 1f, Mathf.Clamp01(a));
+        });
+
+        /// <summary>Small chevron pointing right, for tape readouts.</summary>
+        public static Sprite Chevron => chevron != null ? chevron : chevron = Make("chevron", 16, 24, (x, y) =>
+        {
+            float cy = Mathf.Abs(y + 0.5f - 12f) / 12f;
+            bool inside = x < 16f * (1f - cy);
+            return new Color(1f, 1f, 1f, inside ? 1f : 0f);
+        }, new Vector2(0.5f, 0.5f));
+
         static Sprite radarSweep;
 
         /// <summary>A 70-degree wedge fading behind its leading edge, for the radar sweep.</summary>

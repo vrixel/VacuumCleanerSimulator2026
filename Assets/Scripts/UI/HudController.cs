@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using VCS.Core;
@@ -9,29 +8,33 @@ using VCS.Player;
 namespace VCS.UI
 {
     /// <summary>
-    /// The in-game overlay, spread around the whole screen like a flight deck: score block top-left, power strip
-    /// top-centre, seven-segment timer and dirt radar top-right, vertical meters on the left edge, mission log on
-    /// the right edge, the cockpit along the bottom, banners in the middle, brackets in the corners.
+    /// The in-game overlay: arcade-cabinet boldness on serious instrument frames. Score plate top-left, power strip
+    /// top-centre, timer and dirt radar top-right, scrolling tapes on the left, mission log on the right, the
+    /// cockpit along the bottom, banners in the middle. Frames are generated plates; everything on them is live.
     /// </summary>
     public class HudController : MonoBehaviour
     {
         Canvas canvas;
-        Text scoreText, comboText, powerText, timeText, objectivesText, achievementsText, bannerBig, bannerSmall, hintText, binPrompt;
-        Image[] powerSegments;
-        Image meterSuction, meterTemp, meterThird;
-        Text meterSuctionValue, meterTempValue, meterThirdValue, meterThirdLabel;
+        Text scoreText, comboText, powerText, timeText, achievementsText, bannerBig, bannerSmall, hintText, binPrompt;
+        Image[] powerTiles;
+        Text[] powerTileTexts;
+        Image[] logTiles;
+        Text[] logTileTexts, logTitles, logDescs;
+        Tape tapeSuction, tapeTemp, tapeThird;
         CanvasGroup bannerGroup, hintGroup, binGroup;
         RectTransform bannerRect, scoreRect, comboRect;
+        Image[] sparkles;
+        float[] sparklePhase;
         Cockpit cockpit;
         RadarView radar;
         GameObject playerMarker;
 
-        int lastScore = -1, lastCombo = -1, lastTime = -1, lastPower = -1;
-        bool lastBinPrompt;
-        float bannerT, bannerDur, hintT, hintDur, objectivesTimer, scorePunch, meterTimer;
-        Color accent = UIStyle.Amber;
+        int targetScore, lastCombo = -1, lastTime = -1, lastPower = -1;
+        float displayScore;
+        bool lastBinPrompt, thirdIsBattery;
+        float bannerT, bannerDur, hintT, hintDur, objectivesTimer, scorePunch, sparkleBurst;
         readonly List<Objective> objBuffer = new List<Objective>();
-        readonly StringBuilder sb = new StringBuilder();
+        static readonly Color[] PowerColors = { UIStyle.Green, UIStyle.Blue, UIStyle.Yellow, UIStyle.Amber, UIStyle.Red };
 
         public static HudController Create()
         {
@@ -45,130 +48,127 @@ namespace VCS.UI
         void Build()
         {
             var t = canvas.transform;
-            var steel = UIStyle.Steel;
+            var tl = new Vector2(0f, 1f);
+            var tc = new Vector2(0.5f, 1f);
+            var tr = new Vector2(1f, 1f);
 
-            // screen frame
-            UIStyle.Brackets(t, Vector2.zero, Vector2.one, new Vector2(14f, 14f), new Vector2(-14f, -14f), 42f, 3f, new Color(0.8f, 0.86f, 0.95f, 0.55f));
-
-            // ---- top-left: score block
-            UIStyle.Box(t, "ScoreBox", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(36f, -215f), new Vector2(520f, -36f), 0.6f);
-            UIStyle.Brackets(t, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(36f, -215f), new Vector2(520f, -36f), 22f, 2f);
-            var scoreLabel = UIFactory.Text(t, "ScoreLabel", "SCORE", 20, steel, TextAnchor.UpperLeft,
-                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(54f, -72f), new Vector2(500f, -42f), false);
-            UIStyle.Style(scoreLabel, UIStyle.Display, 20, steel);
-            scoreText = UIFactory.Text(t, "Score", "0", 104, UIStyle.Amber, TextAnchor.UpperLeft,
-                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(52f, -176f), new Vector2(500f, -66f), false);
-            UIStyle.Style(scoreText, UIStyle.Title, 104, UIStyle.Amber);
-            UIStyle.Glow(scoreText, UIStyle.Amber, 4f, 0.4f);
+            // ---- top-left: score plate
+            var scoreBox = UIStyle.Frame(t, "ScoreBox", tl, tl, new Vector2(30f, -230f), new Vector2(560f, -30f), "plate_score", 530f, 200f, 34f);
+            UIStyle.Tab(scoreBox, "ScoreTab", "SCORE", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -26f), new Vector2(120f, 0f));
+            scoreText = UIFactory.Text(scoreBox, "Score", "0", 96, Color.white, TextAnchor.MiddleLeft,
+                Vector2.zero, Vector2.one, new Vector2(4f, 30f), new Vector2(-4f, -24f), false);
+            UIStyle.Style(scoreText, UIStyle.Arcade, 92, Color.white, FontStyle.Italic);
+            UIStyle.ArcadeText(scoreText, Color.white, UIStyle.Yellow, 5f);
             scoreRect = scoreText.rectTransform;
-            comboText = UIFactory.Text(t, "Combo", "", 26, UIStyle.Cyan, TextAnchor.LowerLeft,
-                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(54f, -212f), new Vector2(500f, -176f), false);
-            UIStyle.Style(comboText, UIStyle.Display, 26, UIStyle.Cyan);
-            UIStyle.Glow(comboText, UIStyle.Cyan, 3f, 0.5f);
+            comboText = UIFactory.Text(scoreBox, "Combo", "", 22, UIStyle.Blue, TextAnchor.LowerLeft,
+                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(6f, 0f), new Vector2(-6f, 30f), false);
+            UIStyle.ArcadeText(comboText, UIStyle.Blue, UIStyle.Ink, 2f);
+            comboText.fontSize = 22;
             comboRect = comboText.rectTransform;
-
-            // ---- top-centre: power strip
-            UIStyle.Box(t, "PowerBox", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-560f, -104f), new Vector2(560f, -36f), 0.6f);
-            powerText = UIFactory.Text(t, "Power", "", 24, Color.white, TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-540f, -84f), new Vector2(540f, -40f), false);
-            UIStyle.Style(powerText, UIStyle.Display, 22, Color.white);
-            UIStyle.Edge(powerText);
-            powerSegments = new Image[GameManager.MaxPower];
-            for (int i = 0; i < powerSegments.Length; i++)
+            sparkles = new Image[6];
+            sparklePhase = new float[6];
+            for (int i = 0; i < sparkles.Length; i++)
             {
-                float x = -200f + i * 82f;
-                UIFactory.Panel(t, "PowerSegBack" + i, new Color(0f, 0f, 0f, 0.6f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(x, -100f), new Vector2(x + 76f, -88f));
-                powerSegments[i] = UIFactory.Panel(t, "PowerSeg" + i, UIStyle.Amber, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(x + 2f, -98f), new Vector2(x + 74f, -90f));
+                float x = 40f + i * 90f, y = -60f - (i % 2) * 120f;
+                sparkles[i] = UIFactory.Panel(t, "Sparkle" + i, new Color(1f, 1f, 0.8f, 0f), tl, tl, new Vector2(x, y - 40f), new Vector2(x + 80f, y + 40f));
+                sparkles[i].sprite = UISprites.Sparkle;
+                sparklePhase[i] = i * 0.37f;
             }
 
-            // ---- top-right: timer and radar
-            UIStyle.Box(t, "TimeBox", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330f, -112f), new Vector2(-36f, -36f), 0.6f);
-            var timeLabel = UIFactory.Text(t, "TimeLabel", "RUNTIME", 16, steel, TextAnchor.UpperLeft,
-                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-322f, -60f), new Vector2(-40f, -40f), false);
-            UIStyle.Style(timeLabel, UIStyle.Display, 15, steel);
-            timeText = UIStyle.Digital(t, "Time", "88:88", 50, UIStyle.Amber, TextAnchor.MiddleRight,
-                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-322f, -110f), new Vector2(-46f, -56f));
-            radar = RadarView.Build(t, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-300f, -395f), new Vector2(-66f, -161f), new Vector3(14f, 0f, 10f), 15f);
-            var radarLabel = UIFactory.Text(t, "RadarLabel", "DIRT RADAR", 16, steel, TextAnchor.MiddleCenter,
-                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330f, -150f), new Vector2(-36f, -118f), false);
-            UIStyle.Style(radarLabel, UIStyle.Display, 16, steel);
-            UIStyle.Edge(radarLabel);
-            UIStyle.Brackets(t, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-320f, -410f), new Vector2(-46f, -146f), 22f, 2f);
+            // ---- top-centre: power strip
+            var powerBox = UIStyle.Frame(t, "PowerBox", tc, tc, new Vector2(-600f, -126f), new Vector2(600f, -30f), "frame_wide", 1200f, 96f, 22f);
+            powerText = UIFactory.Text(powerBox, "Power", "", 22, Color.white, TextAnchor.MiddleCenter,
+                new Vector2(0f, 0.5f), new Vector2(1f, 1f), new Vector2(0f, -4f), new Vector2(0f, 0f), false);
+            UIStyle.ArcadeText(powerText, Color.white, UIStyle.Blue, 3f);
+            powerText.fontSize = 21;
+            powerTiles = new Image[GameManager.MaxPower];
+            powerTileTexts = new Text[GameManager.MaxPower];
+            for (int i = 0; i < powerTiles.Length; i++)
+            {
+                float x = -460f + i * 186f;
+                powerTiles[i] = UIStyle.Tile(powerBox, "PowerTile" + i, "POWER " + (i + 1), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(x, 0f), new Vector2(x + 176f, 24f), out powerTileTexts[i]);
+            }
 
-            // ---- left edge: vertical meters
+            // ---- top-right: timer
+            var timeBox = UIStyle.Frame(t, "TimeBox", tr, tr, new Vector2(-340f, -126f), new Vector2(-30f, -30f), "frame_wide", 310f, 96f, 20f);
+            var timeLabel = UIFactory.Text(timeBox, "TimeLabel", "TIME", 14, UIStyle.Yellow, TextAnchor.UpperLeft,
+                Vector2.zero, Vector2.one, new Vector2(2f, 0f), new Vector2(0f, -1f), false);
+            UIStyle.Style(timeLabel, UIStyle.Arcade, 13, UIStyle.Yellow, FontStyle.Italic);
+            timeText = UIStyle.Digital(timeBox, "Time", "88:88", 44, UIStyle.Green, TextAnchor.LowerRight,
+                Vector2.zero, Vector2.one, new Vector2(0f, -2f), new Vector2(-2f, -6f));
+
+            // ---- top-right: radar
+            var radarBox = UIStyle.Frame(t, "RadarBox", tr, tr, new Vector2(-320f, -420f), new Vector2(-30f, -140f), "frame_square", 290f, 280f, 30f);
+            radar = RadarView.Build(radarBox, Vector2.zero, Vector2.one, new Vector2(4f, 4f), new Vector2(-4f, -4f), new Vector3(14f, 0f, 10f), 15f);
+            UIStyle.Tab(radarBox, "RadarTab", "DIRT RADAR", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(-8f, -8f), new Vector2(150f, 18f));
+
+            // ---- left: instrument tapes
             var mid = new Vector2(0f, 0.5f);
-            UIStyle.Box(t, "MetersBox", mid, mid, new Vector2(36f, -170f), new Vector2(230f, 200f), 0.6f);
-            meterSuction = Meter(t, 60f, "SUCTION", out meterSuctionValue);
-            meterTemp = Meter(t, 118f, "TEMP", out meterTempValue);
-            meterThird = Meter(t, 176f, "CORD", out meterThirdValue);
-            meterThirdLabel = meterThird.transform.parent.parent.Find("MeterLabel176")?.GetComponent<Text>();
+            var tapesBox = UIStyle.Frame(t, "TapesBox", mid, mid, new Vector2(30f, -230f), new Vector2(280f, 230f), "frame_tall", 250f, 460f, 26f);
+            const float tapeH = 460f - 52f;
+            tapeSuction = Tape.Build(tapesBox, "TapeSuction", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(62f, 0f), 0f, 100f, 25f, "SUCT %", UIStyle.Yellow, tapeH);
+            tapeTemp = Tape.Build(tapesBox, "TapeTemp", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(68f, 0f), new Vector2(130f, 0f), 20f, 120f, 25f, "TEMP C", UIStyle.Amber, tapeH);
+            tapeThird = Tape.Build(tapesBox, "TapeThird", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(136f, 0f), new Vector2(198f, 0f), 0f, 100f, 25f, "CORD %", UIStyle.Blue, tapeH);
+            UIStyle.Tab(tapesBox, "TapesTab", "INSTRUMENTS", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(-10f, 4f), new Vector2(190f, 30f));
 
-            // ---- right edge: mission log
+            // ---- right: mission log
             var rmid = new Vector2(1f, 0.5f);
-            UIStyle.Box(t, "LogBox", rmid, rmid, new Vector2(-520f, -200f), new Vector2(-36f, 120f), 0.6f);
-            UIFactory.Panel(t, "LogHeader", new Color(UIStyle.Amber.r, UIStyle.Amber.g, UIStyle.Amber.b, 0.85f), rmid, rmid, new Vector2(-520f, 86f), new Vector2(-36f, 120f));
-            var logTitle = UIFactory.Text(t, "LogTitle", "MISSION LOG", 18, UIStyle.Ink, TextAnchor.MiddleLeft,
-                rmid, rmid, new Vector2(-508f, 86f), new Vector2(-40f, 120f), false);
-            UIStyle.Style(logTitle, UIStyle.Display, 18, new Color(0.08f, 0.07f, 0.1f));
-            objectivesText = UIFactory.Text(t, "Objectives", "", 22, Color.white, TextAnchor.UpperLeft,
-                rmid, rmid, new Vector2(-506f, -160f), new Vector2(-46f, 78f), false);
-            UIStyle.Style(objectivesText, UIStyle.Body, 22, Color.white);
-            UIStyle.Edge(objectivesText);
-            achievementsText = UIFactory.Text(t, "Achievements", "", 16, steel, TextAnchor.LowerLeft,
-                rmid, rmid, new Vector2(-506f, -194f), new Vector2(-46f, -164f), false);
-            UIStyle.Style(achievementsText, UIStyle.Mono, 16, steel);
+            var logBox = UIStyle.Frame(t, "LogBox", rmid, rmid, new Vector2(-520f, -300f), new Vector2(-30f, 30f), "frame_square", 490f, 330f, 30f);
+            UIStyle.Tab(logBox, "LogTab", "MISSION LOG", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(-10f, 4f), new Vector2(190f, 30f));
+            logTiles = new Image[3];
+            logTileTexts = new Text[3];
+            logTitles = new Text[3];
+            logDescs = new Text[3];
+            for (int i = 0; i < 3; i++)
+            {
+                float y = -14f - i * 80f;
+                logTiles[i] = UIStyle.Tile(logBox, "LogTile" + i, "0 / 0", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, y - 56f), new Vector2(92f, y - 6f), out logTileTexts[i]);
+                logTileTexts[i].font = UIStyle.Mono;
+                logTileTexts[i].fontSize = 18;
+                logTitles[i] = UIFactory.Text(logBox, "LogTitle" + i, "", 22, Color.white, TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(104f, y - 34f), new Vector2(0f, y - 4f), false);
+                UIStyle.ArcadeText(logTitles[i], Color.white, UIStyle.Ink, 2f);
+                logTitles[i].fontSize = 19;
+                logDescs[i] = UIFactory.Text(logBox, "LogDesc" + i, "", 17, UIStyle.Steel, TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(104f, y - 58f), new Vector2(0f, y - 34f), false);
+                UIStyle.Style(logDescs[i], UIStyle.Body, 17, UIStyle.Steel);
+                UIStyle.Edge(logDescs[i], 1.5f);
+            }
+            achievementsText = UIFactory.Text(logBox, "Achievements", "", 15, UIStyle.Yellow, TextAnchor.LowerRight,
+                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(0f, 22f), false);
+            UIStyle.Style(achievementsText, UIStyle.Mono, 15, UIStyle.Yellow);
+            UIStyle.Edge(achievementsText);
 
             // ---- banner
-            var bannerPanel = UIFactory.Panel(t, "Banner", new Color(0.04f, 0.05f, 0.09f, 0.78f),
-                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-760f, 80f), new Vector2(760f, 270f));
-            bannerRect = bannerPanel.rectTransform;
-            bannerGroup = bannerPanel.gameObject.AddComponent<CanvasGroup>();
+            var bannerHolder = new GameObject("BannerHolder", typeof(RectTransform));
+            bannerHolder.transform.SetParent(t, false);
+            UIFactory.Anchor(bannerHolder, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-780f, 70f), new Vector2(780f, 290f));
+            bannerRect = bannerHolder.GetComponent<RectTransform>();
+            bannerGroup = bannerHolder.AddComponent<CanvasGroup>();
             bannerGroup.alpha = 0f;
-            UIStyle.Brackets(bannerPanel.transform, Vector2.zero, Vector2.one, new Vector2(6f, 6f), new Vector2(-6f, -6f), 30f, 3f, UIStyle.Amber);
-            bannerBig = UIFactory.Text(bannerPanel.transform, "Big", "", 84, UIStyle.Amber, TextAnchor.MiddleCenter,
-                new Vector2(0f, 0.45f), new Vector2(1f, 1f), new Vector2(20f, 0f), new Vector2(-20f, -8f), false);
-            UIStyle.Style(bannerBig, UIStyle.Title, 84, UIStyle.Amber);
-            UIStyle.Glow(bannerBig, UIStyle.Amber, 4f, 0.45f);
-            bannerSmall = UIFactory.Text(bannerPanel.transform, "Small", "", 28, Color.white, TextAnchor.MiddleCenter,
-                new Vector2(0f, 0f), new Vector2(1f, 0.45f), new Vector2(20f, 10f), new Vector2(-20f, 0f), false);
-            UIStyle.Style(bannerSmall, UIStyle.Body, 28, Color.white);
+            var bannerBox = UIStyle.Frame(bannerHolder.transform, "Banner", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, "plate_banner", 1560f, 220f, 34f);
+            bannerBig = UIFactory.Text(bannerBox, "Big", "", 84, Color.white, TextAnchor.MiddleCenter,
+                new Vector2(0f, 0.42f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(0f, -2f), false);
+            UIStyle.Style(bannerBig, UIStyle.Arcade, 66, Color.white, FontStyle.Italic);
+            UIStyle.ArcadeText(bannerBig, Color.white, UIStyle.Yellow, 5f);
+            bannerSmall = UIFactory.Text(bannerBox, "Small", "", 27, Color.white, TextAnchor.MiddleCenter,
+                new Vector2(0f, 0f), new Vector2(1f, 0.42f), new Vector2(0f, 4f), new Vector2(0f, 0f), false);
+            UIStyle.Style(bannerSmall, UIStyle.Body, 26, Color.white, FontStyle.Bold);
             UIStyle.Edge(bannerSmall);
 
-            // ---- hints above the cockpit
-            hintText = UIFactory.Text(t, "Hint", "", 22, new Color(0.9f, 0.93f, 1f, 0.95f), TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-900f, Cockpit.Height + 12f), new Vector2(900f, Cockpit.Height + 52f), false);
-            UIStyle.Style(hintText, UIStyle.Body, 22, new Color(0.9f, 0.93f, 1f, 0.95f));
+            // ---- prompts above the cockpit
+            hintText = UIFactory.Text(t, "Hint", "", 22, Color.white, TextAnchor.MiddleCenter,
+                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-900f, Cockpit.Height + 14f), new Vector2(900f, Cockpit.Height + 54f), false);
+            UIStyle.Style(hintText, UIStyle.Body, 22, Color.white, FontStyle.Bold);
             UIStyle.Edge(hintText);
             hintGroup = hintText.gameObject.AddComponent<CanvasGroup>();
             hintGroup.alpha = 0f;
-            binPrompt = UIFactory.Text(t, "BinPrompt", "PRESS F / X TO EMPTY THE BAG INTO THE BIN", 28, UIStyle.Amber, TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-600f, Cockpit.Height + 70f), new Vector2(600f, Cockpit.Height + 120f), false);
-            UIStyle.Style(binPrompt, UIStyle.Display, 26, UIStyle.Amber);
-            UIStyle.Glow(binPrompt, UIStyle.Amber, 3f, 0.5f);
+            binPrompt = UIFactory.Text(t, "BinPrompt", "PRESS F / X TO EMPTY THE BAG INTO THE BIN", 28, UIStyle.Yellow, TextAnchor.MiddleCenter,
+                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-600f, Cockpit.Height + 66f), new Vector2(600f, Cockpit.Height + 120f), false);
+            UIStyle.Style(binPrompt, UIStyle.Arcade, 30, UIStyle.Yellow, FontStyle.Italic);
+            UIStyle.ArcadeText(binPrompt, UIStyle.Yellow, UIStyle.Blue, 3f);
             binGroup = binPrompt.gameObject.AddComponent<CanvasGroup>();
             binGroup.alpha = 0f;
 
             cockpit = Cockpit.Build(t);
-        }
-
-        Image Meter(Transform t, float x, string label, out Text value)
-        {
-            var mid = new Vector2(0f, 0.5f);
-            var holder = new GameObject("Meter" + (int)x, typeof(RectTransform));
-            holder.transform.SetParent(t, false);
-            UIFactory.Anchor(holder, mid, mid, new Vector2(x - 20f, -150f), new Vector2(x + 20f, 180f));
-            var back = UIFactory.Panel(holder.transform, "Back", new Color(0f, 0f, 0f, 0.7f), new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(8f, 34f), new Vector2(-8f, -40f));
-            var fill = UIFactory.Panel(back.transform, "Fill", UIStyle.Amber, new Vector2(0f, 0f), new Vector2(1f, 0.5f), new Vector2(2f, 2f), new Vector2(-2f, -2f));
-            for (int i = 1; i < 10; i++)
-                UIFactory.Panel(back.transform, "Tick" + i, new Color(0f, 0f, 0f, 0.55f), new Vector2(0f, i / 10f), new Vector2(1f, i / 10f), new Vector2(0f, -1f), new Vector2(0f, 1f));
-            var lbl = UIFactory.Text(holder.transform, "MeterLabel" + (int)x, label, 12, UIStyle.Steel, TextAnchor.UpperCenter,
-                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(-34f, 4f), new Vector2(34f, 32f), false);
-            UIStyle.Style(lbl, UIStyle.Display, 13, UIStyle.Steel);
-            UIStyle.Edge(lbl);
-            value = UIFactory.Text(holder.transform, "MeterValue", "", 15, Color.white, TextAnchor.LowerCenter,
-                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(-34f, -38f), new Vector2(34f, -4f), false);
-            UIStyle.Style(value, UIStyle.Mono, 15, Color.white);
-            return fill;
         }
 
         public void SetVisible(bool v)
@@ -179,22 +179,20 @@ namespace VCS.UI
 
         public void ResetRun()
         {
-            lastScore = -1; lastCombo = -1; lastTime = -1; lastPower = -1;
+            targetScore = 0; displayScore = 0f; lastCombo = -1; lastTime = -1; lastPower = -1;
             lastBinPrompt = false;
             bannerDur = 0f; bannerGroup.alpha = 0f;
             hintDur = 0f; hintGroup.alpha = 0f;
             binGroup.alpha = 0f;
             objectivesTimer = 0f;
+            scoreText.text = "0";
         }
 
         public void BindVacuum(VacuumSpec spec, int serial, Transform player)
         {
-            accent = spec.Accent;
             cockpit.Bind(spec, serial);
-            meterSuction.color = accent;
-            meterSuctionValue.color = accent;
-            if (meterThirdLabel != null) meterThirdLabel.text = spec.Cordless ? "BATT" : "CORD";
-            meterThird.color = spec.Cordless ? UIStyle.Green : UIStyle.Steel;
+            thirdIsBattery = spec.Cordless;
+            tapeThird.SetColor(thirdIsBattery ? UIStyle.Green : UIStyle.Blue);
             if (playerMarker != null) Destroy(playerMarker);
             if (player != null)
             {
@@ -208,30 +206,24 @@ namespace VCS.UI
         public void SetTelemetry(Telemetry tm, SuctionSystem suction, GameManager gm, float dt)
         {
             cockpit.Refresh(tm, suction, gm, dt);
-            meterSuction.rectTransform.anchorMax = new Vector2(1f, Mathf.Clamp01(tm.Suction01));
-            meterTemp.rectTransform.anchorMax = new Vector2(1f, Mathf.Clamp01((tm.TempC - 20f) / 100f));
-            meterTemp.color = tm.Overheat ? UIStyle.Red : new Color(1f, 0.55f, 0.25f);
-            float third = gm.Player != null && gm.Player.Spec.Cordless ? tm.Battery01 : Mathf.Clamp01(tm.CordLength / tm.CordMax);
-            meterThird.rectTransform.anchorMax = new Vector2(1f, third);
-            if (gm.Player != null && !gm.Player.Spec.Cordless) meterThird.color = tm.CordTaut ? UIStyle.Red : (!tm.Powered ? new Color(0.35f, 0.38f, 0.42f) : UIStyle.Steel);
-            meterTimer -= dt;
-            if (meterTimer <= 0f)
+            tapeSuction.Set(tm.Suction01 * 100f, Mathf.RoundToInt(tm.Suction01 * 100f).ToString());
+            tapeTemp.Set(tm.TempC, tm.TempC.ToString("0"));
+            tapeTemp.SetColor(tm.Overheat ? UIStyle.Red : UIStyle.Amber);
+            if (thirdIsBattery) tapeThird.Set(tm.Battery01 * 100f, Mathf.RoundToInt(tm.Battery01 * 100f).ToString());
+            else
             {
-                meterTimer = 0.15f;
-                meterSuctionValue.text = Mathf.RoundToInt(tm.Suction01 * 100f) + "%";
-                meterTempValue.text = tm.TempC.ToString("0") + "C";
-                meterThirdValue.text = gm.Player != null && gm.Player.Spec.Cordless
-                    ? Mathf.RoundToInt(tm.Battery01 * 100f) + "%"
-                    : tm.CordLength.ToString("0.0") + "m";
+                tapeThird.Set(tm.CordLength / tm.CordMax * 100f, tm.CordLength.ToString("0.0"));
+                tapeThird.SetColor(tm.CordTaut ? UIStyle.Red : (!tm.Powered ? UIStyle.Dim : UIStyle.Blue));
             }
         }
 
         public void SetScore(int score)
         {
-            if (score == lastScore) return;
-            if (lastScore >= 0) scorePunch = 1f;
-            lastScore = score;
-            scoreText.text = score.ToString("N0");
+            if (score == targetScore) return;
+            int gain = score - targetScore;
+            targetScore = score;
+            scorePunch = 1f;
+            if (gain >= 100) sparkleBurst = 1f;
         }
 
         public void SetCombo(int count, float mult, float timeLeft)
@@ -245,19 +237,18 @@ namespace VCS.UI
             if (key > 1)
             {
                 float k = Mathf.Clamp01(timeLeft / 1.6f);
-                comboText.color = Color.Lerp(new Color(UIStyle.Cyan.r, UIStyle.Cyan.g, UIStyle.Cyan.b, 0.45f), UIStyle.Cyan, k);
-                comboRect.localScale = Vector3.one * (1f + 0.06f * Mathf.Sin(Time.unscaledTime * 12f) * k);
+                comboRect.localScale = Vector3.one * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 14f) * k);
             }
         }
 
         public void SetPower(string vacuumName, int level, string canEat)
         {
-            powerText.text = vacuumName.ToUpperInvariant() + "   |   POWER " + level + " / " + GameManager.MaxPower + "   |   EATS " + canEat.ToUpperInvariant();
+            powerText.text = vacuumName.ToUpperInvariant() + "     EATS " + canEat.ToUpperInvariant();
             if (level != lastPower)
             {
                 lastPower = level;
-                for (int i = 0; i < powerSegments.Length; i++)
-                    powerSegments[i].color = i < level ? accent : new Color(accent.r, accent.g, accent.b, 0.12f);
+                for (int i = 0; i < powerTiles.Length; i++)
+                    UIStyle.SetTile(powerTiles[i], powerTileTexts[i], i < level, PowerColors[i]);
             }
         }
 
@@ -275,15 +266,20 @@ namespace VCS.UI
             if (objectivesTimer > 0f) return;
             objectivesTimer = 0.2f;
             os.FillActive(objBuffer, 3);
-            sb.Length = 0;
-            for (int i = 0; i < objBuffer.Count; i++)
+            for (int i = 0; i < 3; i++)
             {
+                bool has = i < objBuffer.Count;
+                logTiles[i].gameObject.SetActive(has);
+                logTitles[i].gameObject.SetActive(has);
+                logDescs[i].gameObject.SetActive(has);
+                if (!has) continue;
                 var o = objBuffer[i];
-                sb.Append("<color=#FFC740>[ ").Append(o.Progress).Append(" / ").Append(o.Target).Append(" ]</color>  ");
-                sb.Append("<b>").Append(o.Title.ToUpperInvariant()).Append("</b>\n      <size=17><color=#B8C0CC>").Append(o.Description).Append("</color></size>");
-                if (i < objBuffer.Count - 1) sb.Append('\n');
+                bool started = o.Progress > 0;
+                UIStyle.SetTile(logTiles[i], logTileTexts[i], true, started ? UIStyle.Yellow : UIStyle.Blue);
+                logTileTexts[i].text = o.Progress + " / " + o.Target;
+                logTitles[i].text = o.Title.ToUpperInvariant();
+                logDescs[i].text = o.Description;
             }
-            objectivesText.text = sb.ToString();
             achievementsText.text = "ACHIEVEMENTS " + os.DoneCount + " / " + os.All.Count;
         }
 
@@ -301,6 +297,7 @@ namespace VCS.UI
             bannerT = 0f;
             bannerDur = duration;
             bannerGroup.alpha = 0f;
+            sparkleBurst = 1f;
         }
 
         public void ShowHint(string text, float duration)
@@ -313,17 +310,44 @@ namespace VCS.UI
         void Update()
         {
             float dt = Time.unscaledDeltaTime;
+            if (displayScore < targetScore)
+            {
+                float speed = Mathf.Max(60f, (targetScore - displayScore) * 6f);
+                displayScore = Mathf.Min(targetScore, displayScore + speed * dt);
+                scoreText.text = Mathf.RoundToInt(displayScore).ToString("N0");
+            }
+            else if (displayScore > targetScore)
+            {
+                displayScore = targetScore;
+                scoreText.text = targetScore.ToString("N0");
+            }
             if (scorePunch > 0f)
             {
                 scorePunch = Mathf.Max(0f, scorePunch - dt * 4f);
-                scoreRect.localScale = Vector3.one * (1f + 0.12f * scorePunch);
+                scoreRect.localScale = Vector3.one * (1f + 0.1f * scorePunch);
+            }
+            if (sparkleBurst > 0f)
+            {
+                sparkleBurst = Mathf.Max(0f, sparkleBurst - dt * 1.2f);
+                for (int i = 0; i < sparkles.Length; i++)
+                {
+                    float p = Mathf.Repeat(sparklePhase[i] + Time.unscaledTime * 3f, 1f);
+                    float a = sparkleBurst * Mathf.Sin(p * Mathf.PI);
+                    sparkles[i].color = new Color(1f, 0.95f, 0.6f, a);
+                    sparkles[i].rectTransform.localScale = Vector3.one * (0.5f + 0.8f * a);
+                    sparkles[i].rectTransform.localEulerAngles = new Vector3(0f, 0f, Time.unscaledTime * 120f + i * 45f);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < sparkles.Length; i++) sparkles[i].color = new Color(1f, 1f, 0.8f, 0f);
             }
             if (bannerDur > 0f)
             {
                 bannerT += dt;
-                float a = bannerT < 0.25f ? bannerT / 0.25f : (bannerT > bannerDur - 0.4f ? Mathf.Clamp01((bannerDur - bannerT) / 0.4f) : 1f);
+                float a = bannerT < 0.2f ? bannerT / 0.2f : (bannerT > bannerDur - 0.4f ? Mathf.Clamp01((bannerDur - bannerT) / 0.4f) : 1f);
                 bannerGroup.alpha = a;
-                float s = 1f + 0.35f * Mathf.Max(0f, 1f - bannerT / 0.3f);
+                float s = 1f + 0.3f * Mathf.Max(0f, 1f - bannerT / 0.3f);
                 bannerRect.localScale = Vector3.one * s;
                 if (bannerT >= bannerDur) { bannerDur = 0f; bannerGroup.alpha = 0f; }
             }
