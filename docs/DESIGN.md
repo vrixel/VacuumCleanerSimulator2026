@@ -46,6 +46,24 @@ Stats live in `VacuumCatalog`, shapes in `VacuumModels` (built from `MeshKit` so
 hoses, rounded boxes, chrome and plastic materials). Photoreal branded models would be a licensing purchase; the
 garage takes any model that can be built into a Transform.
 
+## The simulator layer
+
+The joke is that the instruments are serious. A cockpit strip along the bottom shows a suction gauge whose face is
+different for every vacuum (bakelite VU-meter for Harold, teal LED ring for the robot, rugged yellow drum gauge
+for the shop vac), the actual container filling up (paper bag, cyclone bin, debris tray or drum tank), motor
+speed, airflow, temperature, filter, mains or battery, six warning lamps, odometer, serial number and a system
+status box. Around the screen: score in a big condensed face, a power strip with LED segments, a seven-segment
+timer, a dirt radar (top-down map with mess dots and the player blip), vertical meters and a mission log. All
+numbers come from a pretend telemetry model that never touches the physics.
+
+## The cord
+
+Corded vacuums are plugged into a wall socket. The cord lies where you drove, it is 18 metres long, and the end of
+it yanks you back. Press R (Y on the pad) to rewind: the plug whips across the floor along the trail, knocking
+crumbs aside, and thunks into the body. That leaves you unplugged, powerless and quiet until you drive up to
+another socket, one per room. Finishing the house triggers the rewind by itself as the finale. Cordless models
+skip all of this and worry about their battery instead.
+
 ## Content that exists in v0.1
 
 - House layout in `LevelBuilder`: living room, kitchen, hall, bedroom, bathroom, entrance, garden strip with leaves.

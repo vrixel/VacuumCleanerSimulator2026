@@ -11,6 +11,9 @@ namespace VCS.Player
         public const float TurboMult = 1.7f;
 
         public VacuumSpec Spec { get; private set; }
+        public PowerCord Cord { get; private set; }
+        /// <summary>Cordless vacuums are always powered; corded ones only while plugged in.</summary>
+        public bool Powered => Cord == null || Cord.Plugged;
         public Rigidbody Rb { get; private set; }
         public SuctionSystem Suction { get; private set; }
         public VacuumVisuals Visuals { get; private set; }
@@ -26,7 +29,7 @@ namespace VCS.Player
         float spinWindow;
         bool speedReported;
 
-        public static VacuumController Create(Vector3 pos, VacuumSpec spec)
+        public static VacuumController Create(Vector3 pos, VacuumSpec spec, WallSocket socket)
         {
             var go = new GameObject("Vacuum " + spec.Id);
             go.transform.position = pos;
@@ -60,7 +63,13 @@ namespace VCS.Player
             vc.Visuals = VacuumVisuals.Build(go.transform, vc, spec);
             vc.Suction = go.AddComponent<SuctionSystem>();
             vc.Suction.Init(vc);
+            if (!spec.Cordless) vc.Cord = PowerCord.Attach(vc, socket);
             return vc;
+        }
+
+        void OnDestroy()
+        {
+            if (Cord != null) Destroy(Cord.gameObject);
         }
 
         void Update()

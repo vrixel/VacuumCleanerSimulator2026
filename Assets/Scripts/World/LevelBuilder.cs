@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using VCS.Player;
 
 namespace VCS.World
 {
@@ -44,6 +45,7 @@ namespace VCS.World
         public Vector3 PlayerSpawn { get; private set; }
         public Vector3 HouseCenter { get; private set; }
         public TrashCan Bin { get; private set; }
+        public List<WallSocket> Sockets { get; } = new List<WallSocket>();
 
         const float WallH = 2.4f;
         const float WallT = 0.3f;
@@ -68,6 +70,39 @@ namespace VCS.World
             if (Root != null) Destroy(Root.gameObject);
             Root = null;
             Bin = null;
+            Sockets.Clear();
+        }
+
+        public WallSocket NearestSocket(Vector3 pos, float maxDistance)
+        {
+            WallSocket best = null;
+            float bestD = maxDistance;
+            foreach (var s in Sockets)
+            {
+                Vector3 d = s.transform.position - pos;
+                d.y = 0f;
+                float dist = d.magnitude;
+                if (dist < bestD) { bestD = dist; best = s; }
+            }
+            return best;
+        }
+
+        // A white socket flush against a wall, its forward pointing into the room, with a live green LED.
+        void Socket(float x, float z, float yaw)
+        {
+            var root = new GameObject("Socket " + Sockets.Count);
+            root.transform.SetParent(Root, false);
+            root.transform.position = new Vector3(x, 0.3f, z);
+            root.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            PropFactory.Prim(PrimitiveType.Cube, root.transform, new Vector3(0f, 0f, 0.012f), new Vector3(0.16f, 0.16f, 0.025f), Palette.White, "Plate", false);
+            PropFactory.Prim(PrimitiveType.Cylinder, root.transform, new Vector3(0f, 0f, 0.028f), new Vector3(0.09f, 0.006f, 0.09f), new Color(0.85f, 0.85f, 0.85f), "Well", false, Quaternion.Euler(90f, 0f, 0f));
+            PropFactory.Prim(PrimitiveType.Cylinder, root.transform, new Vector3(-0.022f, 0f, 0.03f), new Vector3(0.014f, 0.006f, 0.014f), Palette.Black, "Hole", false, Quaternion.Euler(90f, 0f, 0f));
+            PropFactory.Prim(PrimitiveType.Cylinder, root.transform, new Vector3(0.022f, 0f, 0.03f), new Vector3(0.014f, 0.006f, 0.014f), Palette.Black, "Hole", false, Quaternion.Euler(90f, 0f, 0f));
+            PropFactory.Prim(PrimitiveType.Sphere, root.transform, new Vector3(0.06f, 0.06f, 0.028f), Vector3.one * 0.014f, Palette.Green, "Led", false);
+            var s = root.AddComponent<WallSocket>();
+            s.Index = Sockets.Count;
+            Sockets.Add(s);
+            VCS.UI.RadarView.Marker(root.transform, new Color(0.4f, 0.75f, 1f), 1.1f, 24f);
         }
 
         public void Build(int seed)
@@ -91,8 +126,20 @@ namespace VCS.World
 
             BuildFloorsAndWalls();
             BuildFurniture();
+            BuildSockets();
             BuildMess();
             BuildLighting();
+        }
+
+        // One socket per room; the first one is where a corded vacuum starts plugged in (hall, east wall).
+        void BuildSockets()
+        {
+            Socket(27.83f, 10.0f, -90f);   // hall, east wall, faces -x
+            Socket(0.17f, 4.0f, 90f);      // living room, west wall
+            Socket(20.0f, 7.83f, 180f);    // kitchen, wall shared with the hall, faces -z
+            Socket(8.0f, 19.83f, 180f);    // bedroom, north wall
+            Socket(14.17f, 15.0f, 90f);    // bathroom, west wall
+            Socket(27.83f, 16.0f, -90f);   // entrance, east wall
         }
 
         Room R(string name)
@@ -240,6 +287,7 @@ namespace VCS.World
             PropFactory.Prim(PrimitiveType.Cube, root.transform, new Vector3(0f, 0.92f, 0f), new Vector3(0.2f, 0.06f, 0.08f), Palette.Black, "Knob", false);
             Bin = root.AddComponent<TrashCan>();
             Bin.Init(body.GetComponent<Renderer>());
+            VCS.UI.RadarView.Marker(root.transform, Color.white, 1.4f, 24f);
         }
 
         void BuildMess()

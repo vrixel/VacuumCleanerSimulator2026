@@ -80,10 +80,18 @@ namespace VCS.Player
         {
             var gm = GameManager.I;
             bool active = gm != null && gm.State == GameState.Playing;
-            Blowing = active && GameInput.Blow;
+            bool powered = vac.Powered;
+            Blowing = active && powered && GameInput.Blow;
             if (Blowing && !wasBlowing) gm.Audio.PlayWhoosh();
             wasBlowing = Blowing;
             if (!active) { Activity = 0f; return; }
+            if (!powered)
+            {
+                Activity = 0f;
+                if (swirl != null) { var em0 = swirl.emission; em0.rateOverTimeMultiplier = 0f; }
+                gm.Audio.SetHum(0f, false);
+                return;
+            }
 
             if (Blowing) Blow(gm); else Suck(gm);
 

@@ -57,6 +57,14 @@ namespace VCS.Core
             yield return new WaitForSecondsRealtime(2f);
             GameInput.MoveOverride = Vector2.zero;
             yield return Capture("smoke-game.png");
+            if (gm.Player != null && gm.Player.Cord != null)
+            {
+                gm.Player.Cord.Rewind();
+                yield return new WaitForSecondsRealtime(0.6f);
+                yield return Capture("smoke-rewind.png");
+                yield return new WaitForSecondsRealtime(1.5f);
+                Debug.Log("[VCS] Cord: rewound " + gm.Player.Cord.TotalRewound.ToString("0.0") + " m, plugged=" + gm.Player.Cord.Plugged);
+            }
 
             var s = gm.Suction;
             string pos = gm.Player != null ? gm.Player.transform.position.ToString("F1") : "none";

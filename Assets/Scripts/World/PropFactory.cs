@@ -111,6 +111,7 @@ namespace VCS.World
             d.PuffColor = puff;
             d.Rb = rb;
             if (spec.SizeClass >= 3) root.AddComponent<TipOverTracker>();
+            if (spec.IsMess) VCS.UI.RadarView.Marker(root.transform, spec.SizeClass == 1 ? new Color(1f, 0.85f, 0.3f) : new Color(1f, 0.55f, 0.2f), 0.55f, 20f);
             return d;
         }
 

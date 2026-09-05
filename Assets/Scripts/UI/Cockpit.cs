@@ -72,10 +72,15 @@ namespace VCS.UI
         }
 
         // ---------------------------------------------------------------- pieces
+        // Labels (steel colour) get the squared display face, everything else the monospaced readout face.
         static Text Txt(Transform p, string name, string s, int size, Color c, TextAnchor a, float x0, float y0, float x1, float y1, FontStyle style = FontStyle.Bold)
         {
             var z = Vector2.zero;
-            var t = UIFactory.Text(p, name, s, size, c, a, z, z, new Vector2(x0, y0), new Vector2(x1, y1), false, style);
+            var t = UIFactory.Text(p, name, s, size, c, a, z, z, new Vector2(x0, y0), new Vector2(x1, y1), false, FontStyle.Normal);
+            bool label = c == LabelColor || c == DimColor;
+            t.font = label ? UIStyle.Display : UIStyle.Mono;
+            if (label) t.fontSize = Mathf.Max(11, size - 2);
+            UIStyle.Edge(t);
             return t;
         }
 
@@ -114,6 +119,7 @@ namespace VCS.UI
             needle.preserveAspect = false;
             Img(t, "Hub", UISprites.Circle, new Color(0.15f, 0.16f, 0.18f), 141f, 119f, 159f, 137f);
             suctionValue = Txt(t, "SuctionValue", "0.0 kPa", 26, Color.white, TextAnchor.MiddleCenter, 30f, 0f, 270f, 30f);
+            UIStyle.Glow(suctionValue, Color.white, 2f, 0.3f);
             Divider(t, 276f);
         }
 
@@ -159,6 +165,9 @@ namespace VCS.UI
             containerFullOverlay.fillOrigin = (int)Image.OriginVertical.Bottom;
             containerValue = Txt(t, "ContainerValue", "", 23, Color.white, TextAnchor.MiddleCenter, 580f, 0f, 882f, 30f);
             containerFullText = Txt(t, "ContainerFullText", "FULL", 34, AlarmColor, TextAnchor.MiddleCenter, 592f, 100f, 870f, 160f);
+            containerFullText.font = UIStyle.Title;
+            containerFullText.fontSize = 56;
+            UIStyle.Glow(containerFullText, AlarmColor, 4f, 0.6f);
             containerFullText.gameObject.SetActive(false);
             Divider(t, 886f);
         }
@@ -200,8 +209,13 @@ namespace VCS.UI
             statusBox = UIFactory.Panel(t, "StatusBox", new Color(0f, 0f, 0f, 0.55f), z, z, new Vector2(1552f, 14f), new Vector2(1890f, 232f));
             Txt(t, "StatusTitle", "SYSTEM STATUS", 17, LabelColor, TextAnchor.MiddleCenter, 1552f, 200f, 1890f, 228f, FontStyle.Normal);
             statusText = Txt(t, "StatusText", "ALL SYSTEMS NOMINAL", 26, OkColor, TextAnchor.MiddleCenter, 1556f, 130f, 1886f, 196f);
+            statusText.font = UIStyle.Display;
+            statusText.fontSize = 22;
+            UIStyle.Glow(statusText, OkColor, 2f, 0.35f);
             Txt(t, "ModeTitle", "MODE", 15, LabelColor, TextAnchor.MiddleCenter, 1552f, 96f, 1890f, 118f, FontStyle.Normal);
-            modeText = Txt(t, "ModeText", "NORMAL", 32, Color.white, TextAnchor.MiddleCenter, 1556f, 52f, 1886f, 96f);
+            modeText = Txt(t, "ModeText", "NORMAL", 32, Color.white, TextAnchor.MiddleCenter, 1556f, 48f, 1886f, 98f);
+            modeText.font = UIStyle.Title;
+            modeText.fontSize = 44;
             modelText = Txt(t, "ModelText", "", 14, new Color(0.55f, 0.58f, 0.64f), TextAnchor.MiddleCenter, 1552f, 18f, 1890f, 44f, FontStyle.Normal);
         }
 
@@ -211,6 +225,7 @@ namespace VCS.UI
             spec = s;
             accent = s.Accent;
             suctionValue.color = accent;
+            UIStyle.Glow(suctionValue, accent, 2f, 0.35f);
             for (int i = 0; i < motorValues.Length; i++) motorValues[i].color = accent;
             containerValue.color = accent;
             for (int i = 0; i < metaValues.Length; i++) metaValues[i].color = accent;
@@ -244,6 +259,7 @@ namespace VCS.UI
             motorLabels[4].text = s.Cordless ? "BATTERY" : "MAINS";
             batteryBar.gameObject.SetActive(s.Cordless);
             batteryBar.transform.parent.gameObject.SetActive(s.Cordless);
+            lampTexts[2].text = s.Cordless ? "TILT" : "CORD";
             lampTexts[4].text = s.Cordless ? "BATTERY" : "REVERSE";
 
             metaValues[0].text = s.Name.ToUpperInvariant();
@@ -281,7 +297,8 @@ namespace VCS.UI
 
             Lamp(0, s.BagFull, AlarmColor, blinkOn);
             Lamp(1, tm.Overheat, AlarmColor, blinkOn);
-            Lamp(2, tm.Tilt, WarnColor, true);
+            if (spec.Cordless) Lamp(2, tm.Tilt, WarnColor, true);
+            else Lamp(2, !tm.Powered || tm.CordTaut, !tm.Powered ? AlarmColor : WarnColor, tm.CordTaut ? blinkOn : true);
             Lamp(3, tm.FilterWarning, WarnColor, true);
             if (spec.Cordless) Lamp(4, tm.LowBattery, AlarmColor, blinkOn);
             else Lamp(4, tm.Reverse, new Color(0.4f, 0.7f, 1f), true);
@@ -296,7 +313,7 @@ namespace VCS.UI
             motorValues[1].text = tm.AirflowLps.ToString("0.0") + " L/s";
             motorValues[2].text = tm.TempC.ToString("0") + " C";
             motorValues[3].text = (tm.Filter01 * 100f).ToString("0") + " %";
-            motorValues[4].text = spec.Cordless ? (tm.Battery01 * 100f).ToString("0") + " %" : "230 V  50 Hz";
+            motorValues[4].text = spec.Cordless ? (tm.Battery01 * 100f).ToString("0") + " %" : (tm.Powered ? "230 V  50 Hz" : "0 V  UNPLUGGED");
 
             float litres = s.BagFill / 10f;
             containerValue.text = litres.ToString("0.0") + " / " + (s.BagCapacity / 10f).ToString("0.0") + " L   " + (fill * 100f).ToString("0") + " %";
@@ -307,14 +324,17 @@ namespace VCS.UI
             metaValues[5].text = (gm.Cleanliness * 100f).ToString("0.0") + " %";
             metaValues[6].text = "LEVEL " + gm.PowerLevel + " / " + GameManager.MaxPower;
 
-            if (tm.Overheat) SetStatus("MOTOR OVERHEAT", AlarmColor);
+            if (tm.CordRewinding) SetStatus("REWINDING CORD", WarnColor);
+            else if (!tm.Powered) SetStatus("NO POWER - FIND A SOCKET", AlarmColor);
+            else if (tm.Overheat) SetStatus("MOTOR OVERHEAT", AlarmColor);
+            else if (tm.CordTaut) SetStatus("CORD AT FULL LENGTH", WarnColor);
             else if (s.BagFull) SetStatus("CONTAINER FULL", AlarmColor);
             else if (tm.LowBattery) SetStatus("BATTERY LOW", AlarmColor);
             else if (tm.FilterWarning) SetStatus("CLEAN FILTER SOON", WarnColor);
             else if (tm.Tilt) SetStatus("AIRBORNE", WarnColor);
             else SetStatus("ALL SYSTEMS NOMINAL", OkColor);
-            modeText.text = tm.Reverse ? "REVERSE FLOW" : (tm.Turbo ? "TURBO" : "NORMAL");
-            modeText.color = tm.Reverse ? new Color(0.5f, 0.75f, 1f) : (tm.Turbo ? new Color(0.5f, 0.95f, 1f) : Color.white);
+            modeText.text = !tm.Powered ? "OFF" : (tm.Reverse ? "REVERSE FLOW" : (tm.Turbo ? "TURBO" : "NORMAL"));
+            modeText.color = !tm.Powered ? DimColor : (tm.Reverse ? new Color(0.5f, 0.75f, 1f) : (tm.Turbo ? new Color(0.5f, 0.95f, 1f) : Color.white));
         }
 
         void SetStatus(string text, Color c)

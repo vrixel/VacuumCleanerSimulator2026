@@ -77,6 +77,18 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   and streams `Resources/Audio/Music`.
 - Music: `GameAudio.PlayMusic("title" | "game")` loads `Resources/Audio/Music/<name>` and crossfades; a generated
   motor recording (`Resources/Audio/Sfx/motor_loop`) replaces the synthesised hum when present.
+- Typography and effects live in `UIStyle`: bundled OFL fonts in `Resources/Fonts` (Bebas Neue for big numbers,
+  Orbitron for labels, Share Tech Mono for readouts, DSEG7 for seven-segment digits with ghost "888" behind them,
+  Exo 2 for body text), `Glow`, `Edge`, `Digital`, `Scanlines`, `Brackets`, `Box`. Licenses in
+  `Resources/Fonts/OFL-1.1.txt` and `FONTS-README.txt`: keep them when adding fonts.
+- The HUD (`HudController`) is spread around the screen: score block top-left, power strip top-centre, timer and
+  `RadarView` top-right (a top-down camera into a masked RawImage; markers are quads on layer 8 that the main and
+  preview cameras cull), vertical meters left, mission log right, `Cockpit` at the bottom.
+- The cord (`PowerCord`, corded vacuums only): a breadcrumb trail from the `WallSocket` to the vacuum drawn with
+  a LineRenderer, an 18 m limit that yanks the vacuum back, `Rewind()` (R / Y, and automatically on Spotless)
+  reels it in with a ratchet and knocks light debris on the way. Unplugged means `VacuumController.Powered` is
+  false: no suction, telemetry drops, the CORD lamp and status show it; driving within 1.4 m of any socket
+  plugs back in. Sockets are built in `LevelBuilder.BuildSockets`, one per room, the hall one first.
 - `GameAudio` synthesises every clip at startup (`AudioClip.Create`); `EffectsFactory` configures particle systems.
 - `Palette` caches one material per colour on top of `Resources/Materials/Lit.mat` (Standard shader). That material
   asset exists so the shader is not stripped from builds; `ProjectSetup` creates it. Never enable shader keywords

@@ -40,6 +40,7 @@ namespace VCS.UI
             p.cam.nearClipPlane = 0.05f;
             p.cam.farClipPlane = 12f;
             p.cam.fieldOfView = 40f;
+            p.cam.cullingMask &= ~(1 << 8);
             p.cam.enabled = false;
 
             var fillGo = new GameObject("PreviewFill");

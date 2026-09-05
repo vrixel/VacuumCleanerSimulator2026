@@ -53,22 +53,34 @@ namespace VCS.UI
             UIFactory.Panel(titleRoot.transform, "Dim", new Color(0.05f, 0.05f, 0.1f, 0.35f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             var title = UIFactory.Text(titleRoot.transform, "TitleText", "VACUUM CLEANER\nSIMULATOR <color=#FFD84D>2026</color>", 84, Color.white, TextAnchor.MiddleLeft,
-                left, left, new Vector2(70f, 130f), new Vector2(1250f, 430f));
+                left, left, new Vector2(70f, 130f), new Vector2(1250f, 430f), false);
+            UIStyle.Style(title, UIStyle.Title, 124, Color.white);
+            UIStyle.Glow(title, accent, 5f, 0.45f);
             titleRect = title.rectTransform;
-            UIFactory.Text(titleRoot.transform, "Sub", "Suck it up.", 36, accent, TextAnchor.MiddleLeft,
-                left, left, new Vector2(74f, 70f), new Vector2(1250f, 130f));
+            var sub = UIFactory.Text(titleRoot.transform, "Sub", "Suck it up.", 36, accent, TextAnchor.MiddleLeft,
+                left, left, new Vector2(74f, 70f), new Vector2(1250f, 130f), false, FontStyle.Italic);
+            UIStyle.Style(sub, UIStyle.Body, 40, accent, FontStyle.Italic);
+            UIStyle.Edge(sub);
             titlePrompt = UIFactory.Text(titleRoot.transform, "Prompt", "PRESS ENTER OR (A) TO START CLEANING", 34, Color.white, TextAnchor.MiddleLeft,
-                left, left, new Vector2(74f, -20f), new Vector2(1250f, 50f));
-            UIFactory.Text(titleRoot.transform, "Controls",
-                "WASD / left stick  drive        SPACE / A  hop        SHIFT / RB  turbo\nE / B  blow        F / X  empty bag at the bin        ESC / Start  pause",
-                22, new Color(1f, 1f, 1f, 0.85f), TextAnchor.MiddleLeft, left, left, new Vector2(74f, -170f), new Vector2(1250f, -50f));
+                left, left, new Vector2(74f, -20f), new Vector2(1250f, 50f), false);
+            UIStyle.Style(titlePrompt, UIStyle.Display, 28, Color.white);
+            UIStyle.Glow(titlePrompt, Color.white, 2f, 0.3f);
+            var controls = UIFactory.Text(titleRoot.transform, "Controls",
+                "WASD / left stick  drive        SPACE / A  hop        SHIFT / RB  turbo\nE / B  blow        F / X  empty bag at the bin        R / Y  rewind the cord        ESC / Start  pause",
+                22, new Color(1f, 1f, 1f, 0.85f), TextAnchor.MiddleLeft, left, left, new Vector2(74f, -170f), new Vector2(1250f, -50f), false);
+            UIStyle.Style(controls, UIStyle.Body, 22, new Color(1f, 1f, 1f, 0.85f));
+            UIStyle.Edge(controls);
             titleStats = UIFactory.Text(titleRoot.transform, "Stats", "", 22, new Color(1f, 1f, 1f, 0.7f), TextAnchor.LowerLeft,
-                new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(74f, 30f), new Vector2(1250f, 70f));
+                new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(74f, 30f), new Vector2(1250f, 70f), false);
+            UIStyle.Style(titleStats, UIStyle.Mono, 20, new Color(1f, 1f, 1f, 0.7f));
+            UIStyle.Edge(titleStats);
 
             // ---- garage (right column)
             UIFactory.Panel(titleRoot.transform, "GarageBack", new Color(0.04f, 0.04f, 0.09f, 0.6f), right, right, new Vector2(-580f, -480f), new Vector2(-30f, 320f));
-            UIFactory.Text(titleRoot.transform, "GarageTitle", "CHOOSE YOUR VACUUM", 26, accent, TextAnchor.MiddleCenter,
-                right, right, new Vector2(-560f, 262f), new Vector2(-50f, 306f));
+            var garageTitle = UIFactory.Text(titleRoot.transform, "GarageTitle", "CHOOSE YOUR VACUUM", 26, accent, TextAnchor.MiddleCenter,
+                right, right, new Vector2(-560f, 262f), new Vector2(-50f, 306f), false);
+            UIStyle.Style(garageTitle, UIStyle.Display, 22, accent);
+            UIStyle.Glow(garageTitle, accent, 2f, 0.35f);
             var rawGo = new GameObject("Preview", typeof(RectTransform));
             rawGo.transform.SetParent(titleRoot.transform, false);
             UIFactory.Anchor(rawGo, right, right, new Vector2(-545f, -140f), new Vector2(-65f, 258f));
@@ -77,15 +89,19 @@ namespace VCS.UI
             raw.raycastTarget = false;
 
             vacuumName = UIFactory.Text(titleRoot.transform, "VacuumName", "", 38, Color.white, TextAnchor.MiddleCenter,
-                right, right, new Vector2(-520f, -200f), new Vector2(-90f, -145f));
+                right, right, new Vector2(-520f, -200f), new Vector2(-90f, -145f), false);
+            UIStyle.Style(vacuumName, UIStyle.Title, 48, Color.white);
+            UIStyle.Glow(vacuumName, accent, 3f, 0.4f);
             // Wrap + best fit: sizes that would need two lines do not fit the 55 px rect, so long names shrink to one line.
             vacuumName.horizontalOverflow = HorizontalWrapMode.Wrap;
             vacuumName.verticalOverflow = VerticalWrapMode.Truncate;
             vacuumName.resizeTextForBestFit = true;
-            vacuumName.resizeTextMinSize = 16;
-            vacuumName.resizeTextMaxSize = 38;
+            vacuumName.resizeTextMinSize = 18;
+            vacuumName.resizeTextMaxSize = 48;
             vacuumTagline = UIFactory.Text(titleRoot.transform, "VacuumTagline", "", 21, new Color(1f, 1f, 1f, 0.85f), TextAnchor.MiddleCenter,
-                right, right, new Vector2(-560f, -238f), new Vector2(-50f, -200f), true, FontStyle.Italic);
+                right, right, new Vector2(-560f, -238f), new Vector2(-50f, -200f), false, FontStyle.Italic);
+            UIStyle.Style(vacuumTagline, UIStyle.Body, 21, new Color(1f, 1f, 1f, 0.85f), FontStyle.Italic);
+            UIStyle.Edge(vacuumTagline);
             vacuumTagline.horizontalOverflow = HorizontalWrapMode.Wrap;
             vacuumTagline.verticalOverflow = VerticalWrapMode.Truncate;
             vacuumTagline.resizeTextForBestFit = true;
@@ -98,21 +114,26 @@ namespace VCS.UI
             for (int i = 0; i < BarLabels.Length; i++)
             {
                 float y = -272f - i * 38f;
-                UIFactory.Text(titleRoot.transform, "BarLabel" + i, BarLabels[i], 20, Color.white, TextAnchor.MiddleLeft,
-                    right, right, new Vector2(-545f, y - 14f), new Vector2(-400f, y + 14f));
+                var barLabel = UIFactory.Text(titleRoot.transform, "BarLabel" + i, BarLabels[i], 20, Color.white, TextAnchor.MiddleLeft,
+                    right, right, new Vector2(-545f, y - 14f), new Vector2(-400f, y + 14f), false);
+                UIStyle.Style(barLabel, UIStyle.Display, 16, UIStyle.Steel);
+                UIStyle.Edge(barLabel);
                 var back = UIFactory.Panel(titleRoot.transform, "BarBack" + i, new Color(0f, 0f, 0f, 0.55f), right, right, new Vector2(-390f, y - 10f), new Vector2(-65f, y + 10f));
                 bars[i] = UIFactory.Panel(back.transform, "BarFill" + i, accent, new Vector2(0f, 0f), new Vector2(0.5f, 1f), new Vector2(3f, 3f), new Vector2(-3f, -3f));
             }
-            UIFactory.Text(titleRoot.transform, "GarageHint", "A / D   or   LB / RB   to choose", 19, new Color(1f, 1f, 1f, 0.65f), TextAnchor.MiddleCenter,
-                right, right, new Vector2(-560f, -470f), new Vector2(-50f, -430f));
+            var garageHint = UIFactory.Text(titleRoot.transform, "GarageHint", "A / D   or   LB / RB   to choose", 19, new Color(1f, 1f, 1f, 0.65f), TextAnchor.MiddleCenter,
+                right, right, new Vector2(-560f, -470f), new Vector2(-50f, -430f), false);
+            UIStyle.Style(garageHint, UIStyle.Body, 19, new Color(1f, 1f, 1f, 0.65f));
 
             // ---- pause menu
             pauseRoot = new GameObject("Pause", typeof(RectTransform));
             pauseRoot.transform.SetParent(root, false);
             UIFactory.Anchor(pauseRoot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             UIFactory.Panel(pauseRoot.transform, "Dim", new Color(0.02f, 0.02f, 0.06f, 0.65f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            UIFactory.Text(pauseRoot.transform, "PausedText", "PAUSED", 80, accent, TextAnchor.MiddleCenter,
-                mid, mid, new Vector2(-600f, 230f), new Vector2(600f, 380f));
+            var paused = UIFactory.Text(pauseRoot.transform, "PausedText", "PAUSED", 80, accent, TextAnchor.MiddleCenter,
+                mid, mid, new Vector2(-600f, 230f), new Vector2(600f, 380f), false);
+            UIStyle.Style(paused, UIStyle.Title, 110, accent);
+            UIStyle.Glow(paused, accent, 5f, 0.45f);
             pauseTexts = new Text[PauseLabels.Length];
             pauseBacks = new Image[PauseLabels.Length];
             for (int i = 0; i < PauseLabels.Length; i++)
@@ -125,7 +146,8 @@ namespace VCS.UI
                 btn.onClick.AddListener(() => { sel = idx; Highlight(); OnPauseSelect?.Invoke(idx); });
                 pauseBacks[i] = back;
                 pauseTexts[i] = UIFactory.Text(back.transform, "Label", PauseLabels[i], 36, Color.white, TextAnchor.MiddleCenter,
-                    Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                    Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false);
+                UIStyle.Style(pauseTexts[i], UIStyle.Display, 28, Color.white);
             }
         }
 

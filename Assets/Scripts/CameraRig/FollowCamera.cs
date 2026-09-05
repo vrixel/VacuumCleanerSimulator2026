@@ -25,6 +25,7 @@ namespace VCS.CameraRig
             cam.fieldOfView = 60f;
             cam.nearClipPlane = 0.1f;
             cam.farClipPlane = 300f;
+            cam.cullingMask &= ~(1 << 8);   // radar markers live on layer 8
             go.AddComponent<AudioListener>();
             var fc = go.AddComponent<FollowCamera>();
             fc.Cam = cam;

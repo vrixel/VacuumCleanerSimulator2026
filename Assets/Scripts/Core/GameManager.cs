@@ -113,18 +113,20 @@ namespace VCS.Core
             seed++;
             Level.Build(seed);
             if (Player != null) Destroy(Player.gameObject);
-            Player = VacuumController.Create(Level.PlayerSpawn, VacuumCatalog.Selected);
+            Player = VacuumController.Create(Level.PlayerSpawn, VacuumCatalog.Selected, Level.Sockets.Count > 0 ? Level.Sockets[0] : null);
             Player.Suction.SetPower(PowerLevel);
             Cam.SetFollow(Player.transform);
             Menu.HideAll();
             Hud.SetVisible(true);
             Hud.ResetRun();
             Telemetry.Reset(Player.Spec);
-            Hud.BindVacuum(Player.Spec, seed);
+            Hud.BindVacuum(Player.Spec, seed, Player.transform);
             Hud.SetPower(Player.Spec.Name, PowerLevel, PropFactory.EatLabel(PowerLevel + Player.Spec.SizeBonus));
             Audio.PlayMusic("game");
             Audio.DuckMusic(false);
-            Hud.ShowHint("WASD / left stick: drive     SPACE / A: hop     SHIFT / RB: turbo     E / B: blow     F / X: empty bag at the bin     ESC / Start: pause", 14f);
+            Hud.ShowHint(Player.Spec.Cordless
+                ? "WASD / left stick: drive     SPACE / A: hop     SHIFT / RB: turbo     E / B: blow     F / X: empty bag at the bin     ESC / Start: pause"
+                : "WASD / left stick: drive     SPACE / A: hop     SHIFT / RB: turbo     E / B: blow     F / X: empty bag at the bin     R / Y: rewind the cord     ESC: pause", 14f);
             State = GameState.Playing;
             Time.timeScale = 1f;
             Cursor.lockState = SmokeMode ? CursorLockMode.None : CursorLockMode.Locked;
@@ -202,6 +204,7 @@ namespace VCS.Core
                     Hud.SetBinPrompt(canEmpty);
                     if (canEmpty && GameInput.EmptyDown) EmptyBagIntoBin();
                     Level.Bin.SetHighlight(s.BagFull);
+                    if (GameInput.RewindDown && Player.Cord != null) Player.Cord.Rewind();
                 }
                 if (!spotlessShown && Level.MessTotal > 0 && Level.MessCleaned >= Level.MessTotal)
                 {
@@ -209,6 +212,8 @@ namespace VCS.Core
                     Objectives.Report("clean100");
                     ShowBanner("SPOTLESS!", "House cleaned in " + FormatTime(PlayTime) + ". Keep wrecking it if you like.", 5f);
                     Audio.PlayFanfare();
+                    // the finale of every corded run: the cord reels itself in
+                    if (Player.Cord != null) StartCoroutine(FinaleRewind());
                 }
                 if (Score > BestScore) BestScore = Score;
             }
@@ -216,6 +221,12 @@ namespace VCS.Core
             {
                 if (GameInput.PauseDown) Resume();
             }
+        }
+
+        System.Collections.IEnumerator FinaleRewind()
+        {
+            yield return new WaitForSeconds(2.5f);
+            if (State == GameState.Playing && Player != null && Player.Cord != null) Player.Cord.Rewind();
         }
 
         public void AddScore(int basePoints, bool countsCombo = true)

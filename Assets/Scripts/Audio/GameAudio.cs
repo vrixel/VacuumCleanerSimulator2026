@@ -236,6 +236,9 @@ namespace VCS.Audio
 
         public void PlayBoing() { sfx.pitch = Random.Range(0.95f, 1.1f); sfx.PlayOneShot(boing, 0.5f); }
         public void PlayClick() { ui.pitch = 1.35f; ui.PlayOneShot(pop, 0.35f); }
+        /// <summary>One tooth of the cord reel: a tiny click, pitch jittered so the run sounds mechanical.</summary>
+        public void PlayRatchet() { sfx.pitch = Random.Range(1.6f, 2.1f); sfx.PlayOneShot(clunk, 0.18f); }
+        public void PlayThunk() { sfx.pitch = 0.75f; sfx.PlayOneShot(clunk, 0.9f); }
         public void PlayWhoosh() { sfx.pitch = 1f; sfx.PlayOneShot(whoosh, 0.6f); }
         public void PlayClunk() { sfx.pitch = 1f; sfx.PlayOneShot(clunk, 0.8f); }
         public void PlayDing() { ui.pitch = 1f; ui.PlayOneShot(ding, 0.7f); }

@@ -78,6 +78,21 @@ namespace VCS.UI
 
         public static Sprite Bar => hbar != null ? hbar : hbar = Make("bar", 8, 8, (x, y) => Color.white, new Vector2(0.5f, 0.5f));
 
+        static Sprite radarSweep;
+
+        /// <summary>A 70-degree wedge fading behind its leading edge, for the radar sweep.</summary>
+        public static Sprite RadarSweep => radarSweep != null ? radarSweep : radarSweep = Make("sweep", 256, (x, y) =>
+        {
+            float d = Dist(x, y, 256);
+            if (d > 0.98f) return new Color(1f, 1f, 1f, 0f);
+            float ang = Mathf.Atan2(y - 127.5f, x - 127.5f) * Mathf.Rad2Deg;
+            float rel = Mathf.Repeat(90f - ang, 360f);
+            if (rel > 70f) return new Color(1f, 1f, 1f, 0f);
+            float a = (1f - rel / 70f);
+            a = a * a * (rel < 2f ? 1f : 0.6f);
+            return new Color(1f, 1f, 1f, a);
+        });
+
         static float Dist(int x, int y, int n)
         {
             float dx = (x + 0.5f) / n - 0.5f, dy = (y + 0.5f) / n - 0.5f;
