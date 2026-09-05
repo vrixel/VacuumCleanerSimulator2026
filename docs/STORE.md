@@ -62,7 +62,11 @@ Generated with kie.ai from `tools/assets/kie_assets.py` and cut to store sizes b
 ## Microsoft Store (PC first, Xbox later)
 
 **Status 2026-09-05: submission 1 (v0.1.1.0) certified and live the same day (Partner Center mail 12:09 UTC, IARC live
-rating notice 12:16 UTC); submission 2 (v0.2.0.0) drafted with new screenshots and release notes.** Submission 1 was, free, all 240 markets, public, publish
+rating notice 12:16 UTC); submission 2 (v0.2.0.0) submitted for certification the same evening.** Package upload without a drag: push the
+MSIX to a temporary branch, then in the Packages page run a script that fetches it from raw.githubusercontent.com
+(CORS `*`, no CSP on Partner Center), wraps it in a `File`, sets it on the `input[type=file]` and dispatches
+`change`; delete the branch afterwards. GitHub release assets and localhost do not work (no CORS header; local
+network access prompt). Submission 1 was, free, all 240 markets, public, publish
 as soon as it passes. Filled: pricing, properties (Games / Simulation + Family + kids, no personal data, single player
 PC, support site), IARC questionnaire (ESRB Everyone, PEGI 3), package, English (US) listing with 4 screenshots
 (1920 x 1080, from `tools\smoke-test.ps1 -Width 1920 -Height 1080`), poster 720 x 1080, box art 1080, super hero
