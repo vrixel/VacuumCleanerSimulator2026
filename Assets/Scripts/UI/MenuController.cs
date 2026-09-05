@@ -76,17 +76,17 @@ namespace VCS.UI
             UIStyle.Edge(titleStats);
 
             // ---- garage (right column): an instrument frame
-            UIStyle.Frame(titleRoot.transform, "GarageBack", right, right, new Vector2(-600f, -500f), new Vector2(-14f, 340f), "frame_tall", 586f, 840f, 30f);
-            UIStyle.Tab(titleRoot.transform, "GarageTitle", "CHOOSE YOUR VACUUM", right, right, new Vector2(-500f, 300f), new Vector2(-114f, 330f));
+            UIStyle.Frame(titleRoot.transform, "GarageBack", right, right, new Vector2(-600f, -500f), new Vector2(-14f, 340f), "frame_square", 586f, 840f, 30f);
+            UIStyle.Tab(titleRoot.transform, "GarageTitle", "CHOOSE YOUR VACUUM", right, right, new Vector2(-500f, 302f), new Vector2(-114f, 332f));
             var rawGo = new GameObject("Preview", typeof(RectTransform));
             rawGo.transform.SetParent(titleRoot.transform, false);
-            UIFactory.Anchor(rawGo, right, right, new Vector2(-520f, -130f), new Vector2(-94f, 250f));
+            UIFactory.Anchor(rawGo, right, right, new Vector2(-506f, -108f), new Vector2(-108f, 246f));
             var raw = rawGo.AddComponent<RawImage>();
             raw.texture = preview.Texture;
             raw.raycastTarget = false;
 
             vacuumName = UIFactory.Text(titleRoot.transform, "VacuumName", "", 38, Color.white, TextAnchor.MiddleCenter,
-                right, right, new Vector2(-500f, -196f), new Vector2(-114f, -141f), false);
+                right, right, new Vector2(-500f, -172f), new Vector2(-114f, -117f), false);
             UIStyle.Style(vacuumName, UIStyle.Arcade, 40, Color.white, FontStyle.Italic);
             UIStyle.ArcadeText(vacuumName, Color.white, UIStyle.Yellow, 3f);
             // Wrap + best fit: sizes that would need two lines do not fit the 55 px rect, so long names shrink to one line.
@@ -96,7 +96,7 @@ namespace VCS.UI
             vacuumName.resizeTextMinSize = 18;
             vacuumName.resizeTextMaxSize = 40;
             vacuumTagline = UIFactory.Text(titleRoot.transform, "VacuumTagline", "", 21, new Color(1f, 1f, 1f, 0.85f), TextAnchor.MiddleCenter,
-                right, right, new Vector2(-530f, -234f), new Vector2(-84f, -196f), false, FontStyle.Italic);
+                right, right, new Vector2(-530f, -212f), new Vector2(-84f, -174f), false, FontStyle.Italic);
             UIStyle.Style(vacuumTagline, UIStyle.Body, 21, new Color(1f, 1f, 1f, 0.85f), FontStyle.Italic);
             UIStyle.Edge(vacuumTagline);
             vacuumTagline.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -104,13 +104,13 @@ namespace VCS.UI
             vacuumTagline.resizeTextForBestFit = true;
             vacuumTagline.resizeTextMinSize = 12;
             vacuumTagline.resizeTextMaxSize = 21;
-            MakeArrow(titleRoot.transform, "<", new Vector2(-556f, -196f), new Vector2(-506f, -141f), -1);
-            MakeArrow(titleRoot.transform, ">", new Vector2(-108f, -196f), new Vector2(-58f, -141f), 1);
+            MakeArrow(titleRoot.transform, "<", new Vector2(-556f, -172f), new Vector2(-506f, -117f), -1);
+            MakeArrow(titleRoot.transform, ">", new Vector2(-108f, -172f), new Vector2(-58f, -117f), 1);
 
             bars = new Image[BarLabels.Length];
             for (int i = 0; i < BarLabels.Length; i++)
             {
-                float y = -268f - i * 38f;
+                float y = -250f - i * 38f;
                 var barLabel = UIFactory.Text(titleRoot.transform, "BarLabel" + i, BarLabels[i], 20, Color.white, TextAnchor.MiddleLeft,
                     right, right, new Vector2(-516f, y - 14f), new Vector2(-400f, y + 14f), false);
                 UIStyle.Style(barLabel, UIStyle.Arcade, 15, UIStyle.Steel, FontStyle.Italic);
