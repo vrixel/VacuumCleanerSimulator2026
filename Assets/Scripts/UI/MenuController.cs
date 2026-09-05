@@ -22,6 +22,7 @@ namespace VCS.UI
         Text[] pauseTexts;
         Image[] pauseBacks;
         VacuumPreview preview;
+        public VacuumPreview Preview => preview;
         int sel;
         int vacIndex;
         float t;

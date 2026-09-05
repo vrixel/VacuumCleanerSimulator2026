@@ -93,6 +93,7 @@ namespace VCS.Core
             Debug.Log("[VCS] " + GameName + " v" + Version + " ready: " + Level.MessTotal + " pieces of mess, "
                       + Objectives.All.Count + " achievements, best score " + BestScore);
             SmokeRunner.TryStart(this);
+            GalleryRunner.TryStart(this);
         }
 
         void EnterTitle()

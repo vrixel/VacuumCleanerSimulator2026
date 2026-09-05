@@ -79,6 +79,37 @@ namespace VCS.UI
 
         public void Hide() { cam.enabled = false; }
 
+        /// <summary>Renders one model at a fixed yaw into a PNG (the gallery); leaves the stage empty afterwards.</summary>
+        public void RenderStill(VacuumSpec s, float yawDeg, int size, string path)
+        {
+            if (model != null) Destroy(model.gameObject);
+            model = new GameObject("StillModel").transform;
+            model.SetParent(stage, false);
+            model.localRotation = Quaternion.Euler(0f, yawDeg, 0f);
+            s.Build(model, s);
+            VacuumDetails.Add(model, s);
+            if (!VacuumVisuals.RealisticLook) VacuumVisuals.AddEyes(model, s, out _, out _);
+            Frame();
+            var rt = new RenderTexture(size, size, 24);
+            rt.antiAliasing = 8;
+            var saved = cam.targetTexture;
+            cam.targetTexture = rt;
+            cam.Render();
+            cam.targetTexture = saved;
+            var prev = RenderTexture.active;
+            RenderTexture.active = rt;
+            var tex = new Texture2D(size, size, TextureFormat.RGB24, false);
+            tex.ReadPixels(new Rect(0, 0, size, size), 0, 0);
+            tex.Apply();
+            RenderTexture.active = prev;
+            System.IO.File.WriteAllBytes(path, tex.EncodeToPNG());
+            Destroy(tex);
+            rt.Release();
+            Destroy(rt);
+            DestroyImmediate(model.gameObject);
+            model = null;
+        }
+
         // Frames the union of the model's renderer bounds so every silhouette fills the picture the same way.
         void Frame()
         {

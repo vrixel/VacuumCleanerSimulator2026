@@ -135,11 +135,14 @@ namespace VCS.World
 
         // The material families every prop and vacuum is built from. Real surfaces: fine grain on plastics, soft
         // lumps on rubber, a weave on fabric, brushed streaks on metal.
-        public static Material Plastic(Color c) => Bump(c, ProceduralTextures.PlasticGrain, 0.35f, 0f, 0.55f, 3f);
-        public static Material Glossy(Color c) => Bump(c, ProceduralTextures.PlasticGrain, 0.12f, 0.1f, 0.85f, 3f);
-        public static Material Rubber(Color c) => Bump(c, ProceduralTextures.RubberGrain, 0.7f, 0f, 0.2f, 4f);
-        public static Material Fabric(Color c) => Bump(c, ProceduralTextures.Weave, 0.9f, 0f, 0.08f, 6f);
-        public static Material Chrome => Bump(new Color(0.9f, 0.9f, 0.93f), ProceduralTextures.Brushed, 0.3f, 0.95f, 0.8f, 2f);
+        /// <summary>False restores the flat 0.1 materials (the gallery renders both looks side by side).</summary>
+        public static bool Realistic = true;
+
+        public static Material Plastic(Color c) => Realistic ? Bump(c, ProceduralTextures.PlasticGrain, 0.22f, 0f, 0.55f, 8f) : Mat(c, 0f, 0.55f);
+        public static Material Glossy(Color c) => Realistic ? Bump(c, ProceduralTextures.PlasticGrain, 0.08f, 0.1f, 0.85f, 8f) : Mat(c, 0.2f, 0.8f);
+        public static Material Rubber(Color c) => Realistic ? Bump(c, ProceduralTextures.RubberGrain, 0.3f, 0f, 0.2f, 14f) : Mat(c, 0f, 0.15f);
+        public static Material Fabric(Color c) => Realistic ? Bump(c, ProceduralTextures.Weave, 0.6f, 0f, 0.08f, 10f) : Mat(c, 0f, 0.05f);
+        public static Material Chrome => Realistic ? Bump(new Color(0.9f, 0.9f, 0.93f), ProceduralTextures.Brushed, 0.2f, 0.95f, 0.8f, 4f) : Mat(new Color(0.9f, 0.9f, 0.93f), 0.95f, 0.85f);
 
         public static Material Particle
         {

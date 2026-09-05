@@ -7,7 +7,7 @@ namespace VCS.Player
     public class VacuumVisuals : MonoBehaviour
     {
         /// <summary>Realistic look (2026-09-05): machines without googly eyes, grained materials, real lighting.</summary>
-        public const bool RealisticLook = true;
+        public static bool RealisticLook = true;   // static so the gallery can render both looks
 
         Transform group;
         Transform leftEye;
