@@ -61,7 +61,8 @@ Generated with kie.ai from `tools/assets/kie_assets.py` and cut to store sizes b
 
 ## Microsoft Store (PC first, Xbox later)
 
-**Status 2026-09-05: submission 1 (v0.1.1.0) submitted for certification**, free, all 240 markets, public, publish
+**Status 2026-09-05: submission 1 (v0.1.1.0) certified and live the same day (Partner Center mail 12:09 UTC, IARC live
+rating notice 12:16 UTC); submission 2 (v0.2.0.0) drafted with new screenshots and release notes.** Submission 1 was, free, all 240 markets, public, publish
 as soon as it passes. Filled: pricing, properties (Games / Simulation + Family + kids, no personal data, single player
 PC, support site), IARC questionnaire (ESRB Everyone, PEGI 3), package, English (US) listing with 4 screenshots
 (1920 x 1080, from `tools\smoke-test.ps1 -Width 1920 -Height 1080`), poster 720 x 1080, box art 1080, super hero
