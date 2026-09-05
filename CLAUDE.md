@@ -140,7 +140,7 @@ Unity 6 API names in use: `Rigidbody.linearVelocity`, `linearDamping`, `angularD
   reference), fonts are OFL. Bump `bundleVersion` in `ProjectSetup` with every release.
 - App icon: `Assets/Icon/icon.png` (512, cut by `tools/marketing.py` from the kie icon) is applied to the Standalone
   and default icon slots by `ProjectSetup.ApplyIcon` on every batch build; the exe shows it.
-- The game page on cosnuau.com is `public/vacuum/index.html` in `D:\Cloclo\Projects\cosnuau.com` (web-sized JPEGs
+- The game page on cosnuau.com is `public/vacuum.html` (a flat file: CloudFront serves the home page for folder URLs, assets in `public/vacuum/`) in `D:\Cloclo\Projects\cosnuau.com` (web-sized JPEGs
   and icons next to it, produced from `marketing/store` and `docs/screenshots`), plus the engraved register emblem
   `public/assets/emblems/d8.png` (from `mk_emblem`, 192 px pure black on transparency). The register only shows
   mysterious black engravings; the game keeps its own cartoon style. Deploy = push to that repo's `main` touching
