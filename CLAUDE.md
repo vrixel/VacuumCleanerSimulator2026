@@ -17,6 +17,8 @@ powershell -File tools\build.ps1             # batch-mode Win64 build -> Builds\
 powershell -File tools\build.ps1 -Run        # same, then launch the exe (player log in Builds\player.log)
 powershell -File tools\run.ps1               # launch the last build
 powershell -File tools\smoke-test.ps1        # automated run of the build: self-screenshots (Builds\smoke-*.png), drives, logs "[VCS] Smoke result", quits
+powershell -File tools\release.ps1 -Version 0.2.0   # build, zip Builds\Win64, publish GitHub release v0.2.0 with the zip (-SkipBuild to reuse a smoked build, -Draft)
+python tools\marketing.py                   # cut marketing\source\*.png into store sizes (marketing\store), icon sizes + icon.ico (marketing\icon), Assets\Icon\icon.png
 ```
 
 ```powershell
@@ -26,6 +28,7 @@ python tools\assets\kie_assets.py                        # generate missing gaug
 python tools\assets\kie_assets.py --reprocess --images-only   # rebuild Assets/Resources from tools/assets/raw, no API calls
 python tools\assets\kie_assets.py --sheet tools\assets\raw\contact.png   # contact sheet of every processed image
 python tools\assets\kie_assets.py --only bag_full --force # redo one asset
+python tools\assets\kie_assets.py --images-only --only mk_key_art --force   # marketing images (mk_* items -> marketing\source), 5 credits each
 ```
 
 Generated assets follow the kie-ai skill discipline (idempotent, raw downloads kept in `tools/assets/raw`, never
@@ -132,3 +135,15 @@ Unity 6 API names in use: `Rigidbody.linearVelocity`, `linearDamping`, `angularD
 - A warm batch build is about 15 s of editor time (Unity's `-timestamps` log shows it); the player build step is 6 s.
 - Large heredocs (over roughly 10 KB) fail in the Bash tool on this machine; write source files with the Write tool.
 - Everything on D:, deliverables in English, commit and push on `main` as soon as something works.
+- The repo is PUBLIC (vrixel/VacuumCleanerSimulator2026) since 2026-09-05, downloads at `releases/latest`; never
+  commit kie keys or anything from `D:\Cloclo\Projects\Nazisme`. `LICENSE.md` is all rights reserved (source for
+  reference), fonts are OFL. Bump `bundleVersion` in `ProjectSetup` with every release.
+- App icon: `Assets/Icon/icon.png` (512, cut by `tools/marketing.py` from the kie icon) is applied to the Standalone
+  and default icon slots by `ProjectSetup.ApplyIcon` on every batch build; the exe shows it.
+- The game page on cosnuau.com is `public/vacuum/index.html` in `D:\Cloclo\Projects\cosnuau.com` (web-sized JPEGs
+  and icons next to it, produced from `marketing/store` and `docs/screenshots`), plus the engraved register emblem
+  `public/assets/emblems/d8.png` (from `mk_emblem`, 192 px pure black on transparency). The register only shows
+  mysterious black engravings; the game keeps its own cartoon style. Deploy = push to that repo's `main` touching
+  `public/**` (CI syncs to S3 and invalidates CloudFront).
+- Microsoft Store and Steam need the owner's accounts and fees (Partner Center, Steamworks); `docs/STORE.md` has the
+  listing copy, the asset table and the step lists. MSIX packaging needs the Windows SDK, not installed.

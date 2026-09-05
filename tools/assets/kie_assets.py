@@ -107,9 +107,12 @@ MARKETING = {
     "icon": ("App icon: the friendly face of a cartoon vacuum cleaner, huge googly eyes and a cheeky grin, front view, "
              "filling the frame, bold flat vector style with thick outlines, on a bright safety-yellow rounded-square "
              "background, perfectly centred, square 1:1. " + MARKETING_STYLE),
-    "emblem": ("A small emblem for a personal website: an upright vacuum cleaner with two big round googly eyes, drawn as "
-               "a black ink line engraving, fine crosshatching, in the manner of an old heraldic crest, centred, on a "
-               "pure white background, square. No colour, no shading fills, no frame. ABSOLUTELY NO TEXT of any kind."),
+    "emblem": ("A vintage 1950s canister vacuum cleaner, cylindrical body on small wheels, ribbed hose curling up to a "
+               "wand and floor nozzle, its electric cord coiled loosely on the ground beside it, and a single lost sock "
+               "lying next to the nozzle. Drawn as a black ink burin line engraving with fine crosshatching, in the manner "
+               "of a 19th century catalogue illustration, isolated object with only a small hatched ground shadow, "
+               "centred on a pure white background, square. No frame, no border, no backdrop, no scene, no colour. "
+               "ABSOLUTELY NO TEXT of any kind."),
     "garage_lineup": ("A line-up of eight cartoon vacuum cleaners with googly eyes posing together like a team photo: "
                       "a robot disc, a purple bagless upright on a ball, a red smiling canister, a cordless stick, a "
                       "1970s green upright with a cloth bag, a blue French canister with a beret and a baguette, a yellow "
