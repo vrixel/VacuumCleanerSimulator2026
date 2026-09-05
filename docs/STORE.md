@@ -61,6 +61,13 @@ Generated with kie.ai from `tools/assets/kie_assets.py` and cut to store sizes b
 
 ## Microsoft Store (PC first, Xbox later)
 
+Reserved on 2026-09-05 in the owner's Partner Center: Store ID `9P9HVRJ09PK0`, page
+https://apps.microsoft.com/detail/9P9HVRJ09PK0. Identity for the manifest (public values, not secrets):
+
+```
+python tools\msix.py --identity-name Cosnuau.VacuumCleanerSimulator2026 --publisher "CN=613E5688-3351-4C6B-BFCB-CFFE282F1F0A" --publisher-display Cosnuau
+```
+
 1. Owner: sign in to the existing Partner Center developer account (no new fee; PC games use the same account
    and the same dashboard as apps, category Games).
 2. Owner: reserve the name "Vacuum Cleaner Simulator 2026" in Partner Center.

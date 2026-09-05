@@ -4,7 +4,9 @@
 # Exit code 1 if the run did not finish, logged an exception, or produced no screenshots.
 # Usage:  powershell -File tools\smoke-test.ps1 [-TimeoutSeconds 60]
 param(
-    [int]$TimeoutSeconds = 60
+    [int]$TimeoutSeconds = 60,
+    [int]$Width = 1280,
+    [int]$Height = 720
 )
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -15,7 +17,7 @@ if (-not (Test-Path $exe)) { Write-Host "No build at $exe"; exit 2 }
 Remove-Item $log -ErrorAction SilentlyContinue
 Remove-Item (Join-Path $out "smoke-*.png") -ErrorAction SilentlyContinue
 
-$gameArgs = @("-logFile", "`"$log`"", "-screen-fullscreen", "0", "-screen-width", "1280", "-screen-height", "720", "-smoke", "`"$out`"")
+$gameArgs = @("-logFile", "`"$log`"", "-screen-fullscreen", "0", "-screen-width", "$Width", "-screen-height", "$Height", "-smoke", "`"$out`"")
 $p = Start-Process -FilePath $exe -ArgumentList $gameArgs -PassThru
 Write-Host "Started pid $($p.Id); waiting up to $TimeoutSeconds s for the smoke run to finish..."
 $finished = $p.WaitForExit($TimeoutSeconds * 1000)
