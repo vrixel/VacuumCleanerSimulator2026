@@ -1,7 +1,9 @@
 # Store listing copy and submission checklists
 
-Everything below is ready to paste. The two accounts (Microsoft Partner Center, Steamworks) have to be opened and
-paid for by the owner; nothing here can be submitted by Claude.
+Everything below is ready to paste. Submissions go through the owner's accounts; nothing here can be submitted by
+Claude. The owner already has a Microsoft Partner Center developer account (an app is published): that one
+registration covers every Windows app and game, PC included, so the Store costs nothing more. Steam is different:
+Steamworks charges 100 USD per game (Steam Direct fee, refunded once the game earns 1,000 USD).
 
 ## Listing copy
 
@@ -59,7 +61,8 @@ Generated with kie.ai from `tools/assets/kie_assets.py` and cut to store sizes b
 
 ## Microsoft Store (PC first, Xbox later)
 
-1. Owner: open a Partner Center developer account (one-time fee, identity check).
+1. Owner: sign in to the existing Partner Center developer account (no new fee; PC games use the same account
+   and the same dashboard as apps, category Games).
 2. Owner: reserve the name "Vacuum Cleaner Simulator 2026" in Partner Center.
 3. Package the Win64 build as MSIX with the identity from Partner Center. Needs the Windows SDK (`makeappx`,
    `signtool`) or the MSIX Packaging Tool; neither is installed on this machine yet.
