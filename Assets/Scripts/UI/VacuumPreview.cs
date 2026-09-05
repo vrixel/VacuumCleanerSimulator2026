@@ -39,7 +39,7 @@ namespace VCS.UI
             p.cam.backgroundColor = new Color(0.10f, 0.10f, 0.16f);
             p.cam.nearClipPlane = 0.05f;
             p.cam.farClipPlane = 12f;
-            p.cam.fieldOfView = 36f;
+            p.cam.fieldOfView = 40f;
             p.cam.enabled = false;
 
             var fillGo = new GameObject("PreviewFill");
@@ -92,7 +92,7 @@ namespace VCS.UI
             float horiz = Mathf.Max(Mathf.Abs(b.max.x - cx), Mathf.Abs(b.min.x - cx), Mathf.Abs(b.max.z - cz), Mathf.Abs(b.min.z - cz));
             float radius = Mathf.Sqrt(horiz * horiz + b.extents.y * b.extents.y);
             Vector3 look = new Vector3(cx, b.center.y, cz);
-            float dist = radius / Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) * 0.72f + 0.15f;
+            float dist = radius / Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) * 0.9f + 0.15f;
             cam.transform.position = look + new Vector3(0f, dist * 0.34f, dist);
             cam.transform.LookAt(look);
         }
