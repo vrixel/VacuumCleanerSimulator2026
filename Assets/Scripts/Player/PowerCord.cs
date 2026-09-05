@@ -22,7 +22,7 @@ namespace VCS.Player
     {
         // Rope length, not distance driven (see Tighten). The hall socket reaches the rooms around it; the far
         // corners and the garden need another socket, or the plug comes out of the wall.
-        public const float MaxLength = 22f;
+        public static float MaxLength = 22f;   // static, not const: the smoke test shortens it to reach the end
         public const float RewindSpeed = 22f;
 
         public float Length { get; private set; }
@@ -31,6 +31,8 @@ namespace VCS.Player
         public bool Taut { get; private set; }
         public WallSocket Socket { get; private set; }
         public float TotalRewound { get; private set; }
+        /// <summary>The last point the cord is caught on before the vacuum (the socket when it is straight).</summary>
+        public Vector3 LastCorner => trail.Count >= 2 ? trail[trail.Count - 2] : (Socket != null ? Socket.CordAnchor : vac.transform.position);
 
         VacuumController vac;
         LineRenderer line;

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.IO;
 using UnityEngine;
+using VCS.Player;
 
 namespace VCS.Core
 {
@@ -57,13 +58,39 @@ namespace VCS.Core
             yield return new WaitForSecondsRealtime(2f);
             GameInput.MoveOverride = Vector2.zero;
             yield return Capture("smoke-game.png");
-            if (gm.Player != null && gm.Player.Cord != null)
+            if (gm.Player != null && gm.Player.Cord != null && gm.Player.Cord.Plugged)
             {
-                gm.Player.Cord.Rewind();
-                yield return new WaitForSecondsRealtime(0.6f);
+                // End of the cord: shorten it, drive away from the socket until it is taut, keep pulling until the
+                // plug pops out of the wall, then watch the cord reel itself in.
+                var cord = gm.Player.Cord;
+                float saved = PowerCord.MaxLength;
+                PowerCord.MaxLength = 4f;
+                float t = 0f, tautAt = -1f, yankAt = -1f;
+                while (t < 12f)
+                {
+                    // Pull straight away from whatever the cord is caught on, in camera-relative input terms.
+                    Vector3 away = gm.Player.transform.position - cord.LastCorner;
+                    away.y = 0f;
+                    var camT = Camera.main != null ? Camera.main.transform : null;
+                    Vector3 fwd = camT != null ? Vector3.ProjectOnPlane(camT.forward, Vector3.up).normalized : Vector3.forward;
+                    Vector3 right = Vector3.Cross(Vector3.up, fwd);
+                    if (away.sqrMagnitude < 0.01f) away = Vector3.right;
+                    away.Normalize();
+                    GameInput.MoveOverride = new Vector2(Vector3.Dot(away, right), Vector3.Dot(away, fwd));
+                    yield return new WaitForSecondsRealtime(0.1f);
+                    t += 0.1f;
+                    if (tautAt < 0f && cord.Taut) { tautAt = t; yield return Capture("smoke-taut.png"); }
+                    if (!cord.Plugged) { yankAt = t; break; }
+                }
+                Debug.Log("[VCS] Cord: taut at " + tautAt.ToString("0.0") + " s, plug yanked at " + yankAt.ToString("0.0")
+                          + " s, length " + cord.Length.ToString("0.0") + " m");
+                yield return new WaitForSecondsRealtime(0.4f);
                 yield return Capture("smoke-rewind.png");
-                yield return new WaitForSecondsRealtime(1.5f);
-                Debug.Log("[VCS] Cord: rewound " + gm.Player.Cord.TotalRewound.ToString("0.0") + " m, plugged=" + gm.Player.Cord.Plugged);
+                float w = 0f;
+                while (cord.Rewinding && w < 5f) { yield return new WaitForSecondsRealtime(0.1f); w += 0.1f; }
+                GameInput.MoveOverride = Vector2.zero;
+                PowerCord.MaxLength = saved;
+                Debug.Log("[VCS] Cord: rewound " + cord.TotalRewound.ToString("0.0") + " m, plugged=" + cord.Plugged);
             }
 
             var s = gm.Suction;
