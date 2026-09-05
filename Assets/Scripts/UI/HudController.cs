@@ -2,22 +2,23 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
+using VCS.Core;
 using VCS.Objectives;
+using VCS.Player;
 
 namespace VCS.UI
 {
-    /// <summary>In-game overlay: score, combo, power, bag meter, cleanliness, timer, objectives, banners and hints.</summary>
+    /// <summary>In-game overlay: score, combo, power, timer, objectives, banners, hints, and the cockpit panel.</summary>
     public class HudController : MonoBehaviour
     {
         Canvas canvas;
-        Text scoreText, comboText, powerText, cleanText, timeText, objectivesText, bannerBig, bannerSmall, hintText, bagText, binPrompt;
-        Image bagFill;
+        Text scoreText, comboText, powerText, timeText, objectivesText, bannerBig, bannerSmall, hintText, binPrompt;
         CanvasGroup bannerGroup, hintGroup, binGroup;
         RectTransform bannerRect;
+        Cockpit cockpit;
 
-        int lastScore = -1, lastCombo = -1, lastClean = -1, lastTime = -1;
-        float lastBag = -1f;
-        bool lastBagFull, lastBinPrompt;
+        int lastScore = -1, lastCombo = -1, lastTime = -1;
+        bool lastBinPrompt;
         float bannerT, bannerDur, hintT, hintDur, objectivesTimer;
         readonly List<Objective> objBuffer = new List<Objective>();
         readonly StringBuilder sb = new StringBuilder();
@@ -42,20 +43,11 @@ namespace VCS.UI
                 new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(36f, -215f), new Vector2(600f, -155f));
             powerText = UIFactory.Text(t, "Power", "", 28, Color.white, TextAnchor.UpperCenter,
                 new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-520f, -110f), new Vector2(520f, -30f));
+            timeText = UIFactory.Text(t, "Time", "00:00", 34, Color.white, TextAnchor.UpperRight,
+                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-340f, -90f), new Vector2(-36f, -30f));
 
-            var bagBack = UIFactory.Panel(t, "BagBack", new Color(0f, 0f, 0f, 0.55f),
-                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-440f, -100f), new Vector2(-36f, -40f));
-            bagFill = UIFactory.Panel(bagBack.transform, "BagFill", new Color(0.4f, 0.85f, 0.4f, 0.95f),
-                new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(4f, 4f), new Vector2(-4f, -4f));
-            bagText = UIFactory.Text(bagBack.transform, "BagText", "BAG 0%", 30, Color.white, TextAnchor.MiddleCenter,
-                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            timeText = UIFactory.Text(t, "Time", "00:00", 28, Color.white, TextAnchor.UpperRight,
-                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-440f, -155f), new Vector2(-36f, -105f));
-
-            cleanText = UIFactory.Text(t, "Clean", "", 32, Color.white, TextAnchor.LowerRight,
-                new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-600f, 36f), new Vector2(-36f, 120f));
-            objectivesText = UIFactory.Text(t, "Objectives", "", 26, Color.white, TextAnchor.LowerLeft,
-                new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(36f, 36f), new Vector2(800f, 200f));
+            objectivesText = UIFactory.Text(t, "Objectives", "", 24, Color.white, TextAnchor.LowerLeft,
+                new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(36f, Cockpit.Height + 20f), new Vector2(800f, Cockpit.Height + 150f));
 
             var bannerPanel = UIFactory.Panel(t, "Banner", new Color(0.05f, 0.05f, 0.1f, 0.72f),
                 new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-760f, 60f), new Vector2(760f, 250f));
@@ -68,27 +60,33 @@ namespace VCS.UI
                 new Vector2(0f, 0f), new Vector2(1f, 0.45f), new Vector2(20f, 10f), new Vector2(-20f, 0f));
 
             hintText = UIFactory.Text(t, "Hint", "", 24, new Color(1f, 1f, 1f, 0.92f), TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-900f, 215f), new Vector2(900f, 265f));
+                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-900f, Cockpit.Height + 165f), new Vector2(900f, Cockpit.Height + 215f));
             hintGroup = hintText.gameObject.AddComponent<CanvasGroup>();
             hintGroup.alpha = 0f;
 
             binPrompt = UIFactory.Text(t, "BinPrompt", "Press F / X to empty the bag into the bin", 32, accent, TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-600f, 280f), new Vector2(600f, 330f));
+                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-600f, Cockpit.Height + 230f), new Vector2(600f, Cockpit.Height + 280f));
             binGroup = binPrompt.gameObject.AddComponent<CanvasGroup>();
             binGroup.alpha = 0f;
+
+            cockpit = Cockpit.Build(t);
         }
 
         public void SetVisible(bool v) { canvas.gameObject.SetActive(v); }
 
         public void ResetRun()
         {
-            lastScore = -1; lastCombo = -1; lastClean = -1; lastTime = -1; lastBag = -1f;
-            lastBagFull = false; lastBinPrompt = false;
+            lastScore = -1; lastCombo = -1; lastTime = -1;
+            lastBinPrompt = false;
             bannerDur = 0f; bannerGroup.alpha = 0f;
             hintDur = 0f; hintGroup.alpha = 0f;
             binGroup.alpha = 0f;
             objectivesTimer = 0f;
         }
+
+        public void BindVacuum(VacuumSpec spec, int serial) { cockpit.Bind(spec, serial); }
+
+        public void SetTelemetry(Telemetry tm, SuctionSystem suction, GameManager gm, float dt) { cockpit.Refresh(tm, suction, gm, dt); }
 
         public void SetScore(int score)
         {
@@ -110,34 +108,12 @@ namespace VCS.UI
             powerText.text = vacuumName.ToUpperInvariant() + "   -   POWER " + level + " / 5   -   eats " + canEat;
         }
 
-        public void SetBag(float fill01, bool full)
-        {
-            fill01 = Mathf.Clamp01(fill01);
-            if (Mathf.Abs(fill01 - lastBag) > 0.002f || full != lastBagFull)
-            {
-                lastBag = fill01; lastBagFull = full;
-                bagFill.rectTransform.anchorMax = new Vector2(fill01, 1f);
-                bagFill.color = full ? new Color(1f, 0.25f, 0.2f, 0.95f) : Color.Lerp(new Color(0.4f, 0.85f, 0.4f, 0.95f), new Color(1f, 0.6f, 0.2f, 0.95f), fill01);
-                bagText.text = full ? "BAG FULL!" : "BAG " + Mathf.RoundToInt(fill01 * 100f) + "%";
-            }
-            if (full) bagText.color = Color.Lerp(Color.white, UIFactory.Accent, 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 10f));
-            else bagText.color = Color.white;
-        }
-
-        public void SetClean(float clean01)
-        {
-            int pct = Mathf.RoundToInt(Mathf.Clamp01(clean01) * 100f);
-            if (pct == lastClean) return;
-            lastClean = pct;
-            cleanText.text = "CLEAN " + pct + "%";
-        }
-
         public void SetTime(float seconds)
         {
             int s = (int)seconds;
             if (s == lastTime) return;
             lastTime = s;
-            timeText.text = VCS.Core.GameManager.FormatTime(seconds);
+            timeText.text = GameManager.FormatTime(seconds);
         }
 
         public void SetObjectives(ObjectiveSystem os)

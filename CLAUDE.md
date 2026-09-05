@@ -19,6 +19,19 @@ powershell -File tools\run.ps1               # launch the last build
 powershell -File tools\smoke-test.ps1        # automated run of the build: self-screenshots (Builds\smoke-*.png), drives, logs "[VCS] Smoke result", quits
 ```
 
+```powershell
+python tools\assets\kie_assets.py --list                 # generated-asset campaign: what exists, what is missing
+python tools\assets\kie_assets.py --dry-run              # what would be generated and with which model, no spend
+python tools\assets\kie_assets.py                        # generate missing gauges, containers, panel, music, sounds (kie.ai credits)
+python tools\assets\kie_assets.py --reprocess --images-only   # rebuild Assets/Resources from tools/assets/raw, no API calls
+python tools\assets\kie_assets.py --sheet tools\assets\raw\contact.png   # contact sheet of every processed image
+python tools\assets\kie_assets.py --only bag_full --force # redo one asset
+```
+
+Generated assets follow the kie-ai skill discipline (idempotent, raw downloads kept in `tools/assets/raw`, never
+overwritten without `--force`, balance printed before and after). Look at every image before shipping it: a
+`success` proves an image came back, not that the prompt was honoured. Binary assets are tracked with git LFS.
+
 The smoke test runs the player with `-smoke <dir>` (see `SmokeRunner`): it never injects keystrokes or steals focus,
 so it is safe while the owner is using the PC. Look at the two PNGs it produces; the log scan alone only proves the
 game did not throw. The player log line `d3d12: failed to query info queue interface` is benign.
@@ -55,6 +68,15 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   `"speed"`, `"spin"`, `"clean100"`. Completion is remembered in PlayerPrefs (`ach_<id>`), progress is per run.
 - UI is uGUI built by `UIFactory` with the built-in `LegacyRuntime.ttf`; `HudController` caches values and only
   touches Text when something changed. `MenuController` handles title and pause with keyboard, gamepad and mouse.
+- The cockpit (`Cockpit`, 250 px strip at the bottom) is the simulator joke: a suction gauge styled per vacuum
+  (generated face in `Resources/UI/Gauges/gauge_<id>`, needle or LED ring per `VacuumSpec.Gauge`), the real
+  container filling up (`Resources/UI/Containers/<kind>_empty` under `<kind>_full` with a vertical fill), motor
+  readouts, warning lamps, odometer, a system-status box. Numbers come from `Telemetry`, a pretend model updated
+  each frame by `GameManager` that never touches physics. Every sprite has a procedural fallback in `UISprites`,
+  so the game runs without the generated art. `AssetImportRules` makes everything under `Resources/UI` a sprite
+  and streams `Resources/Audio/Music`.
+- Music: `GameAudio.PlayMusic("title" | "game")` loads `Resources/Audio/Music/<name>` and crossfades; a generated
+  motor recording (`Resources/Audio/Sfx/motor_loop`) replaces the synthesised hum when present.
 - `GameAudio` synthesises every clip at startup (`AudioClip.Create`); `EffectsFactory` configures particle systems.
 - `Palette` caches one material per colour on top of `Resources/Materials/Lit.mat` (Standard shader). That material
   asset exists so the shader is not stripped from builds; `ProjectSetup` creates it. Never enable shader keywords

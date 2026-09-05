@@ -51,6 +51,7 @@ namespace VCS.Core
         public ObjectiveSystem Objectives { get; private set; }
         public GameAudio Audio { get; private set; }
         public EffectsFactory Fx { get; private set; }
+        public Telemetry Telemetry { get; } = new Telemetry();
 
         struct Banner { public string Big; public string Small; public float Duration; }
 
@@ -99,6 +100,8 @@ namespace VCS.Core
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             Audio.SetHum(0f, false);
+            Audio.PlayMusic("title");
+            Audio.DuckMusic(false);
         }
 
         public void StartGame()
@@ -116,7 +119,11 @@ namespace VCS.Core
             Menu.HideAll();
             Hud.SetVisible(true);
             Hud.ResetRun();
+            Telemetry.Reset(Player.Spec);
+            Hud.BindVacuum(Player.Spec, seed);
             Hud.SetPower(Player.Spec.Name, PowerLevel, PropFactory.EatLabel(PowerLevel + Player.Spec.SizeBonus));
+            Audio.PlayMusic("game");
+            Audio.DuckMusic(false);
             Hud.ShowHint("WASD / left stick: drive     SPACE / A: hop     SHIFT / RB: turbo     E / B: blow     F / X: empty bag at the bin     ESC / Start: pause", 14f);
             State = GameState.Playing;
             Time.timeScale = 1f;
@@ -135,6 +142,7 @@ namespace VCS.Core
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             Audio.SetHum(0f, false);
+            Audio.DuckMusic(true);
         }
 
         public void Resume()
@@ -145,6 +153,7 @@ namespace VCS.Core
             Menu.HideAll();
             Cursor.lockState = SmokeMode ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = SmokeMode;
+            Audio.DuckMusic(false);
         }
 
         void OnPauseMenu(int index)
@@ -181,13 +190,13 @@ namespace VCS.Core
                 UpdateBanners(Time.deltaTime);
                 Hud.SetScore(Score);
                 Hud.SetCombo(ComboCount, ComboMultiplier, ComboTimeLeft);
-                Hud.SetClean(Cleanliness);
                 Hud.SetTime(PlayTime);
                 Hud.SetObjectives(Objectives);
                 var s = Suction;
                 if (s != null && Level.Bin != null)
                 {
-                    Hud.SetBag(s.BagFill / s.BagCapacity, s.BagFull);
+                    Telemetry.Tick(this, Time.deltaTime);
+                    Hud.SetTelemetry(Telemetry, s, this, Time.deltaTime);
                     bool nearBin = Vector3.Distance(Player.transform.position, Level.Bin.transform.position) < Level.Bin.Radius;
                     bool canEmpty = nearBin && s.BagFill > 0f;
                     Hud.SetBinPrompt(canEmpty);
@@ -235,6 +244,7 @@ namespace VCS.Core
         {
             AddScore(d.Points);
             if (d.CountsAsMess) Level.OnMessAbsorbed();
+            Telemetry.OnItemIngested(d.SizeClass);
             Objectives.Report("absorb:" + d.Kind);
             Objectives.Report("absorb:any");
             Audio.PlayPop(d.SizeClass);
@@ -259,6 +269,7 @@ namespace VCS.Core
             if (s == null || s.BagFill <= 0f) return;
             int items = s.Bag.Count;
             s.EmptyBag();
+            Telemetry.OnEmptied();
             int bonus = 50 + items * 2;
             AddScore(bonus, false);
             Objectives.Report("trash");

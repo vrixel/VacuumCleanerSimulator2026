@@ -46,3 +46,6 @@ ExportedObj/
 # OS
 Thumbs.db
 .DS_Store
+
+# kie raw downloads (regenerable)
+/tools/assets/raw/

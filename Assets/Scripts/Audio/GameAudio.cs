@@ -10,10 +10,15 @@ namespace VCS.Audio
     {
         const int Rate = 44100;
 
-        AudioSource hum, sfx, ui;
+        AudioSource hum, sfx, ui, music;
         AudioClip pop, gulp, boing, whoosh, ding, levelUp, clunk, bagFull, start, fanfare;
+        AudioClip popReal, bagAlarmReal;
         float humVolTarget;
         float humPitchTarget = 0.85f;
+        float musicVolTarget;
+        const float MusicVolume = 0.32f;
+        string currentMusic;
+        bool ducked;
 
         public static GameAudio Create(Transform parent)
         {
@@ -26,8 +31,20 @@ namespace VCS.Audio
 
         void Init()
         {
+            // a real motor recording (generated with kie.ai) replaces the synthesised hum when present
+            var motor = Resources.Load<AudioClip>("Audio/Sfx/motor_loop");
+            popReal = Resources.Load<AudioClip>("Audio/Sfx/pop_real");
+            bagAlarmReal = Resources.Load<AudioClip>("Audio/Sfx/bag_alarm");
+
+            music = gameObject.AddComponent<AudioSource>();
+            music.loop = true;
+            music.playOnAwake = false;
+            music.spatialBlend = 0f;
+            music.volume = 0f;
+            music.ignoreListenerPause = true;
+
             hum = gameObject.AddComponent<AudioSource>();
-            hum.clip = MakeHum();
+            hum.clip = motor != null ? motor : MakeHum();
             hum.loop = true;
             hum.volume = 0f;
             hum.pitch = 0.85f;
@@ -181,12 +198,39 @@ namespace VCS.Audio
             float dt = Time.unscaledDeltaTime;
             hum.volume = Mathf.Lerp(hum.volume, humVolTarget, 1f - Mathf.Exp(-dt * 6f));
             hum.pitch = Mathf.Lerp(hum.pitch, humPitchTarget, 1f - Mathf.Exp(-dt * 5f));
+            float mv = ducked ? musicVolTarget * 0.35f : musicVolTarget;
+            music.volume = Mathf.Lerp(music.volume, mv, 1f - Mathf.Exp(-dt * 3f));
         }
+
+        /// <summary>Plays Resources/Audio/Music/&lt;name&gt; on a loop, fading from whatever played before. Silent if missing.</summary>
+        public void PlayMusic(string name)
+        {
+            if (name == currentMusic) return;
+            var clip = Resources.Load<AudioClip>("Audio/Music/" + name);
+            currentMusic = name;
+            if (clip == null) { musicVolTarget = 0f; return; }
+            StopAllCoroutines();
+            StartCoroutine(SwapMusic(clip));
+        }
+
+        System.Collections.IEnumerator SwapMusic(AudioClip clip)
+        {
+            musicVolTarget = 0f;
+            float t = 0f;
+            while (t < 0.5f && music.isPlaying && music.volume > 0.02f) { t += Time.unscaledDeltaTime; yield return null; }
+            music.clip = clip;
+            music.volume = 0f;
+            music.Play();
+            musicVolTarget = MusicVolume;
+        }
+
+        public void DuckMusic(bool on) { ducked = on; }
 
         public void PlayPop(int sizeClass)
         {
             bool big = sizeClass >= 3;
             sfx.pitch = Random.Range(0.92f, 1.18f) - sizeClass * 0.06f;
+            if (!big && popReal != null && Random.value < 0.5f) { sfx.PlayOneShot(popReal, 0.6f); return; }
             sfx.PlayOneShot(big ? gulp : pop, big ? 0.9f : 0.55f);
         }
 
@@ -196,7 +240,7 @@ namespace VCS.Audio
         public void PlayClunk() { sfx.pitch = 1f; sfx.PlayOneShot(clunk, 0.8f); }
         public void PlayDing() { ui.pitch = 1f; ui.PlayOneShot(ding, 0.7f); }
         public void PlayLevelUp() { ui.pitch = 1f; ui.PlayOneShot(levelUp, 0.8f); }
-        public void PlayBagFull() { ui.pitch = 1f; ui.PlayOneShot(bagFull, 0.7f); }
+        public void PlayBagFull() { ui.pitch = 1f; ui.PlayOneShot(bagAlarmReal != null ? bagAlarmReal : bagFull, 0.7f); }
         public void PlayStart() { ui.pitch = 1f; ui.PlayOneShot(start, 0.7f); }
         public void PlayFanfare() { ui.pitch = 1f; ui.PlayOneShot(fanfare, 0.8f); }
     }

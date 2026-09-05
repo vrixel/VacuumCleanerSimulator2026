@@ -60,6 +60,10 @@ namespace VCS.Core
 
             var s = gm.Suction;
             string pos = gm.Player != null ? gm.Player.transform.position.ToString("F1") : "none";
+            var tm = gm.Telemetry;
+            Debug.Log("[VCS] Telemetry: suction=" + tm.SuctionValue.ToString("0.0") + " rpm=" + tm.Rpm.ToString("0")
+                      + " temp=" + tm.TempC.ToString("0") + " filter=" + tm.Filter01.ToString("0.00") + " odo=" + tm.OdometerM.ToString("0.0")
+                      + " ingested=" + tm.ItemsIngested);
             Debug.Log("[VCS] Smoke result: score=" + gm.Score + " power=" + gm.PowerLevel
                       + " bag=" + (s != null ? s.Bag.Count : 0)
                       + " cleaned=" + gm.Level.MessCleaned + "/" + gm.Level.MessTotal
