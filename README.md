@@ -8,8 +8,12 @@ Targets: Steam (Windows 64-bit) first, Xbox / Microsoft Store next. See `docs/PU
 
 ## Play
 
+On the title screen, pick your vacuum with A / D (or LB / RB): seven machines with different speed, suction, bag
+size and hop, from a robot disc to a wet/dry drum that eats furniture early.
+
 | Action | Keyboard / mouse | Xbox controller |
 |--------|------------------|-----------------|
+| Choose vacuum (title) | A / D or arrows | LB / RB or d-pad |
 | Drive | WASD | Left stick |
 | Look | Mouse | Right stick |
 | Hop | Space | A |

@@ -191,6 +191,7 @@ namespace VCS.Audio
         }
 
         public void PlayBoing() { sfx.pitch = Random.Range(0.95f, 1.1f); sfx.PlayOneShot(boing, 0.5f); }
+        public void PlayClick() { ui.pitch = 1.35f; ui.PlayOneShot(pop, 0.35f); }
         public void PlayWhoosh() { sfx.pitch = 1f; sfx.PlayOneShot(whoosh, 0.6f); }
         public void PlayClunk() { sfx.pitch = 1f; sfx.PlayOneShot(clunk, 0.8f); }
         public void PlayDing() { ui.pitch = 1f; ui.PlayOneShot(ding, 0.7f); }

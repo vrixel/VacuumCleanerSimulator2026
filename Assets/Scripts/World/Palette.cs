@@ -62,6 +62,28 @@ namespace VCS.World
             return m;
         }
 
+        static readonly Dictionary<string, Material> cacheEx = new Dictionary<string, Material>();
+
+        /// <summary>Material with explicit metallic / smoothness, cached by value.</summary>
+        public static Material Mat(Color c, float metallic, float smoothness)
+        {
+            string key = ColorUtility.ToHtmlStringRGBA(c) + "|" + metallic.ToString("F2") + "|" + smoothness.ToString("F2");
+            if (cacheEx.TryGetValue(key, out var m) && m != null) return m;
+            m = new Material(LitBase());
+            m.color = c;
+            m.SetFloat("_Metallic", metallic);
+            m.SetFloat("_Glossiness", smoothness);
+            m.name = "Mat " + key;
+            cacheEx[key] = m;
+            return m;
+        }
+
+        public static Material Plastic(Color c) => Mat(c, 0f, 0.55f);
+        public static Material Glossy(Color c) => Mat(c, 0.2f, 0.8f);
+        public static Material Rubber(Color c) => Mat(c, 0f, 0.15f);
+        public static Material Fabric(Color c) => Mat(c, 0f, 0.05f);
+        public static Material Chrome => Mat(new Color(0.9f, 0.9f, 0.93f), 0.95f, 0.85f);
+
         public static Material Particle
         {
             get

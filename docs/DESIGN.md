@@ -26,6 +26,25 @@ No fail state, no timer pressure. The timer on screen is for people who like spe
 - Eyes look where you drive.
 - Sounds are synthesised: the hum follows speed and suction, pops for small things, a gulp for furniture.
 
+## The garage
+
+Seven vacuums to choose from on the title screen, each with its own handling. Brand-inspired lookalikes with parody
+names, on purpose: real product names, logos and exact likenesses are trademark trouble for a commercial game.
+
+| Vacuum | Inspired by | Personality |
+|--------|-------------|-------------|
+| Dusty | the prototype | balanced, the original |
+| Roomboo S9 | robot discs | fast, tiny bag, spinning side brush |
+| Cyclonic V-Storm | bagless ball uprights | strong suction, the ball |
+| Harold | the smiling canister | big bag, slow, a face and a hose |
+| Stickmaster Cordless | cordless sticks | fastest, highest hop, smallest bag |
+| Grandma's Upright 1978 | bagged uprights with a headlight | huge bag, slowest, strongest pull, a real headlight |
+| Shop Drum 3000 | wet/dry drums | biggest bag, eats one size class above its power level |
+
+Stats live in `VacuumCatalog`, shapes in `VacuumModels` (built from `MeshKit` solids: revolved profiles, corrugated
+hoses, rounded boxes, chrome and plastic materials). Photoreal branded models would be a licensing purchase; the
+garage takes any model that can be built into a Transform.
+
 ## Content that exists in v0.1
 
 - House layout in `LevelBuilder`: living room, kitchen, hall, bedroom, bathroom, entrance, garden strip with leaves.

@@ -105,9 +105,9 @@ namespace VCS.UI
             comboText.text = key > 1 ? "x" + mult.ToString("0.0") + " COMBO  " + count : "";
         }
 
-        public void SetPower(int level, string canEat)
+        public void SetPower(string vacuumName, int level, string canEat)
         {
-            powerText.text = "POWER " + level + " / 5   -   eats " + canEat;
+            powerText.text = vacuumName.ToUpperInvariant() + "   -   POWER " + level + " / 5   -   eats " + canEat;
         }
 
         public void SetBag(float fill01, bool full)

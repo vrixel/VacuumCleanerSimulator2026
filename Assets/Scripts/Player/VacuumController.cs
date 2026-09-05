@@ -8,12 +8,9 @@ namespace VCS.Player
     /// </summary>
     public class VacuumController : MonoBehaviour
     {
-        public const float BaseSpeed = 7f;
         public const float TurboMult = 1.7f;
-        public const float Accel = 42f;
-        public const float TurnSpeed = 720f;
-        public const float HopVelocity = 6.5f;
 
+        public VacuumSpec Spec { get; private set; }
         public Rigidbody Rb { get; private set; }
         public SuctionSystem Suction { get; private set; }
         public VacuumVisuals Visuals { get; private set; }
@@ -29,13 +26,13 @@ namespace VCS.Player
         float spinWindow;
         bool speedReported;
 
-        public static VacuumController Create(Vector3 pos)
+        public static VacuumController Create(Vector3 pos, VacuumSpec spec)
         {
-            var go = new GameObject("Vacuum");
+            var go = new GameObject("Vacuum " + spec.Id);
             go.transform.position = pos;
 
             var rb = go.AddComponent<Rigidbody>();
-            rb.mass = 10f;
+            rb.mass = spec.Mass;
             rb.linearDamping = 1.2f;
             rb.angularDamping = 5f;
             rb.interpolation = RigidbodyInterpolation.Interpolate;
@@ -53,13 +50,14 @@ namespace VCS.Player
             col.material = mat;
 
             var vc = go.AddComponent<VacuumController>();
+            vc.Spec = spec;
             vc.Rb = rb;
             vc.yawPrev = 0f;
             var nozzle = new GameObject("Nozzle").transform;
             nozzle.SetParent(go.transform, false);
-            nozzle.localPosition = new Vector3(0f, 0.25f, 0.8f);
+            nozzle.localPosition = spec.NozzleLocal;
             vc.Nozzle = nozzle;
-            vc.Visuals = VacuumVisuals.Build(go.transform, vc);
+            vc.Visuals = VacuumVisuals.Build(go.transform, vc, spec);
             vc.Suction = go.AddComponent<SuctionSystem>();
             vc.Suction.Init(vc);
             return vc;
@@ -90,12 +88,12 @@ namespace VCS.Player
 
             if (dir.sqrMagnitude > 0.001f)
             {
-                Rb.AddForce(dir * Accel * (Grounded ? 1f : 0.4f), ForceMode.Acceleration);
+                Rb.AddForce(dir * Spec.Accel * (Grounded ? 1f : 0.4f), ForceMode.Acceleration);
                 var targetRot = Quaternion.LookRotation(dir, Vector3.up);
-                Rb.MoveRotation(Quaternion.RotateTowards(Rb.rotation, targetRot, TurnSpeed * Time.fixedDeltaTime));
+                Rb.MoveRotation(Quaternion.RotateTowards(Rb.rotation, targetRot, Spec.Turn * Time.fixedDeltaTime));
             }
 
-            float maxSpeed = BaseSpeed * (Turbo ? TurboMult : 1f);
+            float maxSpeed = Spec.Speed * (Turbo ? TurboMult : 1f);
             Vector3 v = Rb.linearVelocity;
             Vector3 hvel = new Vector3(v.x, 0f, v.z);
             if (hvel.magnitude > maxSpeed)
@@ -110,7 +108,7 @@ namespace VCS.Player
                 hopQueued = false;
                 if (Grounded)
                 {
-                    Rb.linearVelocity = new Vector3(Rb.linearVelocity.x, HopVelocity, Rb.linearVelocity.z);
+                    Rb.linearVelocity = new Vector3(Rb.linearVelocity.x, Spec.Hop, Rb.linearVelocity.z);
                     if (gm != null)
                     {
                         gm.Audio.PlayBoing();
@@ -121,7 +119,7 @@ namespace VCS.Player
             }
 
             Speed = hvel.magnitude;
-            if (active && !speedReported && Speed > BaseSpeed * TurboMult * 0.93f)
+            if (active && !speedReported && Speed > Spec.Speed * TurboMult * 0.93f)
             {
                 speedReported = true;
                 gm.Objectives.Report("speed");

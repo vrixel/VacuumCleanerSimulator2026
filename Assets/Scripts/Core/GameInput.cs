@@ -47,6 +47,23 @@ namespace VCS.Core
             Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.JoystickButton0);
 
         static float lastNavAxis;
+        static float lastNavAxisH;
+
+        /// <summary>Edge-detected horizontal menu navigation: -1 left, +1 right, 0 nothing. Also LB / RB.</summary>
+        public static int MenuNavHorizontal()
+        {
+            int dir = 0;
+            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.JoystickButton4)) dir = -1;
+            if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.JoystickButton5)) dir = 1;
+            float axis = Input.GetAxisRaw("Horizontal") + Input.GetAxisRaw("DPadX");
+            if (dir == 0)
+            {
+                if (axis > 0.5f && lastNavAxisH <= 0.5f) dir = 1;
+                else if (axis < -0.5f && lastNavAxisH >= -0.5f) dir = -1;
+            }
+            lastNavAxisH = axis;
+            return dir;
+        }
 
         /// <summary>Edge-detected vertical menu navigation: -1 up, +1 down, 0 nothing.</summary>
         public static int MenuNav()

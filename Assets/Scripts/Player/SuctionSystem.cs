@@ -32,11 +32,13 @@ namespace VCS.Player
         public bool BagFull { get; private set; }
         public bool Blowing { get; private set; }
         public float Activity { get; private set; }
-        public float Radius => RadiusByPower[PowerLevel];
+        public float Radius => RadiusByPower[PowerLevel] * (spec != null ? spec.SuctionRadiusMult : 1f);
         public float AbsorbRadius => AbsorbByPower[PowerLevel];
+        public int SizeBonus => spec != null ? spec.SizeBonus : 0;
         public List<BagItem> Bag { get; } = new List<BagItem>();
 
         VacuumController vac;
+        VacuumSpec spec;
         Transform nozzle;
         ParticleSystem swirl;
         readonly Collider[] buffer = new Collider[512];
@@ -47,7 +49,9 @@ namespace VCS.Player
         public void Init(VacuumController v)
         {
             vac = v;
+            spec = v.Spec;
             nozzle = v.Nozzle;
+            SetPower(PowerLevel);
             var gm = GameManager.I;
             if (gm != null && gm.Fx != null) swirl = gm.Fx.CreateSuctionSwirl(nozzle);
         }
@@ -55,7 +59,8 @@ namespace VCS.Player
         public void SetPower(int p)
         {
             PowerLevel = Mathf.Clamp(p, 1, GameManager.MaxPower);
-            BagCapacity = 100f + (PowerLevel - 1) * 25f;
+            float baseCapacity = spec != null ? spec.BagCapacity : 100f;
+            BagCapacity = baseCapacity * (1f + (PowerLevel - 1) * 0.25f);
             if (swirl != null)
             {
                 var sh = swirl.shape;
@@ -97,7 +102,8 @@ namespace VCS.Player
             Vector3 nf = nozzle.forward;
             float radius = Radius;
             float absorb = AbsorbRadius;
-            float pull = PullByPower[PowerLevel];
+            float pull = PullByPower[PowerLevel] * (spec != null ? spec.PullMult : 1f);
+            int maxClass = PowerLevel + SizeBonus;
             int n = Physics.OverlapSphereNonAlloc(np, radius, buffer, ~0, QueryTriggerInteraction.Ignore);
             seen.Clear();
             int pulled = 0;
@@ -115,7 +121,7 @@ namespace VCS.Player
                 bool inCone = dist < 1.0f || Vector3.Angle(nf, -to) <= HalfAngle;
                 if (!inCone) continue;
 
-                bool edible = d.SizeClass <= PowerLevel && !BagFull;
+                bool edible = d.SizeClass <= maxClass && !BagFull;
                 if (edible && dist < absorb * (1f + d.SizeClass * 0.15f))
                 {
                     Absorb(gm, d);
@@ -165,7 +171,7 @@ namespace VCS.Player
                 if (dist < 0.05f) continue;
                 if (Vector3.Angle(nf, away) > 40f) continue;
                 float k = 1f - dist / reach;
-                float scale = d == null ? 0.3f : (d.SizeClass <= PowerLevel ? 1f : 0.35f);
+                float scale = d == null ? 0.3f : (d.SizeClass <= PowerLevel + SizeBonus ? 1f : 0.35f);
                 rb.AddForce((away / dist + Vector3.up * 0.3f) * BlowForce * k * scale, ForceMode.Acceleration);
                 pushed++;
             }

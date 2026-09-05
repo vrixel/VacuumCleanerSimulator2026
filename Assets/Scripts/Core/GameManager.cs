@@ -110,20 +110,20 @@ namespace VCS.Core
             seed++;
             Level.Build(seed);
             if (Player != null) Destroy(Player.gameObject);
-            Player = VacuumController.Create(Level.PlayerSpawn);
+            Player = VacuumController.Create(Level.PlayerSpawn, VacuumCatalog.Selected);
             Player.Suction.SetPower(PowerLevel);
             Cam.SetFollow(Player.transform);
             Menu.HideAll();
             Hud.SetVisible(true);
             Hud.ResetRun();
-            Hud.SetPower(PowerLevel, PropFactory.EatLabel(PowerLevel));
+            Hud.SetPower(Player.Spec.Name, PowerLevel, PropFactory.EatLabel(PowerLevel + Player.Spec.SizeBonus));
             Hud.ShowHint("WASD / left stick: drive     SPACE / A: hop     SHIFT / RB: turbo     E / B: blow     F / X: empty bag at the bin     ESC / Start: pause", 14f);
             State = GameState.Playing;
             Time.timeScale = 1f;
             Cursor.lockState = SmokeMode ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = SmokeMode;
             Audio.PlayStart();
-            Debug.Log("[VCS] Run started, seed " + seed + ", mess " + Level.MessTotal);
+            Debug.Log("[VCS] Run started, seed " + seed + ", mess " + Level.MessTotal + ", vacuum " + Player.Spec.Id);
         }
 
         public void Pause()
@@ -224,8 +224,9 @@ namespace VCS.Core
                 PowerLevel++;
                 if (Suction != null) Suction.SetPower(PowerLevel);
                 if (Player != null) Player.OnPowerUp(PowerLevel);
-                Hud.SetPower(PowerLevel, PropFactory.EatLabel(PowerLevel));
-                ShowBanner("POWER UP!", "Level " + PowerLevel + ": you can now eat " + PropFactory.EatLabel(PowerLevel), 3.5f);
+                int eats = PowerLevel + (Player != null ? Player.Spec.SizeBonus : 0);
+                Hud.SetPower(Player != null ? Player.Spec.Name : "", PowerLevel, PropFactory.EatLabel(eats));
+                ShowBanner("POWER UP!", "Level " + PowerLevel + ": you can now eat " + PropFactory.EatLabel(eats), 3.5f);
                 Audio.PlayLevelUp();
             }
         }

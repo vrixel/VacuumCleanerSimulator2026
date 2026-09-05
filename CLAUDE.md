@@ -42,8 +42,15 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   and the primitive assembly for each kind. Anything the vacuum can interact with carries a `Debris` component on the
   rigidbody root. Furniture (size class 3+) also gets `TipOverTracker`; things blown out get `LaunchTracker`.
 - `VacuumController` (rigidbody + sphere collider, camera-relative driving, hop, turbo, spin/speed tracking),
-  `SuctionSystem` (cone of pull, absorb when size class <= power level, bag, blow-out respawns items from `BagItem`
-  records), `VacuumVisuals` (body, eyes, squash).
+  `SuctionSystem` (cone of pull, absorb when size class <= power level + `SizeBonus`, bag, blow-out respawns items
+  from `BagItem` records), `VacuumVisuals` (body from the catalogue, eyes, squash).
+- The garage: `VacuumCatalog` lists the selectable vacuums as `VacuumSpec` (handling stats, eye and nozzle anchors,
+  a `Build` delegate); `VacuumModels` holds one builder per vacuum, made of `MeshKit` solids (revolve profiles,
+  spline tubes with optional corrugation, rounded boxes) and `Palette.Mat` materials (plastic, glossy, rubber, fabric,
+  chrome). All models are brand-inspired lookalikes with parody names: never use real product names or logos.
+  `VacuumPreview` renders the selected model on a hidden stage at y = -500 into a RenderTexture shown by the title
+  screen (`MenuController`); the choice persists in PlayerPrefs `vacuum_id`. To add a vacuum: one builder in
+  `VacuumModels`, one entry in `VacuumCatalog.All`. Local space is origin on the floor, +z forward, metres.
 - `ObjectiveSystem` is event-string driven: `Report("absorb:Sock")`, `"knock"`, `"launch"`, `"bagfull"`, `"trash"`,
   `"speed"`, `"spin"`, `"clean100"`. Completion is remembered in PlayerPrefs (`ach_<id>`), progress is per run.
 - UI is uGUI built by `UIFactory` with the built-in `LegacyRuntime.ttf`; `HudController` caches values and only

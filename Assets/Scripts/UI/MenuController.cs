@@ -1,24 +1,29 @@
 using UnityEngine;
 using UnityEngine.UI;
 using VCS.Core;
+using VCS.Player;
 
 namespace VCS.UI
 {
-    /// <summary>Title screen and pause menu. Keyboard, gamepad and mouse all work.</summary>
+    /// <summary>Title screen with the vacuum garage, and the pause menu. Keyboard, gamepad and mouse all work.</summary>
     public class MenuController : MonoBehaviour
     {
         public System.Action OnTitleStart;
         public System.Action<int> OnPauseSelect;
 
         static readonly string[] PauseLabels = { "RESUME", "RESTART", "TITLE SCREEN", "QUIT GAME" };
+        static readonly string[] BarLabels = { "SPEED", "SUCTION", "BAG", "HOP" };
 
         Canvas canvas;
         GameObject titleRoot, pauseRoot;
         RectTransform titleRect;
-        Text titlePrompt, titleStats;
+        Text titlePrompt, titleStats, vacuumName, vacuumTagline;
+        Image[] bars;
         Text[] pauseTexts;
         Image[] pauseBacks;
+        VacuumPreview preview;
         int sel;
+        int vacIndex;
         float t;
         bool titleVisible, pauseVisible;
 
@@ -27,6 +32,7 @@ namespace VCS.UI
             var canvas = UIFactory.CreateCanvas("Menus", 20);
             var m = canvas.gameObject.AddComponent<MenuController>();
             m.canvas = canvas;
+            m.preview = VacuumPreview.Create();
             m.Build();
             m.HideAll();
             return m;
@@ -36,29 +42,76 @@ namespace VCS.UI
         {
             var root = canvas.transform;
             var mid = new Vector2(0.5f, 0.5f);
+            var left = new Vector2(0f, 0.5f);
+            var right = new Vector2(1f, 0.5f);
+            var accent = UIFactory.Accent;
 
+            // ---- title screen
             titleRoot = new GameObject("Title", typeof(RectTransform));
             titleRoot.transform.SetParent(root, false);
             UIFactory.Anchor(titleRoot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             UIFactory.Panel(titleRoot.transform, "Dim", new Color(0.05f, 0.05f, 0.1f, 0.35f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            var title = UIFactory.Text(titleRoot.transform, "TitleText", "VACUUM CLEANER\nSIMULATOR <color=#FFD84D>2026</color>", 96, Color.white, TextAnchor.MiddleCenter,
-                mid, mid, new Vector2(-900f, 120f), new Vector2(900f, 430f));
+
+            var title = UIFactory.Text(titleRoot.transform, "TitleText", "VACUUM CLEANER\nSIMULATOR <color=#FFD84D>2026</color>", 84, Color.white, TextAnchor.MiddleLeft,
+                left, left, new Vector2(70f, 130f), new Vector2(1250f, 430f));
             titleRect = title.rectTransform;
-            UIFactory.Text(titleRoot.transform, "Sub", "Suck it up.", 40, UIFactory.Accent, TextAnchor.MiddleCenter,
-                mid, mid, new Vector2(-600f, 50f), new Vector2(600f, 120f));
-            titlePrompt = UIFactory.Text(titleRoot.transform, "Prompt", "PRESS ENTER OR (A) TO START CLEANING", 36, Color.white, TextAnchor.MiddleCenter,
-                mid, mid, new Vector2(-700f, -70f), new Vector2(700f, -10f));
+            UIFactory.Text(titleRoot.transform, "Sub", "Suck it up.", 36, accent, TextAnchor.MiddleLeft,
+                left, left, new Vector2(74f, 70f), new Vector2(1250f, 130f));
+            titlePrompt = UIFactory.Text(titleRoot.transform, "Prompt", "PRESS ENTER OR (A) TO START CLEANING", 34, Color.white, TextAnchor.MiddleLeft,
+                left, left, new Vector2(74f, -20f), new Vector2(1250f, 50f));
             UIFactory.Text(titleRoot.transform, "Controls",
                 "WASD / left stick  drive        SPACE / A  hop        SHIFT / RB  turbo\nE / B  blow        F / X  empty bag at the bin        ESC / Start  pause",
-                24, new Color(1f, 1f, 1f, 0.85f), TextAnchor.MiddleCenter, mid, mid, new Vector2(-900f, -210f), new Vector2(900f, -100f));
-            titleStats = UIFactory.Text(titleRoot.transform, "Stats", "", 24, new Color(1f, 1f, 1f, 0.7f), TextAnchor.LowerCenter,
-                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-900f, 30f), new Vector2(900f, 70f));
+                22, new Color(1f, 1f, 1f, 0.85f), TextAnchor.MiddleLeft, left, left, new Vector2(74f, -170f), new Vector2(1250f, -50f));
+            titleStats = UIFactory.Text(titleRoot.transform, "Stats", "", 22, new Color(1f, 1f, 1f, 0.7f), TextAnchor.LowerLeft,
+                new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(74f, 30f), new Vector2(1250f, 70f));
 
+            // ---- garage (right column)
+            UIFactory.Panel(titleRoot.transform, "GarageBack", new Color(0.04f, 0.04f, 0.09f, 0.6f), right, right, new Vector2(-580f, -480f), new Vector2(-30f, 320f));
+            UIFactory.Text(titleRoot.transform, "GarageTitle", "CHOOSE YOUR VACUUM", 26, accent, TextAnchor.MiddleCenter,
+                right, right, new Vector2(-560f, 262f), new Vector2(-50f, 306f));
+            var rawGo = new GameObject("Preview", typeof(RectTransform));
+            rawGo.transform.SetParent(titleRoot.transform, false);
+            UIFactory.Anchor(rawGo, right, right, new Vector2(-545f, -140f), new Vector2(-65f, 258f));
+            var raw = rawGo.AddComponent<RawImage>();
+            raw.texture = preview.Texture;
+            raw.raycastTarget = false;
+
+            vacuumName = UIFactory.Text(titleRoot.transform, "VacuumName", "", 38, Color.white, TextAnchor.MiddleCenter,
+                right, right, new Vector2(-520f, -200f), new Vector2(-90f, -145f));
+            // Wrap + best fit: sizes that would need two lines do not fit the 55 px rect, so long names shrink to one line.
+            vacuumName.horizontalOverflow = HorizontalWrapMode.Wrap;
+            vacuumName.verticalOverflow = VerticalWrapMode.Truncate;
+            vacuumName.resizeTextForBestFit = true;
+            vacuumName.resizeTextMinSize = 16;
+            vacuumName.resizeTextMaxSize = 38;
+            vacuumTagline = UIFactory.Text(titleRoot.transform, "VacuumTagline", "", 21, new Color(1f, 1f, 1f, 0.85f), TextAnchor.MiddleCenter,
+                right, right, new Vector2(-560f, -238f), new Vector2(-50f, -200f), true, FontStyle.Italic);
+            vacuumTagline.horizontalOverflow = HorizontalWrapMode.Wrap;
+            vacuumTagline.verticalOverflow = VerticalWrapMode.Truncate;
+            vacuumTagline.resizeTextForBestFit = true;
+            vacuumTagline.resizeTextMinSize = 12;
+            vacuumTagline.resizeTextMaxSize = 21;
+            MakeArrow(titleRoot.transform, "<", new Vector2(-575f, -200f), new Vector2(-520f, -145f), -1);
+            MakeArrow(titleRoot.transform, ">", new Vector2(-90f, -200f), new Vector2(-35f, -145f), 1);
+
+            bars = new Image[BarLabels.Length];
+            for (int i = 0; i < BarLabels.Length; i++)
+            {
+                float y = -272f - i * 38f;
+                UIFactory.Text(titleRoot.transform, "BarLabel" + i, BarLabels[i], 20, Color.white, TextAnchor.MiddleLeft,
+                    right, right, new Vector2(-545f, y - 14f), new Vector2(-400f, y + 14f));
+                var back = UIFactory.Panel(titleRoot.transform, "BarBack" + i, new Color(0f, 0f, 0f, 0.55f), right, right, new Vector2(-390f, y - 10f), new Vector2(-65f, y + 10f));
+                bars[i] = UIFactory.Panel(back.transform, "BarFill" + i, accent, new Vector2(0f, 0f), new Vector2(0.5f, 1f), new Vector2(3f, 3f), new Vector2(-3f, -3f));
+            }
+            UIFactory.Text(titleRoot.transform, "GarageHint", "A / D   or   LB / RB   to choose", 19, new Color(1f, 1f, 1f, 0.65f), TextAnchor.MiddleCenter,
+                right, right, new Vector2(-560f, -470f), new Vector2(-50f, -430f));
+
+            // ---- pause menu
             pauseRoot = new GameObject("Pause", typeof(RectTransform));
             pauseRoot.transform.SetParent(root, false);
             UIFactory.Anchor(pauseRoot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             UIFactory.Panel(pauseRoot.transform, "Dim", new Color(0.02f, 0.02f, 0.06f, 0.65f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            UIFactory.Text(pauseRoot.transform, "PausedText", "PAUSED", 80, UIFactory.Accent, TextAnchor.MiddleCenter,
+            UIFactory.Text(pauseRoot.transform, "PausedText", "PAUSED", 80, accent, TextAnchor.MiddleCenter,
                 mid, mid, new Vector2(-600f, 230f), new Vector2(600f, 380f));
             pauseTexts = new Text[PauseLabels.Length];
             pauseBacks = new Image[PauseLabels.Length];
@@ -76,6 +129,16 @@ namespace VCS.UI
             }
         }
 
+        void MakeArrow(Transform parent, string label, Vector2 oMin, Vector2 oMax, int dir)
+        {
+            var right = new Vector2(1f, 0.5f);
+            var back = UIFactory.Panel(parent, "Arrow" + label, new Color(0f, 0f, 0f, 0.45f), right, right, oMin, oMax);
+            back.raycastTarget = true;
+            var btn = back.gameObject.AddComponent<Button>();
+            btn.onClick.AddListener(() => { SelectVacuumIndex(vacIndex + dir); var gm = GameManager.I; if (gm != null) gm.Audio.PlayClick(); });
+            UIFactory.Text(back.transform, "Label", label, 40, UIFactory.Accent, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        }
+
         public void ShowTitle(int best, int achievementsDone, int achievementsTotal)
         {
             titleRoot.SetActive(true);
@@ -83,6 +146,7 @@ namespace VCS.UI
             titleVisible = true;
             pauseVisible = false;
             titleStats.text = "Best score " + best.ToString("N0") + "     Achievements " + achievementsDone + "/" + achievementsTotal + "     v" + GameManager.Version;
+            SelectVacuumIndex(VacuumCatalog.IndexOf(VacuumCatalog.SelectedId));
         }
 
         public void ShowPause()
@@ -91,6 +155,7 @@ namespace VCS.UI
             titleRoot.SetActive(false);
             pauseVisible = true;
             titleVisible = false;
+            preview.Hide();
             sel = 0;
             Highlight();
         }
@@ -101,7 +166,25 @@ namespace VCS.UI
             pauseRoot.SetActive(false);
             titleVisible = false;
             pauseVisible = false;
+            preview.Hide();
         }
+
+        public void SelectVacuumIndex(int i)
+        {
+            var all = VacuumCatalog.All;
+            vacIndex = ((i % all.Count) + all.Count) % all.Count;
+            var s = all[vacIndex];
+            VacuumCatalog.SelectedId = s.Id;
+            PlayerPrefs.Save();
+            vacuumName.text = s.Name.ToUpperInvariant();
+            vacuumTagline.text = s.Tagline;
+            float[] values = { s.SpeedBar, s.SuctionBar, s.BagBar, s.HopBar };
+            for (int k = 0; k < bars.Length; k++)
+                bars[k].rectTransform.anchorMax = new Vector2(Mathf.Clamp(values[k], 0.04f, 1f), 1f);
+            preview.Show(s);
+        }
+
+        public void SelectVacuumById(string id) { SelectVacuumIndex(VacuumCatalog.IndexOf(id)); }
 
         void Highlight()
         {
@@ -119,9 +202,16 @@ namespace VCS.UI
             t += dt;
             if (titleVisible)
             {
-                titleRect.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * 2f) * 2f);
-                titleRect.localScale = Vector3.one * (1f + 0.03f * Mathf.Sin(t * 3f));
+                titleRect.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * 2f) * 1.5f);
+                titleRect.localScale = Vector3.one * (1f + 0.02f * Mathf.Sin(t * 3f));
                 titlePrompt.color = new Color(1f, 1f, 1f, 0.85f + 0.15f * Mathf.Sin(t * 4f));
+                int h = GameInput.MenuNavHorizontal();
+                if (h != 0)
+                {
+                    SelectVacuumIndex(vacIndex + h);
+                    var gm = GameManager.I;
+                    if (gm != null) gm.Audio.PlayClick();
+                }
                 if (GameInput.ConfirmDown) OnTitleStart?.Invoke();
             }
             else if (pauseVisible)

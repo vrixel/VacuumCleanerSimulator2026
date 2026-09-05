@@ -35,6 +35,16 @@ namespace VCS.Core
             yield return Capture("smoke-title.png");
 
             var gm = GameManager.I;
+            var garage = VCS.Player.VacuumCatalog.All;
+            string savedChoice = VCS.Player.VacuumCatalog.SelectedId;
+            for (int i = 0; i < garage.Count; i++)
+            {
+                gm.Menu.SelectVacuumIndex(i);
+                yield return new WaitForSecondsRealtime(0.7f);
+                yield return Capture("smoke-model-" + garage[i].Id + ".png");
+            }
+            gm.Menu.SelectVacuumById("harold");
+            yield return new WaitForSecondsRealtime(0.3f);
             gm.StartGame();
             yield return new WaitForSecondsRealtime(1f);
             GameInput.MoveOverride = new Vector2(0f, 1f);
@@ -55,6 +65,8 @@ namespace VCS.Core
                       + " cleaned=" + gm.Level.MessCleaned + "/" + gm.Level.MessTotal
                       + " pos=" + pos + " fps=" + (1f / Mathf.Max(Time.smoothDeltaTime, 0.0001f)).ToString("F0"));
             yield return new WaitForSecondsRealtime(0.5f);
+            VCS.Player.VacuumCatalog.SelectedId = savedChoice;
+            PlayerPrefs.Save();
             Debug.Log("[VCS] Smoke test finished");
             GameManager.QuitApp();
         }
