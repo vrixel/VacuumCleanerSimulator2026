@@ -20,8 +20,9 @@ namespace VCS.Player
     /// </summary>
     public class PowerCord : MonoBehaviour
     {
-        // Long enough to reach every room from the hall socket; only the garden and the far corners pull it taut.
-        public const float MaxLength = 45f;
+        // Rope length, not distance driven (see Tighten). The hall socket reaches the rooms around it; the far
+        // corners and the garden need another socket, or the plug comes out of the wall.
+        public const float MaxLength = 22f;
         public const float RewindSpeed = 22f;
 
         public float Length { get; private set; }
@@ -39,6 +40,7 @@ namespace VCS.Player
         Vector3[] lineBuffer = new Vector3[64];
         float ratchetTimer;
         bool tautReported;
+        float strain;
 
         public static PowerCord Attach(VacuumController vac, WallSocket initial)
         {
@@ -103,7 +105,7 @@ namespace VCS.Player
         public void Rewind()
         {
             if (!Plugged || Rewinding) return;
-            StartCoroutine(RewindRoutine());
+            StartCoroutine(RewindRoutine(false));
         }
 
         void FixedUpdate()
@@ -132,32 +134,67 @@ namespace VCS.Player
                 else trail[trail.Count - 1] = foot;
             }
 
-            float len = 0f;
-            for (int i = 1; i < trail.Count; i++) len += (trail[i] - trail[i - 1]).magnitude;
-            Length = len;
+            Tighten();
+            Length = PathLength();
             Taut = Length > MaxLength;
 
             if (Taut && active)
             {
-                float over = Length - MaxLength;
-                Vector3 back = trail[trail.Count - 2] - vac.transform.position;
-                back.y = 0f;
-                if (back.sqrMagnitude > 0.001f)
-                    vac.Rb.AddForce(back.normalized * (14f + over * 30f), ForceMode.Acceleration);
-                if (over > 2.5f) vac.Rb.linearVelocity = Vector3.ClampMagnitude(vac.Rb.linearVelocity, 2.5f);
+                // A leash, not a spring: no velocity away from the last corner, the overshoot is taken back, and
+                // you can still slide sideways along the arc. Keep pulling and the plug comes out of the wall.
+                Vector3 corner = trail[trail.Count - 2];
+                Vector3 outward = vac.transform.position - corner;
+                outward.y = 0f;
+                if (outward.sqrMagnitude > 0.001f)
+                {
+                    Vector3 n = outward.normalized;
+                    Vector3 v = vac.Rb.linearVelocity;
+                    float along = Vector3.Dot(v, n);
+                    if (along > 0f) vac.Rb.linearVelocity = v - n * along;
+                    float over = Length - MaxLength;
+                    if (over > 0.02f) vac.Rb.position -= n * Mathf.Min(over, 0.12f);
+                    float pull = Vector3.Dot(vac.MoveDir, n);
+                    strain = pull > 0.4f ? strain + Time.fixedDeltaTime : Mathf.Max(0f, strain - Time.fixedDeltaTime * 2f);
+                    if (strain > 0.9f)
+                    {
+                        YankPlug();
+                        return;
+                    }
+                }
                 if (!tautReported)
                 {
                     tautReported = true;
                     gm.Objectives.Report("taut");
-                    gm.ShowBanner("END OF THE CORD", "That is all " + MaxLength.ToString("0") + " metres. Press R / Y to rewind, then find another socket", 3f);
+                    gm.ShowBanner("END OF THE CORD", "All " + MaxLength.ToString("0") + " metres are out. Keep pulling and the plug comes out; R / Y rewinds", 3f);
                     gm.Audio.PlayBoing();
                     vac.Visuals.Punch(0.3f);
                 }
             }
+            else strain = Mathf.Max(0f, strain - Time.fixedDeltaTime * 2f);
             Redraw();
         }
 
-        IEnumerator RewindRoutine()
+        /// <summary>The player kept pulling on a taut cord: the plug pops out of the wall and the cord reels in.</summary>
+        void YankPlug()
+        {
+            strain = 0f;
+            var gm = GameManager.I;
+            if (gm != null)
+            {
+                gm.Audio.PlayThunk();
+                gm.Fx.Puff(trail[0] + Vector3.up * 0.3f, Color.white, 10);
+                gm.ShowBanner("PLUG YANKED OUT", "You pulled the plug out of the wall. No power: drive to a socket to plug back in", 3f);
+                gm.Objectives.Report("yank");
+                gm.AddScore(50, false);
+                vac.Visuals.Punch(0.5f);
+                Vector3 kick = vac.transform.position - trail[trail.Count - 2];
+                kick.y = 0f;
+                if (kick.sqrMagnitude > 0.001f) vac.Rb.AddForce(kick.normalized * 3f + Vector3.up * 2f, ForceMode.VelocityChange);
+            }
+            StartCoroutine(RewindRoutine(true));
+        }
+
+        IEnumerator RewindRoutine(bool yanked)
         {
             Rewinding = true;
             Plugged = false;
@@ -207,9 +244,67 @@ namespace VCS.Player
                 gm.Fx.Puff(vac.transform.position + Vector3.up * 0.5f, new Color(0.8f, 0.8f, 0.8f), 14);
                 gm.Objectives.Report("rewind", Mathf.RoundToInt(rewound));
                 gm.AddScore(Mathf.RoundToInt(rewound * 3f), false);
-                gm.ShowBanner("CORD REWOUND", rewound.ToString("0.0") + " m reeled in. No power now: drive to a socket to plug back in", 2.5f);
+                if (!yanked) gm.ShowBanner("CORD REWOUND", rewound.ToString("0.0") + " m reeled in. No power now: drive to a socket to plug back in", 2.5f);
                 vac.Visuals.Punch(0.45f);
             }
+        }
+
+        // The cord is a rope, not a footprint. The part being dragged straightens behind the vacuum, and once
+        // most of it is paid out the whole thing pulls tight around whatever corners it is caught on. Before this
+        // the trail only ever grew, so the "length" was the distance driven: 45 m of driving in circles left the
+        // cord at full length anywhere in the house and every step got yanked back (the zigzag a tester filmed).
+        const float CordHeight = 0.18f;
+        const int DragWindow = 14;              // points behind the vacuum that drag straight while there is slack
+        readonly RaycastHit[] hits = new RaycastHit[24];
+        int sweepIndex = 1;
+
+        float PathLength()
+        {
+            float len = 0f;
+            for (int i = 1; i < trail.Count; i++) len += (trail[i] - trail[i - 1]).magnitude;
+            return len;
+        }
+
+        void Tighten()
+        {
+            if (trail.Count < 3) return;
+            bool pulled = PathLength() > MaxLength * 0.8f;
+            int budget = pulled ? 40 : 12;
+            int floor = pulled ? 1 : Mathf.Max(1, trail.Count - DragWindow);
+            // From the vacuum end backwards: a point goes when the straight line around it is clear.
+            for (int i = trail.Count - 2; i >= floor && budget > 0; i--, budget--)
+            {
+                if (i + 1 >= trail.Count || i < 1) continue;
+                if (Clear(trail[i - 1], trail[i + 1])) trail.RemoveAt(i);
+            }
+            // One round-robin check per step further back, so a cord caught on furniture settles after the
+            // furniture is knocked away.
+            if (trail.Count >= 3)
+            {
+                if (sweepIndex >= trail.Count - 1) sweepIndex = 1;
+                if (Clear(trail[sweepIndex - 1], trail[sweepIndex + 1])) trail.RemoveAt(sweepIndex);
+                else sweepIndex++;
+            }
+        }
+
+        /// <summary>True when nothing that can hold a cord (walls, furniture, anything heavy) lies between a and b.</summary>
+        bool Clear(Vector3 a, Vector3 b)
+        {
+            a.y = CordHeight;
+            b.y = CordHeight;
+            Vector3 d = b - a;
+            float dist = d.magnitude;
+            if (dist < 0.01f) return true;
+            int n = Physics.RaycastNonAlloc(a, d / dist, hits, dist, ~(1 << 8), QueryTriggerInteraction.Ignore);
+            for (int k = 0; k < n; k++)
+            {
+                var c = hits[k].collider;
+                if (c == null) continue;
+                var rb = c.attachedRigidbody;
+                if (rb != null && (rb == vac.Rb || rb.mass < 5f)) continue;   // the vacuum and light debris slide under it
+                return false;
+            }
+            return n < hits.Length;   // a buffer that overflowed may have dropped a wall: keep the corner
         }
 
         void KnockDebris(Vector3 p)

@@ -52,6 +52,7 @@ namespace VCS.Objectives
             Add("spin", "Spin Cycle", "Spin 3 times in 2 seconds", "spin", 1, 150);
             Add("eater", "Big Eater", "Eat 200 things", "absorb:any", 200, 300);
             Add("cordwhip", "Cord Whip", "Rewind 80 m of cord", "rewind", 80, 200);
+            Add("plugyank", "Wall Puller", "Pull the plug out of the wall", "yank", 1, 100);
             Add("longreach", "Long Reach", "Find the end of the cord", "taut", 1, 150);
             Add("plughopper", "Plug Hopper", "Use 4 different sockets", "plug", 4, 200);
             Add("spotless", "Spotless", "Clean 100% of the house", "clean100", 1, 1000);
