@@ -79,10 +79,13 @@ namespace VCS.Core
             Menu.OnPauseSelect = OnPauseMenu;
             Level.Build(seed);
             EnterTitle();
+            Debug.Log("[VCS] " + GameName + " v" + Version + " ready: " + Level.MessTotal + " pieces of mess, "
+                      + Objectives.All.Count + " achievements, best score " + BestScore);
         }
 
         void EnterTitle()
         {
+            Debug.Log("[VCS] Title screen");
             State = GameState.Title;
             Time.timeScale = 1f;
             if (Player != null) { Destroy(Player.gameObject); Player = null; }
@@ -116,6 +119,7 @@ namespace VCS.Core
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             Audio.PlayStart();
+            Debug.Log("[VCS] Run started, seed " + seed + ", mess " + Level.MessTotal);
         }
 
         public void Pause()
