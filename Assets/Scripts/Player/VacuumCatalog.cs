@@ -21,6 +21,10 @@ namespace VCS.Player
         public float Mass = 10f;
         /// <summary>Extra size classes this vacuum can eat above its power level.</summary>
         public int SizeBonus;
+        /// <summary>Seconds a combo stays alive between two bites.</summary>
+        public float ComboTime = 1.6f;
+        /// <summary>Loudness of the motor hum, 1 = normal.</summary>
+        public float HumVolume = 1f;
 
         public Vector3 EyeCenter = new Vector3(0f, 0.98f, 0.26f);
         public float EyeSpacing = 0.4f;
@@ -81,6 +85,14 @@ namespace VCS.Player
                 Speed = 6f, Accel = 35f, Turn = 540f, Hop = 4.5f, BagCapacity = 180f, SuctionRadiusMult = 1.1f, PullMult = 1.35f, Mass = 14f,
                 EyeCenter = new Vector3(0f, 0.30f, 0.16f), EyeSpacing = 0.14f, EyeSize = 0.12f,
                 NozzleLocal = new Vector3(0f, 0.06f, 0.45f), Height = 1.2f, Build = VacuumModels.Grandma,
+            },
+            new VacuumSpec
+            {
+                Id = "rowinta", Name = "Rowinta Silence Farce", Tagline = "Tres chic, very quiet, still hungry.",
+                Speed = 7.5f, Accel = 44f, Turn = 660f, Hop = 5.5f, BagCapacity = 130f, SuctionRadiusMult = 1.1f, PullMult = 1.15f, Mass = 11f,
+                ComboTime = 2.4f, HumVolume = 0.45f,
+                EyeCenter = new Vector3(0f, 0.24f, 0.27f), EyeSpacing = 0.16f, EyeSize = 0.12f,
+                NozzleLocal = new Vector3(0.02f, 0.05f, 1.05f), Height = 0.6f, Build = VacuumModels.Rowinta,
             },
             new VacuumSpec
             {

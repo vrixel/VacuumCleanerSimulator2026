@@ -215,6 +215,58 @@ namespace VCS.Player
             Sph(g, new Vector3(-0.14f, 0.03f, 0.38f), 0.05f, black, "Caster");
         }
 
+        // ------------------------------------------------------------------ Rowinta (French canister, "traineau")
+        public static void Rowinta(Transform g, VacuumSpec s)
+        {
+            var blue = Palette.Glossy(new Color(0.10f, 0.18f, 0.45f));
+            var navy = Palette.Plastic(new Color(0.08f, 0.10f, 0.22f));
+            var black = Palette.Rubber(new Color(0.08f, 0.08f, 0.09f));
+            var gray = Palette.Plastic(new Color(0.42f, 0.42f, 0.45f));
+            var white = Palette.Glossy(new Color(0.95f, 0.95f, 0.95f));
+            var red = Palette.Glossy(new Color(0.85f, 0.15f, 0.15f));
+            var crust = Palette.Fabric(new Color(0.85f, 0.62f, 0.32f));
+            var crumb = Palette.Fabric(new Color(0.95f, 0.85f, 0.6f));
+
+            // body: a revolved capsule laid along Z (local y becomes z after the 90-degree tilt), flattened in height
+            var body = Rev(g, new[] { P(0f, -0.30f), P(0.10f, -0.30f), P(0.10f, -0.30f), P(0.16f, -0.26f), P(0.19f, -0.15f), P(0.19f, 0.15f), P(0.16f, 0.25f), P(0.10f, 0.30f), P(0f, 0.30f) },
+                blue, new Vector3(0f, 0.17f, 0f), "Body", Quaternion.Euler(90f, 0f, 0f), 40);
+            body.transform.localScale = new Vector3(1.25f, 1f, 0.8f);
+            Torus(g, new Vector3(0f, 0.17f, -0.29f), Quaternion.Euler(90f, 0f, 0f), 0.13f, 0.022f, black, "Bumper");
+
+            // tricolour stripes on both flanks
+            for (int side = -1; side <= 1; side += 2)
+            {
+                float x = side * 0.235f;
+                Box(g, new Vector3(x, 0.215f, 0f), new Vector3(0.012f, 0.03f, 0.36f), blue, "Stripe");
+                Box(g, new Vector3(x + side * 0.004f, 0.175f, 0f), new Vector3(0.012f, 0.03f, 0.36f), white, "Stripe");
+                Box(g, new Vector3(x, 0.135f, 0f), new Vector3(0.012f, 0.03f, 0.36f), red, "Stripe");
+            }
+
+            // top: carry handle, cord button, silence dial
+            TubeAlong(g, new[] { new Vector3(0f, 0.30f, 0.10f), new Vector3(0f, 0.40f, 0.03f), new Vector3(0f, 0.40f, -0.09f), new Vector3(0f, 0.30f, -0.16f) }, 0.014f, navy, "Handle");
+            Rev(g, new[] { P(0f, 0f), P(0.03f, 0f), P(0.03f, 0.015f), P(0f, 0.015f) }, Palette.Chrome, new Vector3(-0.09f, 0.315f, -0.14f), "CordButton");
+            Rev(g, new[] { P(0f, 0f), P(0.035f, 0f), P(0.035f, 0.02f), P(0.02f, 0.02f), P(0.02f, 0.03f), P(0f, 0.03f) }, gray, new Vector3(0.09f, 0.31f, -0.12f), "SilenceDial");
+
+            // beret and baguette
+            var beret = Rev(g, new[] { P(0f, 0f), P(0.11f, 0f), P(0.11f, 0f), P(0.115f, 0.015f), P(0.09f, 0.03f), P(0f, 0.035f) }, black, new Vector3(0.05f, 0.33f, -0.02f), "Beret", Quaternion.Euler(0f, 0f, -14f));
+            Rev(beret.transform, new[] { P(0f, 0.03f), P(0.012f, 0.03f), P(0.012f, 0.06f), P(0f, 0.06f) }, black, Vector3.zero, "BeretNub");
+            var baguette = Prim(g, PrimitiveType.Capsule, new Vector3(-0.27f, 0.22f, 0.02f), new Vector3(0.07f, 0.24f, 0.07f), crust, "Baguette", Quaternion.Euler(84f, 0f, 0f));
+            for (int i = 0; i < 4; i++)
+                Box(baguette.transform, new Vector3(0.45f, -0.6f + i * 0.4f, 0f), new Vector3(0.25f, 0.05f, 0.9f), crumb, "Cut", Quaternion.Euler(0f, 0f, 35f));
+
+            // wheels
+            Torus(g, new Vector3(0.24f, 0.065f, -0.19f), WheelRot, 0.05f, 0.022f, black, "Wheel");
+            Torus(g, new Vector3(-0.24f, 0.065f, -0.19f), WheelRot, 0.05f, 0.022f, black, "Wheel");
+            Sph(g, new Vector3(0f, 0.035f, 0.18f), 0.06f, gray, "Caster");
+
+            // hose, grip, telescopic tube, floor head
+            TubeAlong(g, new[] { new Vector3(0f, 0.28f, 0.29f), new Vector3(0f, 0.46f, 0.42f), new Vector3(0.05f, 0.56f, 0.56f), new Vector3(0.08f, 0.46f, 0.68f) }, 0.028f, gray, "Hose", true);
+            Box(g, new Vector3(0.08f, 0.45f, 0.69f), new Vector3(0.05f, 0.06f, 0.09f), navy, "Grip", Quaternion.Euler(45f, 0f, 0f));
+            TubeAlong(g, new[] { new Vector3(0.08f, 0.44f, 0.70f), new Vector3(0.06f, 0.26f, 0.86f), new Vector3(0.03f, 0.08f, 0.99f) }, 0.016f, Palette.Chrome, "Tube");
+            RBox(g, 0.32f, 0.05f, 0.12f, 0.02f, navy, new Vector3(0.02f, 0f, 1.0f), "FloorHead");
+            Box(g, new Vector3(0.02f, 0.02f, 1.06f), new Vector3(0.28f, 0.02f, 0.012f), red, "Felt");
+        }
+
         // ------------------------------------------------------------------ Shop Drum (wet and dry)
         public static void ShopDrum(Transform g, VacuumSpec s)
         {

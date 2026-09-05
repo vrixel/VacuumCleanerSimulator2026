@@ -39,6 +39,7 @@ names, on purpose: real product names, logos and exact likenesses are trademark 
 | Harold | the smiling canister | big bag, slow, a face and a hose |
 | Stickmaster Cordless | cordless sticks | fastest, highest hop, smallest bag |
 | Grandma's Upright 1978 | bagged uprights with a headlight | huge bag, slowest, strongest pull, a real headlight |
+| Rowinta Silence Farce | the French canister ("traineau") every household has | quiet motor, combos last longer, beret and baguette included |
 | Shop Drum 3000 | wet/dry drums | biggest bag, eats one size class above its power level |
 
 Stats live in `VacuumCatalog`, shapes in `VacuumModels` (built from `MeshKit` solids: revolved profiles, corrugated

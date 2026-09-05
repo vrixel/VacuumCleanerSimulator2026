@@ -93,7 +93,8 @@ namespace VCS.Player
                 em.rateOverTimeMultiplier = (Blowing || BagFull) ? 0f : 25f + 40f * Activity;
             }
             float intensity = Mathf.Clamp01(vac.Speed / 12f) * 0.6f + Activity * 0.4f + (vac.Turbo ? 0.2f : 0f);
-            gm.Audio.SetHum(0.35f + intensity * 0.65f, Blowing);
+            float humVolume = spec != null ? spec.HumVolume : 1f;
+            gm.Audio.SetHum((0.35f + intensity * 0.65f) * humVolume, Blowing);
         }
 
         void Suck(GameManager gm)

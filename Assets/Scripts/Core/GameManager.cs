@@ -211,7 +211,7 @@ namespace VCS.Core
 
         public void AddScore(int basePoints, bool countsCombo = true)
         {
-            if (countsCombo) { ComboCount++; ComboTimeLeft = 1.6f; }
+            if (countsCombo) { ComboCount++; ComboTimeLeft = Player != null ? Player.Spec.ComboTime : 1.6f; }
             int pts = Mathf.RoundToInt(basePoints * (countsCombo ? ComboMultiplier : 1f));
             Score += pts;
             CheckPowerUp();
