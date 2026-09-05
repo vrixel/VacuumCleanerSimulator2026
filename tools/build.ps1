@@ -13,8 +13,10 @@ New-Item -ItemType Directory -Force $buildDir | Out-Null
 Write-Host "Building with $UnityExe"
 Write-Host "Log: $log"
 $sw = [System.Diagnostics.Stopwatch]::StartNew()
-& $UnityExe -batchmode -nographics -quit -projectPath "$RepoRoot" -executeMethod VCS.Editor.BuildScript.BuildWindows64 -logFile "$log"
-$code = $LASTEXITCODE
+# Unity.exe is a GUI-subsystem executable: PowerShell's call operator would return immediately, so wait explicitly.
+$unityArgs = @("-batchmode", "-nographics", "-quit", "-projectPath", "`"$RepoRoot`"", "-executeMethod", "VCS.Editor.BuildScript.BuildWindows64", "-logFile", "`"$log`"")
+$proc = Start-Process -FilePath $UnityExe -ArgumentList $unityArgs -PassThru -Wait
+$code = $proc.ExitCode
 $sw.Stop()
 
 if ($code -ne 0) {

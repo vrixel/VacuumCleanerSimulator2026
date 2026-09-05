@@ -73,5 +73,10 @@ Unity 6 API names in use: `Rigidbody.linearVelocity`, `linearDamping`, `angularD
   are .NET Framework (`net48`); both module sets live in `Editor\Data\Managed\UnityEngine`. uGUI is a source package,
   so the check references the precompiled `UnityEngine.UI.dll` from `Data\Resources\PackageManager\ProjectTemplates\libcache`.
 - No C++ toolchain on this machine: keep the Standalone scripting backend on Mono. IL2CPP and UWP need Visual Studio.
+  The IL2CPP module is not installed either, and `Editor\Data\il2cpp` (which also holds UnityLinker) does not exist,
+  so managed stripping is set to Disabled in `ProjectSetup`; with stripping on, the build dies in the
+  "ManagedStripped" Bee step with "The system cannot find the path specified".
+- `Unity.exe` is a GUI-subsystem executable: PowerShell's `&` returns immediately. `build.ps1` uses
+  `Start-Process -Wait -PassThru` to get the real exit code.
 - Large heredocs (over roughly 10 KB) fail in the Bash tool on this machine; write source files with the Write tool.
 - Everything on D:, deliverables in English, commit and push on `main` as soon as something works.

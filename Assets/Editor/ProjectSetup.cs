@@ -28,6 +28,8 @@ namespace VCS.Editor
             PlayerSettings.defaultIsNativeResolution = true;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
             PlayerSettings.SetApiCompatibilityLevel(NamedBuildTarget.Standalone, ApiCompatibilityLevel.NET_Standard);
+            // Mono player: no need for UnityLinker stripping, and the linker step is what fails on this machine.
+            PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.Standalone, ManagedStrippingLevel.Disabled);
             EnsureMaterials();
             EnsureScene();
             AssetDatabase.SaveAssets();
