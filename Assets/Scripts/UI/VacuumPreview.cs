@@ -87,10 +87,11 @@ namespace VCS.UI
             {
                 if (first) { b = r.bounds; first = false; } else b.Encapsulate(r.bounds);
             }
-            // the model spins around its own Y axis: use the horizontal footprint as a radius so nothing pops out
-            float horiz = Mathf.Max(b.extents.x, b.extents.z);
-            float radius = Mathf.Sqrt(horiz * horiz * 2f + b.extents.y * b.extents.y);
-            Vector3 look = new Vector3(stage.position.x, b.center.y, stage.position.z);
+            // the model spins around the stage axis: take the farthest horizontal point from that axis as the radius
+            float cx = stage.position.x, cz = stage.position.z;
+            float horiz = Mathf.Max(Mathf.Abs(b.max.x - cx), Mathf.Abs(b.min.x - cx), Mathf.Abs(b.max.z - cz), Mathf.Abs(b.min.z - cz));
+            float radius = Mathf.Sqrt(horiz * horiz + b.extents.y * b.extents.y);
+            Vector3 look = new Vector3(cx, b.center.y, cz);
             float dist = radius / Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) * 0.72f + 0.15f;
             cam.transform.position = look + new Vector3(0f, dist * 0.34f, dist);
             cam.transform.LookAt(look);
