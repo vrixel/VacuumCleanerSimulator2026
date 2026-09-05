@@ -90,7 +90,7 @@ namespace VCS.UI
                 new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-322f, -110f), new Vector2(-46f, -56f));
             radar = RadarView.Build(t, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-300f, -395f), new Vector2(-66f, -161f), new Vector3(14f, 0f, 10f), 15f);
             var radarLabel = UIFactory.Text(t, "RadarLabel", "DIRT RADAR", 16, steel, TextAnchor.MiddleCenter,
-                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330f, -430f), new Vector2(-36f, -398f), false);
+                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330f, -150f), new Vector2(-36f, -118f), false);
             UIStyle.Style(radarLabel, UIStyle.Display, 16, steel);
             UIStyle.Edge(radarLabel);
             UIStyle.Brackets(t, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-320f, -410f), new Vector2(-46f, -146f), 22f, 2f);
@@ -105,17 +105,17 @@ namespace VCS.UI
 
             // ---- right edge: mission log
             var rmid = new Vector2(1f, 0.5f);
-            UIStyle.Box(t, "LogBox", rmid, rmid, new Vector2(-520f, -120f), new Vector2(-36f, 200f), 0.6f);
-            UIFactory.Panel(t, "LogHeader", new Color(UIStyle.Amber.r, UIStyle.Amber.g, UIStyle.Amber.b, 0.85f), rmid, rmid, new Vector2(-520f, 166f), new Vector2(-36f, 200f));
+            UIStyle.Box(t, "LogBox", rmid, rmid, new Vector2(-520f, -200f), new Vector2(-36f, 120f), 0.6f);
+            UIFactory.Panel(t, "LogHeader", new Color(UIStyle.Amber.r, UIStyle.Amber.g, UIStyle.Amber.b, 0.85f), rmid, rmid, new Vector2(-520f, 86f), new Vector2(-36f, 120f));
             var logTitle = UIFactory.Text(t, "LogTitle", "MISSION LOG", 18, UIStyle.Ink, TextAnchor.MiddleLeft,
-                rmid, rmid, new Vector2(-508f, 166f), new Vector2(-40f, 200f), false);
+                rmid, rmid, new Vector2(-508f, 86f), new Vector2(-40f, 120f), false);
             UIStyle.Style(logTitle, UIStyle.Display, 18, new Color(0.08f, 0.07f, 0.1f));
             objectivesText = UIFactory.Text(t, "Objectives", "", 22, Color.white, TextAnchor.UpperLeft,
-                rmid, rmid, new Vector2(-506f, -80f), new Vector2(-46f, 158f), false);
+                rmid, rmid, new Vector2(-506f, -160f), new Vector2(-46f, 78f), false);
             UIStyle.Style(objectivesText, UIStyle.Body, 22, Color.white);
             UIStyle.Edge(objectivesText);
             achievementsText = UIFactory.Text(t, "Achievements", "", 16, steel, TextAnchor.LowerLeft,
-                rmid, rmid, new Vector2(-506f, -114f), new Vector2(-46f, -84f), false);
+                rmid, rmid, new Vector2(-506f, -194f), new Vector2(-46f, -164f), false);
             UIStyle.Style(achievementsText, UIStyle.Mono, 16, steel);
 
             // ---- banner

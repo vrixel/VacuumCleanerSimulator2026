@@ -20,6 +20,7 @@ size and hop, from a robot disc to a wet/dry drum that eats furniture early.
 | Turbo | Shift | RB or RT |
 | Blow (spit the bag out) | E or right mouse | B or LT |
 | Empty bag at the bin | F | X |
+| Rewind the cord (corded models) | R | Y |
 | Pause | Esc | Start |
 
 ## Build
