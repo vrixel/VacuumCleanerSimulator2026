@@ -2,6 +2,7 @@
 
 A silly physics sandbox in the spirit of Goat Simulator, except you are a vacuum cleaner and the house is a mess.
 Drive around, suck up crumbs, socks, toys, then chairs, the couch, and eventually the toilet. Blow it all back out.
+Clear the cocoa powder off the floors (your path stays visible), scare the cat, and mind the cord.
 Rated for ages 8 and up: cartoon chaos, no violence.
 
 **Download:** the latest Windows build is on the
@@ -10,6 +11,7 @@ Rated for ages 8 and up: cartoon chaos, no violence.
 ![Cockpit](docs/screenshots/cockpit.png)
 ![Title screen and garage](docs/screenshots/title.png)
 ![Rewinding the cord](docs/screenshots/cord-rewind.png)
+![The vacuum's path through the cocoa powder](docs/screenshots/powder.png)
 
 Targets: Steam (Windows 64-bit) first, Xbox / Microsoft Store next. See `docs/PUBLISHING.md` and `docs/STORE.md`.
 Source is published for reference; see `LICENSE.md`.

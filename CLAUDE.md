@@ -35,9 +35,11 @@ Generated assets follow the kie-ai skill discipline (idempotent, raw downloads k
 overwritten without `--force`, balance printed before and after). Look at every image before shipping it: a
 `success` proves an image came back, not that the prompt was honoured. Binary assets are tracked with git LFS.
 
-The smoke test runs the player with `-smoke <dir>` (see `SmokeRunner`): it never injects keystrokes or steals focus,
-so it is safe while the owner is using the PC. Look at the two PNGs it produces; the log scan alone only proves the
-game did not throw. The player log line `d3d12: failed to query info queue interface` is benign.
+The smoke test runs the player with `-smoke <dir>` (see `SmokeRunner`, `-Width/-Height` for 1080p listing shots): it
+never injects keystrokes or steals focus, so it is safe while the owner is using the PC. It drives, chases the cat
+(`smoke-cat.png`, cat state in the log), photographs the powder trail from above (`smoke-powder.png`), shortens the
+cord to 4 m and pulls the plug out (`smoke-taut.png`, `smoke-rewind.png`). Look at the PNGs; the log scan alone only
+proves the game did not throw. The player log line `d3d12: failed to query info queue interface` is benign.
 
 Builds are local only. There is no GitHub Actions workflow on purpose (Unity in CI burns minutes and needs a license
 server); do not add one. The editor path is resolved in `tools/common.ps1`, override with `$env:VCS_UNITY`.
@@ -102,6 +104,21 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   false: no suction, telemetry drops, the CORD lamp and status show it; driving within 1.4 m of any socket
   plugs back in. Sockets are built in `LevelBuilder.BuildSockets`, one per room, the hall one first.
 - `GameAudio` synthesises every clip at startup (`AudioClip.Create`); `EffectsFactory` configures particle systems.
+- Look (2026-09-05, "realistic, not cartoon"): `VacuumVisuals.RealisticLook` drops the googly eyes; `VacuumDetails`
+  adds vent slots, nameless badges, hubcaps, screws and seams per model id on top of the `VacuumModels` builders;
+  `Palette.Plastic/Glossy/Rubber/Fabric/Chrome` are normal-mapped (`ProceduralTextures`: tileable grain, brushed,
+  weave, wood) on `Resources/Materials/LitBump.mat` (carries `_NORMALMAP` so the variant ships); MeshKit meshes
+  get tangents. Lighting: trilight ambient, soft shadows at VeryHigh, MSAA 4x, and a realtime `ReflectionProbe`
+  rendered once per level build (`BuildLighting`). LineRenderers keep `Palette.Mat` (no tangents).
+- Cocoa powder (`PowderSystem`, one `PowderLayer` quad per room at y = 0.012): generated RGBA texture at 36 px/m
+  (splats, streaks, dusting), `Resources/Materials/Fade.mat` (Standard Fade, keyword in the asset). `SuctionSystem.Suck`
+  calls `Powder.Vacuum(nozzle, radius)` every physics step while grounded and the bag has room: it zeroes alpha in a
+  disc, so the vacuum's path stays visible; cleared m² go to `GameManager.OnPowderCleaned` (40 pts/m², event
+  `powder`, bag fill 1.5 L/m²) and every 1.5 m² counts as one piece of mess in the cleanliness ratio.
+- The cat (`Cat`, spawned by `LevelBuilder.BuildCat` in the living room): idle / wander / flee state machine, three
+  raycast feelers to steer around walls and furniture (small mess is ignored), 8.5 m/s flee with a sideways panic hop
+  when nearly caught, knocks light debris; scares and bumps go to `GameManager.OnCatScared` (event `cat`, synthesised
+  meow / yowl in `GameAudio`). It has no `Debris`, so it can never be absorbed.
 - `Palette` caches one material per colour on top of `Resources/Materials/Lit.mat` (Standard shader). That material
   asset exists so the shader is not stripped from builds; `ProjectSetup` creates it. Never enable shader keywords
   at runtime (the variant will be missing in the build).
@@ -141,6 +158,9 @@ Unity 6 API names in use: `Rigidbody.linearVelocity`, `linearDamping`, `angularD
 - A warm batch build is about 15 s of editor time (Unity's `-timestamps` log shows it); the player build step is 6 s.
 - Large heredocs (over roughly 10 KB) fail in the Bash tool on this machine; write source files with the Write tool.
 - Everything on D:, deliverables in English, commit and push on `main` as soon as something works.
+- Xbox consoles: UWP games are no longer accepted on the Xbox Store (Microsoft Q&A, Nov 2025) and the Hub refuses to
+  add modules to this editor (installed outside the Hub); the only path is ID@Xbox (owner application) + GDK. Do not
+  install the UWP toolchain for it. Blender 4.5 portable lives in `D:\Program Files\Blender` (not used by the build).
 - The repo is PUBLIC (vrixel/VacuumCleanerSimulator2026) since 2026-09-05, downloads at `releases/latest`; never
   commit kie keys or anything from `D:\Cloclo\Projects\Nazisme`. `LICENSE.md` is all rights reserved (source for
   reference), fonts are OFL. Bump `bundleVersion` in `ProjectSetup` with every release.
