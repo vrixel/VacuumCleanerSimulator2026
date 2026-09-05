@@ -17,6 +17,9 @@ namespace VCS.Player
     /// </summary>
     public static class VacuumModels
     {
+        /// <summary>The second-generation shells (VacuumModelsV2); false keeps the 0.2 models (gallery "before").</summary>
+        public static bool UseV2 = true;
+
         static readonly Quaternion WheelRot = Quaternion.Euler(0f, 0f, 90f);
 
         static Vector2 P(float r, float y) => new Vector2(r, y);
@@ -67,6 +70,7 @@ namespace VCS.Player
         // ------------------------------------------------------------------ Dusty (the prototype, primitives)
         public static void Dusty(Transform g, VacuumSpec s)
         {
+            if (UseV2) { VacuumModelsV2.Dusty(g, s); return; }
             var body = Palette.Plastic(new Color(0.95f, 0.38f, 0.28f));
             var dark = Palette.Rubber(new Color(0.15f, 0.15f, 0.18f));
             var bag = Palette.Fabric(new Color(0.92f, 0.82f, 0.55f));
@@ -84,6 +88,7 @@ namespace VCS.Player
         // ------------------------------------------------------------------ Roomboo (robot disc)
         public static void Roomboo(Transform g, VacuumSpec s)
         {
+            if (UseV2) { VacuumModelsV2.Roomboo(g, s); return; }
             var top = Palette.Glossy(new Color(0.22f, 0.22f, 0.25f));
             var bumper = Palette.Rubber(new Color(0.08f, 0.08f, 0.09f));
             var accent = Palette.Glossy(new Color(0.2f, 0.75f, 0.55f));
@@ -111,6 +116,7 @@ namespace VCS.Player
         // ------------------------------------------------------------------ Cyclonic (bagless upright on a ball)
         public static void Cyclonic(Transform g, VacuumSpec s)
         {
+            if (UseV2) { VacuumModelsV2.Cyclonic(g, s); return; }
             var purple = Palette.Glossy(new Color(0.45f, 0.25f, 0.65f));
             var gray = Palette.Plastic(new Color(0.35f, 0.35f, 0.38f));
             var lightGray = Palette.Glossy(new Color(0.78f, 0.78f, 0.82f));
@@ -130,6 +136,7 @@ namespace VCS.Player
         // ------------------------------------------------------------------ Harold (canister with a face)
         public static void Harold(Transform g, VacuumSpec s)
         {
+            if (UseV2) { VacuumModelsV2.Harold(g, s); return; }
             var red = Palette.Glossy(new Color(0.85f, 0.15f, 0.12f));
             var black = Palette.Rubber(new Color(0.08f, 0.08f, 0.09f));
             var gray = Palette.Plastic(new Color(0.4f, 0.4f, 0.42f));
@@ -160,6 +167,7 @@ namespace VCS.Player
         // ------------------------------------------------------------------ Stickmaster (cordless stick)
         public static void Stickmaster(Transform g, VacuumSpec s)
         {
+            if (UseV2) { VacuumModelsV2.Stickmaster(g, s); return; }
             var dark = Palette.Rubber(new Color(0.15f, 0.15f, 0.17f));
             var blue = Palette.Glossy(new Color(0.2f, 0.5f, 0.9f));
             var lightGray = Palette.Glossy(new Color(0.8f, 0.8f, 0.84f));
@@ -184,6 +192,7 @@ namespace VCS.Player
         // ------------------------------------------------------------------ Grandma's upright (bagged, headlight)
         public static void Grandma(Transform g, VacuumSpec s)
         {
+            if (UseV2) { VacuumModelsV2.Grandma(g, s); return; }
             var green = Palette.Plastic(new Color(0.50f, 0.58f, 0.30f));
             var black = Palette.Rubber(new Color(0.1f, 0.1f, 0.1f));
             var bagMat = Palette.Fabric(new Color(0.78f, 0.66f, 0.45f));
@@ -218,6 +227,7 @@ namespace VCS.Player
         // ------------------------------------------------------------------ Rowinta (French canister, "traineau")
         public static void Rowinta(Transform g, VacuumSpec s)
         {
+            if (UseV2) { VacuumModelsV2.Rowinta(g, s); return; }
             var blue = Palette.Glossy(new Color(0.10f, 0.18f, 0.45f));
             var navy = Palette.Plastic(new Color(0.08f, 0.10f, 0.22f));
             var black = Palette.Rubber(new Color(0.08f, 0.08f, 0.09f));
@@ -270,6 +280,7 @@ namespace VCS.Player
         // ------------------------------------------------------------------ Shop Drum (wet and dry)
         public static void ShopDrum(Transform g, VacuumSpec s)
         {
+            if (UseV2) { VacuumModelsV2.ShopDrum(g, s); return; }
             var yellow = Palette.Plastic(new Color(0.95f, 0.75f, 0.10f));
             var black = Palette.Rubber(new Color(0.09f, 0.09f, 0.1f));
             var gray = Palette.Plastic(new Color(0.35f, 0.35f, 0.37f));

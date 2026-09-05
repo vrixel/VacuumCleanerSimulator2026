@@ -38,8 +38,9 @@ namespace VCS.Core
             preview.Hide();
             foreach (var look in new[] { false, true })
             {
-                VacuumVisuals.RealisticLook = look;
-                Palette.Realistic = look;
+                VacuumVisuals.RealisticLook = true;
+                Palette.Realistic = true;
+                VacuumModels.UseV2 = look;
                 foreach (var s in VacuumCatalog.All)
                 {
                     string file = Path.Combine(outDir, (look ? "after-" : "before-") + s.Id + ".png");
@@ -48,8 +49,7 @@ namespace VCS.Core
                     yield return null;
                 }
             }
-            VacuumVisuals.RealisticLook = true;
-            Palette.Realistic = true;
+            VacuumModels.UseV2 = true;
             Debug.Log("[VCS] Gallery done");
             yield return new WaitForSecondsRealtime(0.5f);
             Application.Quit();

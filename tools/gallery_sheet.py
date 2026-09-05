@@ -20,7 +20,7 @@ W = cols * (2 * CELL + GAP) + (cols + 1) * GAP
 H = rows * (CELL + LABEL + GAP) + GAP + 70
 sheet = Image.new("RGB", (W, H), (18, 18, 24))
 d = ImageDraw.Draw(sheet)
-d.text((GAP, 18), "VACUUM CLEANER SIMULATOR 2026  |  models: before (v0.1, cartoon)  vs  after (v0.2, realistic)", fill=(255, 212, 0), font=font)
+d.text((GAP, 18), "VACUUM CLEANER SIMULATOR 2026  |  models: before (v0.2 shells)  vs  after (v2: faceted, grooved, electronic)", fill=(255, 212, 0), font=font)
 for i, (mid, name) in enumerate(ORDER):
     r, c = divmod(i, cols)
     x0 = GAP + c * (2 * CELL + 2 * GAP)

@@ -116,6 +116,52 @@ namespace VCS.World
             return new Material(fadeBase);
         }
 
+        static Material emissiveBase;
+        static readonly Dictionary<string, Material> cacheLed = new Dictionary<string, Material>();
+        static readonly Dictionary<string, Material> cacheGlass = new Dictionary<string, Material>();
+
+        // Resources/Materials/LitEmissive.mat carries _EMISSION so the variant ships.
+        static Material EmissiveBase()
+        {
+            if (emissiveBase != null) return emissiveBase;
+            emissiveBase = Resources.Load<Material>("Materials/LitEmissive");
+            if (emissiveBase == null)
+            {
+                emissiveBase = new Material(LitBase());
+                emissiveBase.EnableKeyword("_EMISSION");
+            }
+            return emissiveBase;
+        }
+
+        /// <summary>A glowing LED / display segment of the given colour.</summary>
+        public static Material Led(Color c)
+        {
+            string key = ColorUtility.ToHtmlStringRGBA(c);
+            if (cacheLed.TryGetValue(key, out var m) && m != null) return m;
+            m = new Material(EmissiveBase());
+            m.color = c;
+            m.SetColor("_EmissionColor", c * 1.7f);
+            m.SetFloat("_Glossiness", 0.75f);
+            m.SetFloat("_Metallic", 0f);
+            m.name = "Led " + key;
+            cacheLed[key] = m;
+            return m;
+        }
+
+        /// <summary>Tinted translucent plastic (bins, windows); alpha is the tint's alpha.</summary>
+        public static Material Glass(Color c)
+        {
+            string key = ColorUtility.ToHtmlStringRGBA(c);
+            if (cacheGlass.TryGetValue(key, out var m) && m != null) return m;
+            m = Fade();
+            m.color = c;
+            m.SetFloat("_Glossiness", 0.92f);
+            m.SetFloat("_Metallic", 0.05f);
+            m.name = "Glass " + key;
+            cacheGlass[key] = m;
+            return m;
+        }
+
         /// <summary>Lit material with a tiled procedural normal map (see ProceduralTextures), cached by value.</summary>
         public static Material Bump(Color c, Texture2D normal, float bumpScale, float metallic, float smoothness, float tiling)
         {

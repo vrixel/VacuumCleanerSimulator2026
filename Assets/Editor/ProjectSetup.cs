@@ -91,6 +91,15 @@ namespace VCS.Editor
                 m.SetFloat("_Glossiness", 0.05f);
                 m.SetFloat("_Metallic", 0f);
             });
+            // Standard with emission (LEDs and displays): same reason.
+            EnsureMaterial("Assets/Resources/Materials/LitEmissive.mat", "Standard", m =>
+            {
+                m.EnableKeyword("_EMISSION");
+                m.SetColor("_EmissionColor", Color.white);
+                m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+                m.SetFloat("_Glossiness", 0.7f);
+                m.SetFloat("_Metallic", 0f);
+            });
             // Standard with a normal map (every plastic, rubber, fabric and metal): same reason.
             EnsureMaterial("Assets/Resources/Materials/LitBump.mat", "Standard", m =>
             {

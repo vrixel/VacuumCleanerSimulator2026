@@ -16,7 +16,7 @@ namespace VCS.Player
 
         public static void Add(Transform g, VacuumSpec spec)
         {
-            if (!VacuumVisuals.RealisticLook) return;
+            if (!VacuumVisuals.RealisticLook || VacuumModels.UseV2) return;
             switch (spec.Id)
             {
                 case "dusty":

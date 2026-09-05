@@ -256,6 +256,18 @@ namespace VCS.World
             return m;
         }
 
+        /// <summary>Un-shares every vertex so each triangle gets its own flat normal: crisp facets.</summary>
+        public static Mesh Flat(Mesh src)
+        {
+            var v = src.vertices; var t = src.triangles; var uv = src.uv;
+            var nv = new Vector3[t.Length]; var nuv = new Vector2[t.Length]; var nt = new int[t.Length];
+            for (int i = 0; i < t.Length; i++) { nv[i] = v[t[i]]; nuv[i] = uv.Length > 0 ? uv[t[i]] : Vector2.zero; nt[i] = i; }
+            var m = new Mesh { name = src.name + " flat" };
+            m.vertices = nv; m.uv = nuv; m.triangles = nt;
+            m.RecalculateNormals(); m.RecalculateTangents(); m.RecalculateBounds();
+            return m;
+        }
+
         public static GameObject Part(Transform parent, Mesh mesh, Material mat, Vector3 pos, Quaternion rot, Vector3 scale, string name)
         {
             var go = new GameObject(name);
