@@ -77,10 +77,13 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   and streams `Resources/Audio/Music`.
 - Music: `GameAudio.PlayMusic("title" | "game")` loads `Resources/Audio/Music/<name>` and crossfades; a generated
   motor recording (`Resources/Audio/Sfx/motor_loop`) replaces the synthesised hum when present.
-- Typography and effects live in `UIStyle`: bundled OFL fonts in `Resources/Fonts` (Bebas Neue for big numbers,
-  Orbitron for labels, Share Tech Mono for readouts, DSEG7 for seven-segment digits with ghost "888" behind them,
-  Exo 2 for body text), `Glow`, `Edge`, `Digital`, `Scanlines`, `Brackets`, `Box`. Licenses in
-  `Resources/Fonts/OFL-1.1.txt` and `FONTS-README.txt`: keep them when adding fonts.
+- Art direction of the HUD (settled 2026-09-05 after two rejected passes, one blurry-dull and one Vegas): bold
+  arcade cabinet on serious instruments. `UIStyle` holds it: Russo One italic headlines with a hard black edge and
+  a block shadow (`ArcadeText`), safety yellow / electric blue / red / white, generated instrument frames from
+  `Resources/UI/Hud` nine-sliced under live content (`Frame`, `PlateSprite`), yellow `Tab` labels, `Tile`
+  annunciators, `Tape` scrolling scales, `Digital` seven-segment readouts (DSEG7 with ghost digits), Share Tech
+  Mono for values, Exo 2 for body. No soft glow anywhere: blur was the first complaint. Fonts are OFL in
+  `Resources/Fonts` with `OFL-1.1.txt` and `FONTS-README.txt`: keep them when adding fonts.
 - The HUD (`HudController`) is spread around the screen: score block top-left, power strip top-centre, timer and
   `RadarView` top-right (a top-down camera into a masked RawImage; markers are quads on layer 8 that the main and
   preview cameras cull), vertical meters left, mission log right, `Cockpit` at the bottom.
