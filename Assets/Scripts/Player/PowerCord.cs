@@ -20,8 +20,9 @@ namespace VCS.Player
     /// </summary>
     public class PowerCord : MonoBehaviour
     {
-        public const float MaxLength = 18f;
-        public const float RewindSpeed = 15f;
+        // Long enough to reach every room from the hall socket; only the garden and the far corners pull it taut.
+        public const float MaxLength = 45f;
+        public const float RewindSpeed = 22f;
 
         public float Length { get; private set; }
         public bool Plugged { get; private set; }

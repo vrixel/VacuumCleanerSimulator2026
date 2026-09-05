@@ -4,7 +4,15 @@ A silly physics sandbox in the spirit of Goat Simulator, except you are a vacuum
 Drive around, suck up crumbs, socks, toys, then chairs, the couch, and eventually the toilet. Blow it all back out.
 Rated for ages 8 and up: cartoon chaos, no violence.
 
-Targets: Steam (Windows 64-bit) first, Xbox / Microsoft Store next. See `docs/PUBLISHING.md`.
+**Download:** the latest Windows build is on the
+[releases page](https://github.com/vrixel/VacuumCleanerSimulator2026/releases/latest). Unzip, run the exe.
+
+![Cockpit](docs/screenshots/cockpit.png)
+![Title screen and garage](docs/screenshots/title.png)
+![Rewinding the cord](docs/screenshots/cord-rewind.png)
+
+Targets: Steam (Windows 64-bit) first, Xbox / Microsoft Store next. See `docs/PUBLISHING.md` and `docs/STORE.md`.
+Source is published for reference; see `LICENSE.md`.
 
 ## Play
 

@@ -88,6 +88,34 @@ HUD_PLATES = {
                   "rectangular screen areas separated by steel ribs. " + HUD_STYLE + NO_TEXT,
 }
 
+# Marketing art and the app icon. Landscape or portrait as the subject suggests (the models decide, we measure).
+MARKETING_STYLE = ("Bold saturated colours, thick clean outlines, dynamic composition, exaggerated cartoon physics, "
+                   "glossy modern 3D-cartoon render, arcade game poster style, family friendly, no gore. "
+                   "ABSOLUTELY NO TEXT of any kind: no title, no letters, no logos, no watermark.")
+MARKETING = {
+    "key_art": ("Key art for a comedy video game: an upright vacuum cleaner with huge googly eyes and a mischievous grin "
+                "tears through a messy suburban living room at full speed, crumbs, socks, toy bricks and coins flying "
+                "into its nozzle, a couch tipping over, a lamp airborne, a cat on the curtain rail. Low dynamic camera "
+                "angle, wide 16:9 landscape composition with empty space at the top for a title. " + MARKETING_STYLE),
+    "hero_wide": ("Ultra-wide cinematic banner for a comedy video game: a cartoon vacuum cleaner with googly eyes "
+                  "charging across a chaotic kitchen, cereal and crumbs swirling into it, chairs knocked over, a fridge "
+                  "wobbling, bright morning light, very wide landscape composition, subject centred, room to crop at "
+                  "both ends. " + MARKETING_STYLE),
+    "library_portrait": ("Portrait poster for a comedy video game: a cartoon vacuum cleaner with googly eyes standing "
+                         "proudly on a mountain of dust, socks and toys inside a living room, dramatic low angle, "
+                         "tall 2:3 portrait composition with empty space at the top for a title. " + MARKETING_STYLE),
+    "icon": ("App icon: the friendly face of a cartoon vacuum cleaner, huge googly eyes and a cheeky grin, front view, "
+             "filling the frame, bold flat vector style with thick outlines, on a bright safety-yellow rounded-square "
+             "background, perfectly centred, square 1:1. " + MARKETING_STYLE),
+    "emblem": ("A small emblem for a personal website: an upright vacuum cleaner with two big round googly eyes, drawn as "
+               "a black ink line engraving, fine crosshatching, in the manner of an old heraldic crest, centred, on a "
+               "pure white background, square. No colour, no shading fills, no frame. ABSOLUTELY NO TEXT of any kind."),
+    "garage_lineup": ("A line-up of eight cartoon vacuum cleaners with googly eyes posing together like a team photo: "
+                      "a robot disc, a purple bagless upright on a ball, a red smiling canister, a cordless stick, a "
+                      "1970s green upright with a cloth bag, a blue French canister with a beret and a baguette, a yellow "
+                      "wet-and-dry drum, and a boxy orange prototype. Studio backdrop, wide landscape. " + MARKETING_STYLE),
+}
+
 MUSIC = {
     "title": "Quirky upbeat jazzy theme for a silly video game about a vacuum cleaner, instrumental, kazoo, tuba, ukulele and brushed drums, cheerful and mischievous, 95 bpm, loopable, no vocals",
     "game": "Energetic playful funk with chiptune touches for a comedy physics game, instrumental, bouncy bass, clavinet, hand claps, 120 bpm, loopable, no vocals",
@@ -338,6 +366,10 @@ def plan(only):
     items.append(("image", "panel", dict(prompt=PANEL, dst=os.path.join(RES, "UI", "panel.png"), size=1024, key=False)))
     for pid, prompt in HUD_PLATES.items():
         items.append(("image", pid, dict(prompt=prompt, dst=os.path.join(RES, "UI", "Hud", f"{pid}.png"), size=1024, square=False)))
+    for mid, prompt in MARKETING.items():
+        items.append(("image", f"mk_{mid}", dict(prompt=prompt, dst=os.path.join(ROOT, "marketing", "source", f"{mid}.png"),
+                                                 size=2048 if mid != "emblem" else 768, square=mid in ("icon", "emblem"),
+                                                 key=(mid == "emblem"))))
     for mid, prompt in MUSIC.items():
         items.append(("music", f"music_{mid}", dict(prompt=prompt, dst=os.path.join(RES, "Audio", "Music", f"{mid}.mp3"))))
     for sid, spec in SOUNDS.items():
