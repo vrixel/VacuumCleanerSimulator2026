@@ -22,11 +22,11 @@ When the bag is full, blow everything back out at high speed and start again.
 Eight vacuums with real handling differences: a robot disc, a bagless upright on a ball, a smiling red canister,
 a cordless stick, a 1978 upright with a headlight, a French canister that whispers, a wet-and-dry drum that eats
 furniture early, and the cardboard prototype that started it all. Corded models drag a real cord behind them: it
-runs out, it yanks you back, and rewinding it whips the plug across the floor. Cordless models worry about their
-battery instead.
+straightens as you go, pulls tight around corners, and at the end it holds you like a leash. Keep pulling and the
+plug pops out of the wall. Cordless models worry about their battery instead.
 
 The cockpit takes itself very seriously. Every vacuum has its own suction gauge, a real dust bag or bin that fills
-up, motor readouts, warning tiles, a MASTER CAUTION lamp, a dirt radar and a mission log of sixteen silly
+up, motor readouts, warning tiles, a MASTER CAUTION lamp, a dirt radar and a mission log of twenty silly
 achievements. None of it will help you. All of it looks great.
 
 - Family friendly: cartoon chaos, no violence, no language, no ads, no purchases.
