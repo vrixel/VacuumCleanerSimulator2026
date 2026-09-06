@@ -61,12 +61,17 @@ Generated with kie.ai from `tools/assets/kie_assets.py` and cut to store sizes b
 
 ## Microsoft Store (PC first, Xbox later)
 
-**Status 2026-09-06 evening: submission 1 (v0.1.1.0) live on 2026-09-05; submission 2 (v0.2.0.0) certified and live on
-2026-09-06 (mail 14:36 UTC, about 19 h in certification; the public catalog
+**Status 2026-09-06 night: submission 1 (v0.1.1.0) live on 2026-09-05; submission 2 (v0.2.0.0) live on 2026-09-06
+(mail 14:36 UTC, about 19 h in certification; the public catalog
 `https://displaycatalog.mp.microsoft.com/v7.0/products/9P9HVRJ09PK0?market=US&languages=en-us` lists the package
-full names, a clean signal to poll); submission 3 (id 1152921505701822812, v0.3.0.0) prepared: package uploaded and
-validated, "What's new" filled, everything else unchanged, waiting for the owner's go on "Submit for certification".**
-Lessons of submission 3: the in-page `fetch` of the MSIX keeps running after the browser tool times out at 45 s, so
+full names, a clean signal to poll); submission 3 (id 1152921505701822812) carries v0.4.1.0 (the 0.4.0 build packaged again with the final icon: two
+packages with the same full name and different contents are refused even when one is marked for removal, so the
+MSIX version was incremented),
+the 0.4.0 release notes and the racing-style poster, box art, super hero and tile icon (uploaded by dropping the
+file on each slot's input, no trash needed); everything else unchanged; waiting for the owner's go on "Submit for
+certification".**
+Lessons of submission 3: raw.githubusercontent.com caches a path for minutes, so a replaced file needs a new name
+(`_v5`, `_b`); the in-page `fetch` of the MSIX keeps running after the browser tool times out at 45 s, so
 never launch it twice (the second run made a duplicate package that had to be removed); the Save buttons of the
 Packages and Store listing pages ignore clicks by accessibility reference and need a click at screen coordinates
 (take a screenshot, click the button); the English listing lives at
