@@ -69,7 +69,8 @@ packages with the same full name and different contents are refused even when on
 MSIX version was incremented),
 the 0.4.0 release notes and the racing-style poster, box art, super hero and tile icon (uploaded by dropping the
 file on each slot's input, no trash needed); everything else unchanged; SUBMITTED for certification on 2026-09-06 about 18:30 UTC on the owner's go (the
-"Submit for certification" he-button responds to a plain element click).**
+"Submit for certification" he-button responds to a plain element click); LIVE in the public catalog at 19:58 UTC, about
+90 minutes later.**
 Lessons of submission 3: raw.githubusercontent.com caches a path for minutes, so a replaced file needs a new name
 (`_v5`, `_b`); the in-page `fetch` of the MSIX keeps running after the browser tool times out at 45 s, so
 never launch it twice (the second run made a duplicate package that had to be removed); the Save buttons of the
