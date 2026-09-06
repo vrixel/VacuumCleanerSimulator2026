@@ -62,6 +62,15 @@ def main():
         save(cover(hero, 1920, 620, (0.5, 0.5)), STORE, "site_banner.png")
     if portrait is not None:
         save(cover(portrait, 600, 900, (0.5, 0.4)), STORE, "steam_library.png")
+    # Microsoft Store listing art (2026-09-06): poster from the portrait, box art from the key art, heroes from the wide one
+    portrait = load("library_portrait.png")
+    hero = load("hero_wide.png")
+    key = load("key_art.png")
+    if portrait is not None: save(cover(portrait, 720, 1080), STORE, "ms_poster_720x1080.png")
+    if key is not None: save(cover(key, 1080, 1080), STORE, "ms_boxart_1080.png")
+    if hero is not None:
+        save(cover(hero, 1920, 1080, (0.5, 0.6)), STORE, "ms_superhero_1920x1080.png")
+        save(cover(hero, 2400, 1200, (0.5, 0.6)), STORE, "ms_hero_2400x1200.png")
     if icon is not None:
         sq = cover(icon, 1024, 1024)
         save(sq, ICON, "icon_1024.png")

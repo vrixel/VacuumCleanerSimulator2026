@@ -51,6 +51,34 @@ ITEMS = {
 }
 
 
+# 2026-09-06 evening, his second direction: "plus style et impressionnant, artwork Need for Speed ou jeux de voiture,
+# mais avec un aspi bien detaille et technique en mouvement". These start from the reference render alone.
+RACE = ("this exact vacuum cleaner from the image, a red and dark-grey canister vacuum on wheels with a ribbed black hose "
+        "and metal wand, rendered as a hyper-detailed technical hero machine: crisp mechanical parts, panel gaps, vents, "
+        "spoked wheels with rubber tyres, glossy red paint with reflections, carbon-fibre and brushed-metal details, "
+        "NO eyes, NO face, NO mouth")
+RACE_STYLE = ("Key art in the style of a AAA racing video game: low dramatic camera angle close to the floor, the machine "
+              "caught at full speed, motion blur streaks, dust clouds and debris trailing behind it, sparks from the wheels, "
+              "strong rim lighting, wet-floor reflections, cinematic lens flare, moody dark colour grade with hot orange and "
+              "electric blue accents, volumetric light, photoreal 3D render, family friendly, no violence. ABSOLUTELY NO TEXT "
+              "of any kind: no title, no letters, no logos, no watermark.")
+RACE_ITEMS = {
+    "key_art": (f"{RACE}, drifting sideways through a dark messy living room at night, its hose and wand whipping behind it, "
+                f"crumbs, socks and toy bricks being sucked into its floor head, a sofa and a lamp blurred in the background. "
+                f"Square composition with room at the top for a title. {RACE_STYLE}"),
+    "hero_wide": (f"{RACE}, charging straight at the camera down a long dark kitchen at night, chairs toppling in its wake, "
+                  f"cereal and crumbs swirling into its floor head. Very wide landscape composition, machine centred. {RACE_STYLE}"),
+    "library_portrait": (f"{RACE}, launching off a mountain of dust, socks and toys like a rally car over a crest, seen from a "
+                         f"low angle against a dramatic dark sky of dust, headlight-like glow from its front. Tall portrait "
+                         f"composition with empty space at the top for a title. {RACE_STYLE}"),
+    "icon": (f"App icon on a FLAT bright safety-yellow background that fills the entire square edge to edge (no floor, no "
+             f"room, no scene, no panel, no vignette): {RACE}, three-quarter front view, slightly tilted as if cornering at "
+             f"speed, big and centred, filling most of the frame, with a small dust puff and a few orange sparks behind it "
+             f"and a soft drop shadow under it. Bold, punchy, readable when small, square. Photoreal 3D render, family "
+             f"friendly. ABSOLUTELY NO TEXT of any kind: no title, no letters, no logos, no watermark."),
+}
+
+
 def log(*a):
     print(*a, flush=True)
 
@@ -62,14 +90,17 @@ def main():
     ap.add_argument("--only", default="")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--model", default="bytedance/seedream-v4-edit")
+    ap.add_argument("--style", default="swap", choices=["swap", "race"], help="swap: keep the cartoon composition; race: racing-game key art from the reference alone")
     a = ap.parse_args()
     only = {s.strip() for s in a.only.split(",") if s.strip()}
-    names = [n for n in ITEMS if not only or n in only]
+    items = RACE_ITEMS if a.style == "race" else ITEMS
+    names = [n for n in items if not only or n in only]
+    tag = "race_" if a.style == "race" else "real_"
 
     os.makedirs(CARTOON, exist_ok=True)
     if a.list:
         for n in names:
-            raw = os.path.join(RAW, f"real_{n}.png")
+            raw = os.path.join(RAW, f"{tag}{n}.png")
             log(f"{'done' if os.path.exists(raw) else 'todo':5} {n:18} <- {os.path.relpath(os.path.join(CARTOON, n + '.png'), ROOT)}")
         return 0
     if not os.path.exists(REFERENCE):
@@ -86,7 +117,7 @@ def main():
         base = os.path.join(CARTOON, n + ".png")
         if not os.path.exists(base):
             shutil.copy2(os.path.join(SRC, n + ".png"), base)
-        raw = os.path.join(RAW, f"real_{n}.png")
+        raw = os.path.join(RAW, f"{tag}{n}.png")
         if os.path.exists(raw) and os.path.getsize(raw) > 10000 and not a.force:
             log(f"[{n}] already there, skipped")
         elif a.dry_run:
@@ -97,8 +128,8 @@ def main():
                 if ref_url is None:
                     ref_url = k.upload(REFERENCE, "images/vcs")
                     log("   reference uploaded")
-                base_url = k.upload(base, "images/vcs")
-                inp = {"prompt": ITEMS[n], "image_urls": [base_url, ref_url], "output_format": "png"}
+                urls = [ref_url] if a.style == "race" else [k.upload(base, "images/vcs"), ref_url]
+                inp = {"prompt": items[n], "image_urls": urls, "output_format": "png"}
                 r = k._request(k.base + "/api/v1/jobs/createTask", {"model": a.model, "input": inp})
                 tid = (r.get("data") or {}).get("taskId")
                 if not tid:
