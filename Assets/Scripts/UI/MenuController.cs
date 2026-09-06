@@ -192,13 +192,13 @@ namespace VCS.UI
 
         public void SelectVacuumIndex(int i)
         {
-            var all = VacuumCatalog.All;
+            var all = VacuumCatalog.Visible;
             vacIndex = ((i % all.Count) + all.Count) % all.Count;
             var s = all[vacIndex];
             VacuumCatalog.SelectedId = s.Id;
             PlayerPrefs.Save();
             vacuumName.text = s.Name.ToUpperInvariant();
-            vacuumTagline.text = s.Tagline;
+            vacuumTagline.text = string.IsNullOrEmpty(s.Credit) ? s.Tagline : s.Tagline + "\n" + s.Credit;
             float[] values = { s.SpeedBar, s.SuctionBar, s.BagBar, s.HopBar };
             for (int k = 0; k < bars.Length; k++)
                 bars[k].rectTransform.anchorMax = new Vector2(Mathf.Clamp(values[k], 0.04f, 1f), 1f);
@@ -226,6 +226,14 @@ namespace VCS.UI
                 titleRect.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * 2f) * 1.5f);
                 titleRect.localScale = Vector3.one * (1f + 0.02f * Mathf.Sin(t * 3f));
                 titlePrompt.color = new Color(1f, 1f, 1f, 0.85f + 0.15f * Mathf.Sin(t * 4f));
+                if (Input.GetKeyDown(KeyCode.M))
+                {
+                    VacuumCatalog.MuseumUnlocked = !VacuumCatalog.MuseumUnlocked;
+                    SelectVacuumIndex(0);
+                    var gmm = GameManager.I;
+                    if (gmm != null) gmm.Audio.PlayDing();
+                    Debug.Log("[VCS] Museum " + (VacuumCatalog.MuseumUnlocked ? "open" : "closed"));
+                }
                 int h = GameInput.MenuNavHorizontal();
                 if (h != 0)
                 {

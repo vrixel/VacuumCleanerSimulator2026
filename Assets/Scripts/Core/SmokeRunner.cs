@@ -36,7 +36,7 @@ namespace VCS.Core
             yield return Capture("smoke-title.png");
 
             var gm = GameManager.I;
-            var garage = VCS.Player.VacuumCatalog.All;
+            var garage = VCS.Player.VacuumCatalog.Visible;
             string savedChoice = VCS.Player.VacuumCatalog.SelectedId;
             for (int i = 0; i < garage.Count; i++)
             {

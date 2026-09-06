@@ -37,6 +37,34 @@ def main():
         raise SystemExit("no mesh in " + src)
     before = sum(len(o.data.polygons) for o in meshes)
 
+    # The game simulates its own power cord: drop any cable, plug or wire the artist modelled, by object name
+    # first, then by material name on the faces that remain.
+    CABLE = ("cable", "cord", "wire", "plug", "cavo", "kabel", "fil_", "plane", "floor", "ground", "dock", "station", "backdrop")
+    dropped = [o for o in meshes if any(k in o.name.lower() for k in CABLE)]
+    for o in dropped:
+        print("dropping object", o.name)
+        bpy.data.objects.remove(o, do_unlink=True)
+    meshes = [o for o in meshes if o not in dropped]
+    for o in meshes:
+        bad = {i for i, slot in enumerate(o.material_slots) if slot.material and any(k in slot.material.name.lower() for k in CABLE)}
+        if not bad:
+            continue
+        print("dropping faces of", o.name, "with materials", [o.material_slots[i].material.name for i in bad])
+        bpy.ops.object.select_all(action="DESELECT")
+        o.select_set(True)
+        bpy.context.view_layer.objects.active = o
+        bpy.ops.object.mode_set(mode="EDIT")
+        bpy.ops.mesh.select_all(action="DESELECT")
+        bpy.ops.object.mode_set(mode="OBJECT")
+        for poly in o.data.polygons:
+            poly.select = poly.material_index in bad
+        bpy.ops.object.mode_set(mode="EDIT")
+        bpy.ops.mesh.delete(type="FACE")
+        bpy.ops.object.mode_set(mode="OBJECT")
+    meshes = [o for o in meshes if len(o.data.polygons) > 0]
+    if not meshes:
+        raise SystemExit("nothing left after dropping cables in " + src)
+
     bpy.ops.object.select_all(action="DESELECT")
     for o in meshes:
         o.select_set(True)

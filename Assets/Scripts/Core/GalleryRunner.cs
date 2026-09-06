@@ -43,6 +43,7 @@ namespace VCS.Core
                 VacuumModels.UseV2 = look;
                 foreach (var s in VacuumCatalog.All)
                 {
+                    if (s.Hidden) continue;   // museum pieces are rendered by the import loop below
                     string file = Path.Combine(outDir, (look ? "after-" : "before-") + s.Id + ".png");
                     preview.RenderStill(s, -35f, 768, file);
                     Debug.Log("[VCS] Gallery " + file);
