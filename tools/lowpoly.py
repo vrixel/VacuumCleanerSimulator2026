@@ -1,6 +1,6 @@
 """Blender (headless) decimation of a downloaded model into a game-ready OBJ (+ .mtl and PNG textures).
 
-    "D:\Program Files\Blender\blender-4.5.13-windows-x64\blender.exe" -b --python tools\lowpoly.py -- <in.glb|.gltf|.fbx|.obj> <out.fbx> [target_faces=4000] [size_m=0.6]
+    "D:\Program Files\Blender\blender-4.5.13-windows-x64\blender.exe" -b --python tools\lowpoly.py -- <in.glb|.gltf|.fbx|.obj> <out.obj> [target_faces=4000] [size_m=0.6] [strip_tubes=0] [side_drop=0] [dense_tubes=0]
 
 Imports the file, joins all meshes, applies a Decimate (collapse) modifier to reach the target face count, scales the
 whole model so its largest horizontal extent is size_m and its base sits on y = 0 (Unity convention: origin on the
@@ -20,6 +20,16 @@ def main():
     src, dst = argv[0], argv[1]
     target = int(argv[2]) if len(argv) > 2 else 4000
     size = float(argv[3]) if len(argv) > 3 else 0.6
+    # optional: also drop tube-like loose parts (cables fused into the body): surface per length below this
+    # fraction of the model size. 0 = off. Philips AquaTrio needs about 0.08.
+    strip_tubes = float(argv[4]) if len(argv) > 4 else 0.0
+    # optional: drop small tube-like parts hanging beside the body (a cord looped on a hook, its plug): parts whose
+    # centre sits farther than this fraction of the model size from the vertical axis, above the base. 0 = off.
+    side_drop = float(argv[5]) if len(argv) > 5 else 0.0
+    # optional: drop densely tessellated small parts (cable loops modelled as fine tubes, hanging on the body):
+    # faces per unit of surface, surface in units of the model size squared. Shell panels sit around 15000-26000
+    # on the Philips, its handle grip at 40000, its cord loops above 58000. 0 = off.
+    dense_tubes = float(argv[6]) if len(argv) > 6 else 0.0
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     ext = os.path.splitext(src)[1].lower()
@@ -64,6 +74,62 @@ def main():
     meshes = [o for o in meshes if len(o.data.polygons) > 0]
     if not meshes:
         raise SystemExit("nothing left after dropping cables in " + src)
+
+    # Cables fused into the body mesh have no name: they are long, thin ribbons or tubes with almost no surface
+    # per unit of length. Split every mesh into loose parts and drop those (and dust-sized fragments).
+    import bmesh
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in meshes:
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = meshes[0]
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.mesh.separate(type="LOOSE")
+    bpy.ops.object.mode_set(mode="OBJECT")
+    parts = [o for o in bpy.context.scene.objects if o.type == "MESH"]
+    H = max(max(o.dimensions) for o in parts)
+    from mathutils import Vector
+    def wbox(o):
+        pts = [o.matrix_world @ Vector(c) for c in o.bound_box]
+        return (Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts))),
+                Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts))))
+    lo = Vector((1e9,) * 3); hi = Vector((-1e9,) * 3)
+    for o in parts:
+        mn, mx = wbox(o)
+        lo = Vector((min(lo.x, mn.x), min(lo.y, mn.y), min(lo.z, mn.z))); hi = Vector((max(hi.x, mx.x), max(hi.y, mx.y), max(hi.z, mx.z)))
+    axis_x, axis_y = (lo.x + hi.x) / 2, (lo.y + hi.y) / 2
+    M = max(hi.x - lo.x, hi.y - lo.y, hi.z - lo.z)   # the whole model, not the largest part
+    dropped_parts = 0
+    for o in parts:
+        d = o.dimensions
+        L = (d.x * d.x + d.y * d.y + d.z * d.z) ** 0.5
+        bm = bmesh.new()
+        bm.from_mesh(o.data)
+        area = sum(f.calc_area() for f in bm.faces)
+        bm.free()
+        ratio = area / max(L, 1e-9)
+        thin = L > 0.1 * H and ratio < 0.0024 * H
+        tube = strip_tubes > 0 and L > 0.1 * H and ratio < strip_tubes * H and len(o.data.polygons) <= 40   # cable segments are few-face tubes
+        dust = L < 0.012 * H
+        side = False
+        if side_drop > 0:
+            mn, mx = wbox(o)
+            c = (mn + mx) / 2
+            off = ((c.x - axis_x) ** 2 + (c.y - axis_y) ** 2) ** 0.5
+            # beside the axis, above the head, small and not a tall structural piece (a rail, a tank wall)
+            side = off > side_drop * M and c.z > lo.z + 0.25 * M and len(o.data.polygons) < 300 and max(mx - mn) < 0.3 * M
+        dense = False
+        if dense_tubes > 0 and L > 0.05 * M and L < 0.3 * M and len(o.data.polygons) < 500 and area > 1e-9:
+            dense = len(o.data.polygons) * M * M / area > dense_tubes
+        if thin or dust or tube or side or dense:
+            if (tube or side or dense) and not thin:
+                kind = "side" if side else ("dense" if dense else "tube")
+                print(f"dropping {kind} part {o.name} L={L:.3f} area/L={ratio:.4f} faces={len(o.data.polygons)} density={len(o.data.polygons) * M * M / max(area, 1e-9):.0f}")
+            bpy.data.objects.remove(o, do_unlink=True)
+            dropped_parts += 1
+    meshes = [o for o in bpy.context.scene.objects if o.type == "MESH"]
+    print(f"dropped {dropped_parts} thin or dust parts of {len(parts)}")
 
     bpy.ops.object.select_all(action="DESELECT")
     for o in meshes:

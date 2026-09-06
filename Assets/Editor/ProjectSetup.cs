@@ -20,7 +20,7 @@ namespace VCS.Editor
         {
             PlayerSettings.productName = "Vacuum Cleaner Simulator 2026";
             PlayerSettings.companyName = "Cosnuau";
-            PlayerSettings.bundleVersion = "0.2.0";
+            PlayerSettings.bundleVersion = "0.3.0";
             PlayerSettings.colorSpace = ColorSpace.Linear;
             PlayerSettings.fullScreenMode = FullScreenMode.FullScreenWindow;
             PlayerSettings.resizableWindow = true;
