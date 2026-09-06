@@ -99,6 +99,13 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   go on a flat green background (black glass on black cannot be keyed), the models answer square so processed
   sprites are cropped to the object, `largest` keeps one part and cuts the haze the key leaves, an edit borrows the
   base's silhouette (`mask_from_base`), glows get a `radial_fade`. Look at every sprite on a green sheet before wiring it.
+- The boost (Shift / RB / LB / right trigger, 2026-09-06 "I want to feel the boost"): still a 1.7x speed cap, but felt:
+  `GameAudio.SetTurbo` (kie `turbo_up` / `turbo_loop` / `turbo_down`, synthesised sweeps as fallbacks),
+  `EffectsFactory.CreateBoostTrail` (dust plume and sparks behind the vacuum; on a constant curve
+  `rateOverTimeMultiplier` IS the rate, so it is driven to 110 / 60, not 1), the body shivers and digs its nose in
+  (`VacuumVisuals.SetTurbo`), the camera opens to 74 degrees with a rumble (`FollowCamera`), generated radial
+  `speed_lines` (brightness as alpha, `lum_alpha`) fade in over the picture (`HudController`), the cockpit TURBO
+  tile lights. The smoke test holds `GameInput.TurboOverride` for `smoke-turbo.png` and logs `[VCS] Boost:`.
 - The HUD (`HudController`) is spread around the screen: score block top-left, power strip top-centre, timer and
   `RadarView` top-right (a top-down camera into a masked RawImage; markers are quads on layer 8 that the main and
   preview cameras cull), vertical meters left, mission log right, `Cockpit` at the bottom.

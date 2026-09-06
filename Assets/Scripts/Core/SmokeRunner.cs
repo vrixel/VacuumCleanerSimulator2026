@@ -51,7 +51,14 @@ namespace VCS.Core
             GameInput.MoveOverride = new Vector2(0f, 1f);
             yield return new WaitForSecondsRealtime(1.5f);
             GameInput.MoveOverride = new Vector2(1f, 0f);
-            yield return new WaitForSecondsRealtime(2.5f);
+            yield return new WaitForSecondsRealtime(0.6f);
+            // the boost: trail, camera kick, speed lines and the turbo tile, photographed mid-run
+            GameInput.TurboOverride = true;
+            yield return new WaitForSecondsRealtime(1.3f);
+            Debug.Log("[VCS] Boost: " + gm.Player.BoostDebug() + ", speed " + gm.Player.Speed.ToString("0.0"));
+            yield return Capture("smoke-turbo.png");
+            GameInput.TurboOverride = false;
+            yield return new WaitForSecondsRealtime(0.6f);
             GameInput.MoveOverride = new Vector2(0f, -1f);
             yield return new WaitForSecondsRealtime(1.5f);
             GameInput.MoveOverride = new Vector2(-1f, 0.3f);

@@ -71,6 +71,9 @@ namespace VCS.Player
 
         public void SetPowerScale(float s) { powerScale = s; }
 
+        bool turbo;
+        public void SetTurbo(bool on) { turbo = on; }
+
         void Update()
         {
             float dt = Time.deltaTime;
@@ -79,12 +82,13 @@ namespace VCS.Player
             float bobAmp = 0.01f + 0.02f * Mathf.Clamp01(speed / 8f);
 
             Vector3 lv = vac != null ? transform.InverseTransformDirection(vac.Rb.linearVelocity) : Vector3.zero;
-            float pitch = Mathf.Clamp(lv.z * 0.7f, -5f, 5f);
+            float pitch = Mathf.Clamp(lv.z * 0.7f, -5f, 5f) + (turbo ? 2.5f : 0f);
             float roll = Mathf.Clamp(-lv.x * 0.7f, -6f, 6f);
+            Vector2 shiver = turbo ? Random.insideUnitCircle * 0.012f : Vector2.zero;
             // nose-down (pitch > 0) sinks the front by sin(pitch) * zFront, nose-up sinks the back; roll sinks a side
             float lift = Mathf.Sin(Mathf.Abs(pitch) * Mathf.Deg2Rad) * (pitch > 0f ? zFront : zBack)
                        + Mathf.Sin(Mathf.Abs(roll) * Mathf.Deg2Rad) * xHalf;
-            group.localPosition = new Vector3(0f, Mathf.Sin(bob) * bobAmp + lift, 0f);
+            group.localPosition = new Vector3(shiver.x, Mathf.Sin(bob) * bobAmp + lift + Mathf.Abs(shiver.y), 0f);
             group.localRotation = Quaternion.Euler(pitch, 0f, roll);
 
             punch = Mathf.Lerp(punch, 0f, dt * 9f);

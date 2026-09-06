@@ -20,6 +20,17 @@ namespace VCS.Player
         public Transform Nozzle { get; private set; }
         public float Speed { get; private set; }
         public bool Turbo { get; private set; }
+        ParticleSystem[] boostTrail;
+
+        /// <summary>For the smoke log: what the boost trail is doing.</summary>
+        public string BoostDebug()
+        {
+            if (boostTrail == null) return "trail missing";
+            var d = boostTrail[0];
+            return "turbo " + Turbo + ", grounded " + Grounded + ", dust rate " + d.emission.rateOverTime.constant.ToString("0") + " x" + d.emission.rateOverTimeMultiplier.ToString("0.0")
+                   + ", alive " + d.particleCount + "/" + boostTrail[1].particleCount + ", playing " + d.isPlaying + ", emitting " + d.isEmitting
+                   + ", pos " + d.transform.position.ToString("F1") + ", mat " + (d.GetComponent<ParticleSystemRenderer>().sharedMaterial != null ? d.GetComponent<ParticleSystemRenderer>().sharedMaterial.shader.name : "none");
+        }
         public bool Grounded { get; private set; }
         public Vector3 MoveDir { get; private set; }
 
@@ -63,6 +74,8 @@ namespace VCS.Player
             vc.Visuals = VacuumVisuals.Build(go.transform, vc, spec);
             vc.Suction = go.AddComponent<SuctionSystem>();
             vc.Suction.Init(vc);
+            var gmFx = GameManager.I;
+            if (gmFx != null && gmFx.Fx != null) vc.boostTrail = gmFx.Fx.CreateBoostTrail(go.transform);
             if (!spec.Cordless) vc.Cord = PowerCord.Attach(vc, socket);
             return vc;
         }
@@ -83,7 +96,24 @@ namespace VCS.Player
             var gm = GameManager.I;
             bool active = gm != null && gm.State == GameState.Playing;
             Vector2 input = active ? GameInput.Move : Vector2.zero;
-            Turbo = active && GameInput.Turbo && input.sqrMagnitude > 0.01f;
+            bool wasTurbo = Turbo;
+            Turbo = active && GameInput.Turbo && input.sqrMagnitude > 0.01f && Powered;
+            if (Turbo != wasTurbo)
+            {
+                // the boost is felt: spool-up sound, a camera kick and a squash on ignition; spool-down on release
+                if (gm != null)
+                {
+                    gm.Audio.SetTurbo(Turbo);
+                    if (Turbo) { gm.Cam.Shake(0.22f); Visuals.Punch(0.3f); }
+                }
+            }
+            if (boostTrail != null)
+            {
+                // on a constant curve the multiplier is the rate itself: dust at 70 per second, sparks at 45
+                bool on = Turbo && Grounded;
+                for (int i = 0; i < boostTrail.Length; i++) { var e = boostTrail[i].emission; e.rateOverTimeMultiplier = on ? (i == 0 ? 110f : 60f) : 0f; }
+            }
+            Visuals.SetTurbo(Turbo);
 
             var cam = Camera.main != null ? Camera.main.transform : null;
             Vector3 fwd = cam != null ? Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized : Vector3.forward;

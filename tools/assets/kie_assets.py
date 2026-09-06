@@ -128,6 +128,10 @@ HUD_ELEMENTS = {
                     "toward the edge, soft and glowing, centred, circular, bold arcade game victory background, empty "
                     "centre, isolated on a pure black background. ABSOLUTELY NO TEXT of any kind: no letters, no "
                     "numbers, no logos."),
+    "speed_lines": ("A full-frame overlay of radial motion speed lines: thin bright white streaks radiating from the "
+                    "centre outward to the edges like a comic-book zoom, dense at the edges, the centre and the middle "
+                    "of the frame completely empty, high energy arcade racing effect, isolated on a pure black "
+                    "background. ABSOLUTELY NO TEXT of any kind: no letters, no numbers, no logos."),
     "radar_bezel": ("A round radar scope bezel for a game HUD: a thick circular bevelled brushed-steel ring with hex "
                     "screws and a thin safety-yellow accent groove, the centre of the ring is EMPTY flat pure black, "
                     "seen exactly from the front, isolated. " + ELEMENT_STYLE + NO_TEXT),
@@ -185,6 +189,10 @@ SOUNDS = {
     "absorb_small": {"prompt": "A sock sucked into a vacuum cleaner hose, one fast whoosh thwip with a soft flap, no music", "loop": False, "trim": 0.9},
     "absorb_medium": {"prompt": "A wooden toy block sucked into a vacuum cleaner hose, rattling up the pipe then a hollow thud into the bin, no music", "loop": False, "trim": 1.4},
     "absorb_big": {"prompt": "A heavy object slamming into a big vacuum cleaner drum, one deep hollow bonk with a rattle and a suction gulp, no music", "loop": False, "trim": 1.5},
+    # the boost (2026-09-06, "I want to feel the boost"): spool-up, a screaming loop, spool-down
+    "turbo_up": {"prompt": "A vacuum cleaner motor surging from normal speed to a screaming high-rpm turbo whine in one second, rising pitch, air rush, punchy, no music", "loop": False, "trim": 1.2},
+    "turbo_loop": {"prompt": "A vacuum cleaner motor screaming at maximum turbo rpm, high-pitched whine with roaring airflow, steady, intense, no music, clean seamless loop", "loop": True, "trim": 3.0},
+    "turbo_down": {"prompt": "A screaming vacuum cleaner motor spooling down from turbo rpm to normal speed in one second, falling pitch with a soft airflow sigh, no music", "loop": False, "trim": 1.2},
 }
 
 
@@ -275,10 +283,19 @@ def largest_component(im):
     return im
 
 
-def process_image(src, dst, size, key=True, square=True, keyall=False, largest=False, mask_src=None, radial_fade=False):
+def process_image(src, dst, size, key=True, square=True, keyall=False, largest=False, mask_src=None, radial_fade=False, lum_alpha=False):
     from PIL import Image
     import numpy as np
     im = _fit(Image.open(src).convert("RGB"), size, square)
+    if lum_alpha:
+        # white marks on black (speed lines, glows): brightness becomes the alpha of a white sprite, so the game
+        # tints it and the black never shows. The corner-colour key would pick the white and invert it.
+        a = np.asarray(im).astype(np.float32)
+        lum = a.max(axis=2)
+        rgba = np.dstack([np.full_like(lum, 255.0), np.full_like(lum, 255.0), np.full_like(lum, 255.0), lum]).astype(np.uint8)
+        im = Image.fromarray(rgba, "RGBA")
+        log("   brightness taken as alpha")
+        key = False
     if key:
         im, bg = key_background(im, connected=not keyall)
         log(f"   background keyed: rgb({int(bg[0])},{int(bg[1])},{int(bg[2])})" + (" everywhere" if keyall else ""))
@@ -365,12 +382,12 @@ class Campaign:
         self.spent_log = []
 
     # ---------------------------------------------------------------- images
-    def image(self, id_, prompt, dst, size, model=IMAGE_MODEL, base=None, key=True, square=True, keyall=False, largest=False, mask_src=None, radial_fade=False):
+    def image(self, id_, prompt, dst, size, model=IMAGE_MODEL, base=None, key=True, square=True, keyall=False, largest=False, mask_src=None, radial_fade=False, lum_alpha=False):
         raw = os.path.join(RAW, id_ + ".png")
         if self.reprocess:
             if ok_file(raw):
                 log(f"[{id_}] reprocessing from raw")
-                process_image(raw, dst, size, key, square, keyall, largest, mask_src, radial_fade)
+                process_image(raw, dst, size, key, square, keyall, largest, mask_src, radial_fade, lum_alpha)
             else:
                 log(f"[{id_}] no raw file, cannot reprocess")
             return
@@ -383,7 +400,7 @@ class Campaign:
         if not ok_file(raw) or self.force:
             log(f"[{id_}] generating with {model}")
             self.k.generate(prompt, raw, model=model, image=base, ratio="1:1", output_format="png", force=True)
-        process_image(raw, dst, size, key, square, keyall, largest, mask_src, radial_fade)
+        process_image(raw, dst, size, key, square, keyall, largest, mask_src, radial_fade, lum_alpha)
 
     # ----------------------------------------------------------------- audio
     def _audio_task(self, path, body):
@@ -496,9 +513,10 @@ def plan(only):
     for pid, prompt in HUD_PLATES.items():
         items.append(("image", pid, dict(prompt=prompt, dst=os.path.join(RES, "UI", "Hud", f"{pid}.png"), size=1024, square=False)))
     for eid, prompt in HUD_ELEMENTS.items():
-        big = eid.startswith("banner_")
+        big = eid.startswith("banner_") or eid == "speed_lines"
         items.append(("image", eid, dict(prompt=prompt, dst=os.path.join(RES, "UI", "Hud", f"{eid}.png"), size=1024 if big else 512, square=False,
-                                         keyall=(eid == "radar_bezel"), largest=not big, radial_fade=(eid == "banner_rays"))))
+                                         keyall=(eid == "radar_bezel"), largest=not big, radial_fade=(eid == "banner_rays"),
+                                         lum_alpha=(eid == "speed_lines"))))
     items.append(("edit", "tile_on", dict(prompt=TILE_ON_EDIT, base_id="tile_off", dst=os.path.join(RES, "UI", "Hud", "tile_on.png"), size=512, square=False,
                                           largest=True, mask_from_base=True)))
     for mid, prompt in MARKETING.items():
@@ -557,7 +575,7 @@ def main():
     def do_image(it):
         _, id_, s = it
         try:
-            c.image(id_, s["prompt"], s["dst"], s["size"], key=s.get("key", True), square=s.get("square", True), keyall=s.get("keyall", False), largest=s.get("largest", False), radial_fade=s.get("radial_fade", False))
+            c.image(id_, s["prompt"], s["dst"], s["size"], key=s.get("key", True), square=s.get("square", True), keyall=s.get("keyall", False), largest=s.get("largest", False), radial_fade=s.get("radial_fade", False), lum_alpha=s.get("lum_alpha", False))
             return id_, None
         except Exception as e:  # noqa: BLE001
             return id_, str(e)

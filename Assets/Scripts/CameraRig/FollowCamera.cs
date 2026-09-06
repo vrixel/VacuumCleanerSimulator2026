@@ -92,8 +92,10 @@ namespace VCS.CameraRig
                 pitch = Mathf.Clamp(pitch - stick.y * 100f * Time.deltaTime - mouse.y * 2f, 22f, 70f);
             }
 
-            float wantedFov = playing && gm.Player != null && gm.Player.Turbo ? 72f : 60f;
-            Cam.fieldOfView = Mathf.Lerp(Cam.fieldOfView, wantedFov, 1f - Mathf.Exp(-dt * 4f));
+            bool boosting = playing && gm.Player != null && gm.Player.Turbo;
+            float wantedFov = boosting ? 74f : 60f;
+            Cam.fieldOfView = Mathf.Lerp(Cam.fieldOfView, wantedFov, 1f - Mathf.Exp(-dt * (boosting ? 9f : 3.5f)));
+            if (boosting) transform.position += Random.insideUnitSphere * 0.012f;   // engine rumble
 
             Vector3 desired = Desired();
             transform.position = Vector3.SmoothDamp(transform.position, desired, ref vel, 0.10f, Mathf.Infinity, dt);

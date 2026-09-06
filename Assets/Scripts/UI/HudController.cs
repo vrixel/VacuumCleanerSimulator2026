@@ -25,6 +25,8 @@ namespace VCS.UI
         RectTransform bannerRect, scoreRect, comboRect;
         Image[] sparkles;
         Image bannerRays;
+        Image speedLines;
+        float speedLinesAlpha;
         RectTransform toastRect;
         CanvasGroup toastGroup;
         Text toastText;
@@ -58,6 +60,13 @@ namespace VCS.UI
             var tl = new Vector2(0f, 1f);
             var tc = new Vector2(0.5f, 1f);
             var tr = new Vector2(1f, 1f);
+
+            // ---- boost: radial speed lines over the whole picture, under every plate (first child draws first)
+            if (UIStyle.Has("speed_lines"))
+            {
+                speedLines = UIStyle.Simple(t, "SpeedLines", "speed_lines", new Color(1f, 1f, 1f, 0f), Vector2.zero, Vector2.one, new Vector2(-80f, -80f), new Vector2(80f, 80f), Color.clear, false);
+                speedLines.raycastTarget = false;
+            }
 
             // ---- top-left: score plate
             var scoreBox = UIStyle.Frame(t, "ScoreBox", tl, tl, new Vector2(30f, -230f), new Vector2(560f, -30f), "plate_score", 530f, 200f, 34f);
@@ -247,6 +256,17 @@ namespace VCS.UI
         public void SetTelemetry(Telemetry tm, SuctionSystem suction, GameManager gm, float dt)
         {
             cockpit.Refresh(tm, suction, gm, dt);
+            if (speedLines != null)
+            {
+                speedLinesAlpha = Mathf.Lerp(speedLinesAlpha, tm.Turbo ? 0.42f : 0f, 1f - Mathf.Exp(-dt * (tm.Turbo ? 8f : 5f)));
+                speedLines.color = new Color(1f, 1f, 1f, speedLinesAlpha);
+                if (speedLinesAlpha > 0.01f)
+                {
+                    float tt = Time.unscaledTime;
+                    speedLines.rectTransform.localScale = Vector3.one * (1f + 0.05f * Mathf.Sin(tt * 21f));
+                    speedLines.rectTransform.localEulerAngles = new Vector3(0f, 0f, 1.5f * Mathf.Sin(tt * 13f));
+                }
+            }
             tapeSuction.Set(tm.Suction01 * 100f, Mathf.RoundToInt(tm.Suction01 * 100f).ToString());
             tapeTemp.Set(tm.TempC, tm.TempC.ToString("0"));
             tapeTemp.SetColor(tm.Overheat ? UIStyle.Red : UIStyle.Amber);

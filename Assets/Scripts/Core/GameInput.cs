@@ -10,6 +10,8 @@ namespace VCS.Core
     {
         /// <summary>When set, replaces the stick/keys for driving (used by the smoke test).</summary>
         public static Vector2? MoveOverride;
+        /// <summary>The smoke test holds the boost with this, never with keystrokes.</summary>
+        public static bool TurboOverride;
 
         public static Vector2 Move
         {
@@ -30,6 +32,7 @@ namespace VCS.Core
         public static bool HopDown => Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.JoystickButton0);
 
         public static bool Turbo =>
+            TurboOverride ||
             Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) ||
             Input.GetKey(KeyCode.JoystickButton4) || Input.GetKey(KeyCode.JoystickButton5) ||
             Input.GetAxis("TriggerR") > 0.3f;

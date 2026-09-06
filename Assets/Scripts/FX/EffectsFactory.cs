@@ -81,6 +81,59 @@ namespace VCS.FX
         }
 
         /// <summary>Looping particles that converge on the nozzle. Negative start speed on a cone points them inward.</summary>
+        /// <summary>
+        /// The boost trail: a dust plume and a few hot sparks thrown out behind the vacuum. Both systems start
+        /// silent; the controller drives their emission with the turbo state.
+        /// </summary>
+        public ParticleSystem[] CreateBoostTrail(Transform root)
+        {
+            var holder = new GameObject("BoostTrail");
+            holder.transform.SetParent(root, false);
+            holder.transform.localPosition = new Vector3(0f, 0.12f, -0.35f);
+            holder.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);   // +z of the emitters points backwards
+
+            var dust = holder.AddComponent<ParticleSystem>();
+            var m = dust.main;
+            m.loop = true; m.playOnAwake = true;
+            m.simulationSpace = ParticleSystemSimulationSpace.World;
+            m.startLifetime = new ParticleSystem.MinMaxCurve(0.5f, 0.9f);
+            m.startSpeed = new ParticleSystem.MinMaxCurve(3.5f, 6.5f);
+            m.startSize = new ParticleSystem.MinMaxCurve(0.35f, 0.7f);
+            m.startColor = new ParticleSystem.MinMaxGradient(new Color(0.97f, 0.96f, 0.94f, 1f), new Color(0.75f, 0.74f, 0.72f, 1f));
+            m.maxParticles = 600;
+            m.gravityModifier = -0.08f;
+            var em = dust.emission; em.rateOverTime = 110f; em.rateOverTimeMultiplier = 0f;
+            var sh = dust.shape; sh.shapeType = ParticleSystemShapeType.Cone; sh.angle = 25f; sh.radius = 0.15f;
+            var sz = dust.sizeOverLifetime; sz.enabled = true;
+            sz.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.5f, 1f, 2.2f));
+            var col = dust.colorOverLifetime; col.enabled = true;
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                      new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0.75f, 0.4f), new GradientAlphaKey(0f, 1f) });
+            col.color = g;
+            var r = holder.GetComponent<ParticleSystemRenderer>();
+            r.material = Palette.Particle; r.renderMode = ParticleSystemRenderMode.Billboard;
+
+            var sparkGo = new GameObject("Sparks");
+            sparkGo.transform.SetParent(holder.transform, false);
+            var sparks = sparkGo.AddComponent<ParticleSystem>();
+            var m2 = sparks.main;
+            m2.loop = true; m2.playOnAwake = true;
+            m2.simulationSpace = ParticleSystemSimulationSpace.World;
+            m2.startLifetime = new ParticleSystem.MinMaxCurve(0.25f, 0.5f);
+            m2.startSpeed = new ParticleSystem.MinMaxCurve(6f, 11f);
+            m2.startSize = new ParticleSystem.MinMaxCurve(0.08f, 0.16f);
+            m2.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.95f, 0.5f, 1f), new Color(1f, 0.55f, 0.15f, 1f));
+            m2.maxParticles = 300;
+            m2.gravityModifier = 0.8f;
+            var em2 = sparks.emission; em2.rateOverTime = 60f; em2.rateOverTimeMultiplier = 0f;
+            var sh2 = sparks.shape; sh2.shapeType = ParticleSystemShapeType.Cone; sh2.angle = 20f; sh2.radius = 0.08f;
+            var r2 = sparkGo.GetComponent<ParticleSystemRenderer>();
+            r2.material = Palette.Particle; r2.renderMode = ParticleSystemRenderMode.Stretch; r2.velocityScale = 0.12f; r2.lengthScale = 2f;
+            dust.Play(); sparks.Play();
+            return new[] { dust, sparks };
+        }
+
         public ParticleSystem CreateSuctionSwirl(Transform nozzle)
         {
             var go = new GameObject("Swirl");

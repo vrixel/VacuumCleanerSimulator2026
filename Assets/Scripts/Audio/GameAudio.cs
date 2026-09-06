@@ -10,7 +10,10 @@ namespace VCS.Audio
     {
         const int Rate = 44100;
 
-        AudioSource hum, sfx, ui, music, suction, reel;
+        AudioSource hum, sfx, ui, music, suction, reel, turbo;
+        AudioClip turboUp, turboLoop, turboDown, turboUpSynth, turboDownSynth;
+        float turboVolTarget;
+        bool turboOn;
         AudioClip pop, gulp, boing, whoosh, ding, levelUp, clunk, bagFull, start, fanfare, meow;
         AudioClip popReal, bagAlarmReal;
         // generated with kie.ai (tools/assets/kie_assets.py), all optional: the synthesised sounds stay as fallbacks
@@ -45,6 +48,9 @@ namespace VCS.Audio
             absorbSmall = Resources.Load<AudioClip>("Audio/Sfx/absorb_small");
             absorbMedium = Resources.Load<AudioClip>("Audio/Sfx/absorb_medium");
             absorbBig = Resources.Load<AudioClip>("Audio/Sfx/absorb_big");
+            turboUp = Resources.Load<AudioClip>("Audio/Sfx/turbo_up");
+            turboLoop = Resources.Load<AudioClip>("Audio/Sfx/turbo_loop");
+            turboDown = Resources.Load<AudioClip>("Audio/Sfx/turbo_down");
 
             music = gameObject.AddComponent<AudioSource>();
             music.loop = true;
@@ -69,6 +75,10 @@ namespace VCS.Audio
             // the airflow at the nozzle, louder when things are being pulled; the cord reel while rewinding
             suction = LoopSource(suctionLoop);
             reel = LoopSource(rewindLoop);
+            turbo = LoopSource(turboLoop);
+            // without the generated clips the boost still speaks: a rising and a falling sweep
+            turboUpSynth = Sweep("turboup", 0.7f, 220f, 1100f, 1.2f, 0.45f, 0.25f);
+            turboDownSynth = Sweep("turbodown", 0.8f, 1100f, 260f, 2.2f, 0.4f, 0.25f);
 
             ui = gameObject.AddComponent<AudioSource>();
             ui.playOnAwake = false;
@@ -257,6 +267,17 @@ namespace VCS.Audio
             if (was && !on && rewindEnd != null) { sfx.pitch = Random.Range(0.95f, 1.05f); sfx.PlayOneShot(rewindEnd, 0.8f); }
         }
 
+        /// <summary>The boost: spool-up on ignition, a screaming loop while held, spool-down on release.</summary>
+        public void SetTurbo(bool on)
+        {
+            if (on == turboOn) return;
+            turboOn = on;
+            turboVolTarget = on ? 0.75f : 0f;
+            sfx.pitch = Random.Range(0.97f, 1.03f);
+            if (on) sfx.PlayOneShot(turboUp != null ? turboUp : turboUpSynth, 0.8f);
+            else sfx.PlayOneShot(turboDown != null ? turboDown : turboDownSynth, 0.7f);
+        }
+
         /// <summary>True when the generated reel loop is present, so the cord can skip its per-tooth ratchet clicks.</summary>
         public bool HasReelLoop => reel != null;
 
@@ -271,6 +292,11 @@ namespace VCS.Audio
                 suction.pitch = Mathf.Lerp(suction.pitch, suctionPitchTarget, 1f - Mathf.Exp(-dt * 4f));
             }
             if (reel != null) reel.volume = Mathf.Lerp(reel.volume, reelVolTarget, 1f - Mathf.Exp(-dt * 12f));
+            if (turbo != null)
+            {
+                turbo.volume = Mathf.Lerp(turbo.volume, turboVolTarget, 1f - Mathf.Exp(-dt * (turboOn ? 6f : 10f)));
+                turbo.pitch = Mathf.Lerp(turbo.pitch, turboOn ? 1.05f : 0.9f, 1f - Mathf.Exp(-dt * 4f));
+            }
             float mv = ducked ? musicVolTarget * 0.35f : musicVolTarget;
             music.volume = Mathf.Lerp(music.volume, mv, 1f - Mathf.Exp(-dt * 3f));
         }
