@@ -372,46 +372,71 @@ namespace VCS.Player
             Sph(g, new Vector3(-0.14f, 0.03f, 0.38f), 0.05f, Rubber, "Caster");
         }
 
-        // ------------------------------------------------------------------ Rowinta (ribbed navy canister)
+        // ------------------------------------------------------------------ Rowinta (French canister, "traineau")
+        // Proportions from real canisters (docs/research/rowinta-references.png): a low pebble-shaped body, big
+        // spoked rear wheels, one small front caster, a sloped hood with a recessed carry handle and the controls
+        // on top, the hose leaving from the nose, the exhaust grille and the cord slot at the back.
         public static void Rowinta(Transform g, VacuumSpec s)
         {
-            var navy = Palette.Plastic(new Color(0.09f, 0.12f, 0.24f));
+            var navy = Palette.Glossy(new Color(0.10f, 0.17f, 0.40f));
+            var navyDark = Palette.Plastic(new Color(0.07f, 0.10f, 0.22f));
             var grey = Palette.Plastic(new Color(0.38f, 0.39f, 0.42f));
             var white = Palette.Glossy(new Color(0.85f, 0.85f, 0.86f));
             var red = Palette.Glossy(new Color(0.62f, 0.12f, 0.12f));
             var blue = Palette.Glossy(new Color(0.15f, 0.25f, 0.55f));
-            var profile = new List<Vector2> { P(0f, -0.30f), P(0.10f, -0.30f), P(0.16f, -0.26f), P(0.19f, -0.16f) };
-            for (int i = 0; i < 8; i++)
-            {
-                float z = -0.14f + i * 0.035f;
-                profile.Add(P(0.19f, z)); profile.Add(P(0.178f, z + 0.008f)); profile.Add(P(0.178f, z + 0.02f)); profile.Add(P(0.19f, z + 0.028f));
-            }
-            profile.Add(P(0.19f, 0.15f)); profile.Add(P(0.16f, 0.25f)); profile.Add(P(0.10f, 0.30f)); profile.Add(P(0f, 0.30f));
-            var body = Rev(g, profile.ToArray(), navy, new Vector3(0f, 0.17f, 0f), "Body", 36, Quaternion.Euler(90f, 0f, 0f));
-            body.transform.localScale = new Vector3(1.25f, 1f, 0.8f);
-            Torus(g, new Vector3(0f, 0.17f, -0.29f), Quaternion.Euler(90f, 0f, 0f), 0.13f, 0.02f, Rubber, "Bumper");
+            // chassis and bumper strip
+            RBox(g, 0.30f, 0.05f, 0.44f, 0.05f, Rubber, new Vector3(0f, 0.05f, 0f), "Chassis");
+            RBox(g, 0.31f, 0.02f, 0.45f, 0.05f, Rubber, new Vector3(0f, 0.10f, 0f), "Bumper");
+            // body: a low pebble, nose lower than the hood
+            RBox(g, 0.30f, 0.14f, 0.44f, 0.06f, navy, new Vector3(0f, 0.07f, 0f), "Body");
+            Prim(g, PrimitiveType.Sphere, new Vector3(0f, 0.15f, 0.17f), new Vector3(0.29f, 0.17f, 0.22f), navy, "Nose");
+            var hood = RBox(g, 0.27f, 0.09f, 0.34f, 0.05f, navy, new Vector3(0f, 0.20f, -0.04f), "Hood", Quaternion.Euler(-7f, 0f, 0f));
+            Box(g, new Vector3(0f, 0.205f, -0.06f), new Vector3(0.275f, 0.004f, 0.35f), navyDark, "HoodSeam", Quaternion.Euler(-7f, 0f, 0f));
+            // recessed carry handle at the back of the hood
+            Box(g, new Vector3(0f, 0.255f, -0.16f), new Vector3(0.14f, 0.03f, 0.05f), navyDark, "HandleWell", Quaternion.Euler(-7f, 0f, 0f));
+            TubeAlong(g, new[] { new Vector3(-0.06f, 0.26f, -0.16f), new Vector3(-0.06f, 0.30f, -0.16f), new Vector3(0.06f, 0.30f, -0.16f), new Vector3(0.06f, 0.26f, -0.16f) }, 0.011f, Rubber, "Handle");
+            // controls on top: power button, cord button, bag indicator, silence dial
+            Rev(g, new[] { P(0f, 0f), P(0.028f, 0f), P(0.028f, 0.012f), P(0f, 0.012f) }, Rubber, new Vector3(-0.07f, 0.283f, -0.02f), "PowerButton", 20, Quaternion.Euler(-7f, 0f, 0f));
+            Led(g, new Vector3(-0.07f, 0.296f, -0.02f), new Vector3(0.012f, 0.004f, 0.012f), GreenLed, Quaternion.Euler(-7f, 0f, 0f), PrimitiveType.Cylinder);
+            Rev(g, new[] { P(0f, 0f), P(0.028f, 0f), P(0.028f, 0.012f), P(0f, 0.012f) }, Steel, new Vector3(0.07f, 0.283f, -0.02f), "CordButton", 20, Quaternion.Euler(-7f, 0f, 0f));
+            Display(g, new Vector3(0f, 0.286f, 0.04f), Quaternion.Euler(83f, 0f, 0f), 0.07f, 0.026f, Teal);
+            Rev(g, new[] { P(0f, 0f), P(0.03f, 0f), P(0.03f, 0.016f), P(0.018f, 0.016f), P(0.018f, 0.024f), P(0f, 0.024f) }, grey, new Vector3(0f, 0.27f, -0.10f), "SilenceDial", 20, Quaternion.Euler(-7f, 0f, 0f));
+            // flanks: tricolour badge and a chrome trim line
             for (int side = -1; side <= 1; side += 2)
             {
-                float x = side * 0.236f;
-                Box(g, new Vector3(x, 0.215f, 0.20f), new Vector3(0.012f, 0.03f, 0.10f), blue, "Stripe");
-                Box(g, new Vector3(x + side * 0.003f, 0.175f, 0.20f), new Vector3(0.012f, 0.03f, 0.10f), white, "Stripe");
-                Box(g, new Vector3(x, 0.135f, 0.20f), new Vector3(0.012f, 0.03f, 0.10f), red, "Stripe");
+                float x = side * 0.151f;
+                Box(g, new Vector3(x, 0.14f, 0.03f), new Vector3(0.008f, 0.024f, 0.06f), blue, "Stripe");
+                Box(g, new Vector3(x + side * 0.001f, 0.14f, 0.09f), new Vector3(0.008f, 0.024f, 0.06f), white, "Stripe");
+                Box(g, new Vector3(x + side * 0.002f, 0.14f, 0.15f), new Vector3(0.008f, 0.024f, 0.06f), red, "Stripe");
+                Box(g, new Vector3(x, 0.115f, -0.02f), new Vector3(0.006f, 0.006f, 0.30f), Steel, "Trim");
             }
-            TubeAlong(g, new[] { new Vector3(0f, 0.30f, 0.10f), new Vector3(0f, 0.40f, 0.03f), new Vector3(0f, 0.40f, -0.09f), new Vector3(0f, 0.30f, -0.16f) }, 0.014f, Rubber, "Handle");
-            Rev(g, new[] { P(0f, 0f), P(0.03f, 0f), P(0.03f, 0.012f), P(0f, 0.012f) }, Steel, new Vector3(-0.09f, 0.315f, -0.14f), "CordButton", 16);
-            Rev(g, new[] { P(0f, 0f), P(0.035f, 0f), P(0.035f, 0.02f), P(0.02f, 0.02f), P(0.02f, 0.03f), P(0f, 0.03f) }, grey, new Vector3(0.09f, 0.31f, -0.12f), "SilenceDial", 20);
-            Display(g, new Vector3(0f, 0.327f, -0.20f), Quaternion.Euler(70f, 0f, 0f), 0.07f, 0.028f, Teal);
-            Ring(g, new Vector3(0f, 0.17f, -0.22f), 0.20f, 0.03f, 5, new Vector3(0.02f, 0.014f, 0.01f), 200f, 250f);
-            Ring(g, new Vector3(0f, 0.17f, -0.22f), 0.20f, 0.03f, 5, new Vector3(0.02f, 0.014f, 0.01f), 290f, 340f);
-            Wheel(g, new Vector3(0.25f, 0.065f, -0.19f), 0.10f, 0.03f, Rubber, Steel);
-            Wheel(g, new Vector3(-0.25f, 0.065f, -0.19f), 0.10f, 0.03f, Rubber, Steel);
-            Sph(g, new Vector3(0f, 0.035f, 0.18f), 0.06f, Rubber, "Caster");
-            TubeAlong(g, new[] { new Vector3(0f, 0.28f, 0.29f), new Vector3(0f, 0.46f, 0.42f), new Vector3(0.05f, 0.56f, 0.56f), new Vector3(0.08f, 0.46f, 0.68f) }, 0.028f, grey, "Hose", true);
+            // big spoked rear wheels, small front caster
+            for (int side = -1; side <= 1; side += 2)
+            {
+                var wp = new Vector3(side * 0.165f, 0.10f, -0.12f);
+                Wheel(g, wp, 0.20f, 0.045f, Rubber, navyDark);
+                for (int k = 0; k < 5; k++)
+                {
+                    var rot = Quaternion.Euler(0f, side * 90f, 0f) * Quaternion.Euler(0f, 0f, k * 72f);
+                    Box(g, wp + rot * new Vector3(0f, 0.045f, 0f) + new Vector3(side * 0.026f, 0f, 0f), new Vector3(0.014f, 0.06f, 0.006f), Steel, "Spoke", rot);
+                }
+                Rev(g, new[] { P(0f, -0.004f), P(0.02f, -0.004f), P(0.02f, 0.004f), P(0f, 0.004f) }, Steel, wp + new Vector3(side * 0.029f, 0f, 0f), "HubCap", 16, WheelRot);
+            }
+            Sph(g, new Vector3(0f, 0.03f, 0.19f), 0.06f, Rubber, "Caster");
+            // back: exhaust grille, cord slot, parking notch
+            Slots(g, new Vector3(0f, 0.15f, -0.222f), Quaternion.Euler(0f, 180f, 0f), 7, 0.028f, new Vector3(0.018f, 0.05f, 0.008f));
+            Box(g, new Vector3(0.09f, 0.09f, -0.222f), new Vector3(0.04f, 0.014f, 0.008f), Rubber, "CordSlot");
+            Box(g, new Vector3(-0.09f, 0.18f, -0.222f), new Vector3(0.03f, 0.03f, 0.01f), navyDark, "ParkNotch");
+            // hose from the nose port, grip, telescopic steel tube, parquet head
+            Rev(g, new[] { P(0f, 0f), P(0.035f, 0f), P(0.035f, 0.04f), P(0.03f, 0.04f), P(0.03f, 0.05f), P(0f, 0.05f) }, navyDark, new Vector3(0f, 0.17f, 0.25f), "HosePort", 20, Quaternion.Euler(90f, 0f, 0f));
+            TubeAlong(g, new[] { new Vector3(0f, 0.17f, 0.29f), new Vector3(0f, 0.36f, 0.42f), new Vector3(0.05f, 0.52f, 0.56f), new Vector3(0.08f, 0.46f, 0.68f) }, 0.026f, grey, "Hose", true);
             Box(g, new Vector3(0.08f, 0.45f, 0.69f), new Vector3(0.05f, 0.06f, 0.09f), Graphite, "Grip", Quaternion.Euler(45f, 0f, 0f));
             Led(g, new Vector3(0.08f, 0.49f, 0.67f), new Vector3(0.012f, 0.006f, 0.012f), GreenLed);
             TubeAlong(g, new[] { new Vector3(0.08f, 0.44f, 0.70f), new Vector3(0.06f, 0.26f, 0.86f), new Vector3(0.03f, 0.08f, 0.99f) }, 0.016f, Steel, "Tube");
+            Rev(g, new[] { P(0f, 0f), P(0.02f, 0f), P(0.02f, 0.06f), P(0f, 0.06f) }, navyDark, new Vector3(0.07f, 0.35f, 0.78f), "TubeCollar", 16, Quaternion.Euler(50f, 0f, 0f));
             RBox(g, 0.32f, 0.05f, 0.12f, 0.015f, Graphite, new Vector3(0.02f, 0f, 1.0f), "FloorHead");
             Box(g, new Vector3(0.02f, 0.02f, 1.061f), new Vector3(0.28f, 0.02f, 0.008f), red, "Felt");
+            Slots(g, new Vector3(0.02f, 0.051f, 0.97f), Quaternion.Euler(90f, 0f, 0f), 6, 0.04f, new Vector3(0.025f, 0.01f, 0.008f));
         }
 
         // ------------------------------------------------------------------ Shop Drum (grooved yellow drum)
