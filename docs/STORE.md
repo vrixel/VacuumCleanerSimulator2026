@@ -68,8 +68,8 @@ full names, a clean signal to poll); submission 3 (id 1152921505701822812) carri
 packages with the same full name and different contents are refused even when one is marked for removal, so the
 MSIX version was incremented),
 the 0.4.0 release notes and the racing-style poster, box art, super hero and tile icon (uploaded by dropping the
-file on each slot's input, no trash needed); everything else unchanged; waiting for the owner's go on "Submit for
-certification".**
+file on each slot's input, no trash needed); everything else unchanged; SUBMITTED for certification on 2026-09-06 about 18:30 UTC on the owner's go (the
+"Submit for certification" he-button responds to a plain element click).**
 Lessons of submission 3: raw.githubusercontent.com caches a path for minutes, so a replaced file needs a new name
 (`_v5`, `_b`); the in-page `fetch` of the MSIX keeps running after the browser tool times out at 45 s, so
 never launch it twice (the second run made a duplicate package that had to be removed); the Save buttons of the
