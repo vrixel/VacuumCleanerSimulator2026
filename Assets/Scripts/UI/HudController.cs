@@ -25,6 +25,12 @@ namespace VCS.UI
         RectTransform bannerRect, scoreRect, comboRect;
         Image[] sparkles;
         Image bannerRays;
+        RectTransform toastRect;
+        CanvasGroup toastGroup;
+        Text toastText;
+        readonly Queue<string> toasts = new Queue<string>();
+        float toastT = -1f;
+        const float ToastDur = 2.6f;
         float[] sparklePhase;
         Cockpit cockpit;
         RadarView radar;
@@ -141,7 +147,8 @@ namespace VCS.UI
             // ---- banner
             var bannerHolder = new GameObject("BannerHolder", typeof(RectTransform));
             bannerHolder.transform.SetParent(t, false);
-            UIFactory.Anchor(bannerHolder, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-780f, 70f), new Vector2(780f, 290f));
+            // upper band, between the vacuum and the power strip: the splash never sits on the player
+            UIFactory.Anchor(bannerHolder, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-500f, 110f), new Vector2(500f, 270f));
             bannerRect = bannerHolder.GetComponent<RectTransform>();
             bannerGroup = bannerHolder.AddComponent<CanvasGroup>();
             bannerGroup.alpha = 0f;
@@ -150,26 +157,42 @@ namespace VCS.UI
             RectTransform bannerBox;
             if (UIStyle.Has("banner_burst"))
             {
-                bannerRays = UIStyle.Simple(bannerHolder.transform, "Rays", "banner_rays", new Color(1f, 1f, 1f, 0.7f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-270f, -270f), new Vector2(270f, 270f), Color.clear, true);
+                bannerRays = UIStyle.Simple(bannerHolder.transform, "Rays", "banner_rays", new Color(1f, 1f, 1f, 0.65f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-190f, -190f), new Vector2(190f, 190f), Color.clear, true);
                 bannerRays.raycastTarget = false;
                 // the burst is stretched wide so the headline sits inside its core
-                var burst = UIStyle.Simple(bannerHolder.transform, "Burst", "banner_burst", Color.white, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-600f, -215f), new Vector2(600f, 215f), Color.clear, false);
+                var burst = UIStyle.Simple(bannerHolder.transform, "Burst", "banner_burst", Color.white, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-430f, -150f), new Vector2(430f, 150f), Color.clear, false);
                 burst.raycastTarget = false;
                 var inner = new GameObject("Screen", typeof(RectTransform));
                 inner.transform.SetParent(bannerHolder.transform, false);
-                UIFactory.Anchor(inner, Vector2.zero, Vector2.one, new Vector2(120f, 20f), new Vector2(-120f, -20f));
+                UIFactory.Anchor(inner, Vector2.zero, Vector2.one, new Vector2(70f, 4f), new Vector2(-70f, -4f));
                 bannerBox = inner.GetComponent<RectTransform>();
             }
-            else bannerBox = UIStyle.Frame(bannerHolder.transform, "Banner", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, "plate_banner", 1560f, 220f, 34f);
-            bannerBig = UIFactory.Text(bannerBox, "Big", "", 84, Color.white, TextAnchor.MiddleCenter,
+            else bannerBox = UIStyle.Frame(bannerHolder.transform, "Banner", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, "plate_banner", 1000f, 160f, 30f);
+            bannerBig = UIFactory.Text(bannerBox, "Big", "", 60, Color.white, TextAnchor.MiddleCenter,
                 new Vector2(0f, 0.42f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(0f, -2f), false);
-            UIStyle.Style(bannerBig, UIStyle.Arcade, 66, Color.white, FontStyle.Italic);
+            UIStyle.Style(bannerBig, UIStyle.Arcade, 48, Color.white, FontStyle.Italic);
             // blue edge on the yellow burst, yellow edge on the dark plate
-            UIStyle.ArcadeText(bannerBig, Color.white, UIStyle.Has("banner_burst") ? UIStyle.Blue : UIStyle.Yellow, 5f);
-            bannerSmall = UIFactory.Text(bannerBox, "Small", "", 27, Color.white, TextAnchor.MiddleCenter,
+            UIStyle.ArcadeText(bannerBig, Color.white, UIStyle.Has("banner_burst") ? UIStyle.Blue : UIStyle.Yellow, 4f);
+            bannerSmall = UIFactory.Text(bannerBox, "Small", "", 22, Color.white, TextAnchor.MiddleCenter,
                 new Vector2(0f, 0f), new Vector2(1f, 0.42f), new Vector2(0f, 4f), new Vector2(0f, 0f), false);
-            UIStyle.Style(bannerSmall, UIStyle.Body, 26, Color.white, FontStyle.Bold);
-            UIStyle.Edge(bannerSmall, 3f);
+            UIStyle.Style(bannerSmall, UIStyle.Body, 20, Color.white, FontStyle.Bold);
+            UIStyle.Edge(bannerSmall, 2.5f);
+
+            // ---- toast strip: one slim enamel line right under the power strip, queued
+            var toastGo = new GameObject("Toast", typeof(RectTransform));
+            toastGo.transform.SetParent(t, false);
+            UIFactory.Anchor(toastGo, tc, tc, new Vector2(-470f, -178f), new Vector2(470f, -134f));
+            toastRect = toastGo.GetComponent<RectTransform>();
+            toastGroup = toastGo.AddComponent<CanvasGroup>();
+            toastGroup.alpha = 0f;
+            UIStyle.Plate(toastGo.transform, "Plate", "tab_plate", UIStyle.Yellow, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, 7f, UIStyle.Yellow, 0.34f);
+            toastText = UIFactory.Text(toastGo.transform, "Text", "", 20, UIStyle.Ink, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, new Vector2(16f, 0f), new Vector2(-16f, 0f), false);
+            UIStyle.Style(toastText, UIStyle.Arcade, 19, UIStyle.Ink, FontStyle.Italic);
+            toastText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            toastText.verticalOverflow = VerticalWrapMode.Truncate;
+            toastText.resizeTextForBestFit = true;
+            toastText.resizeTextMinSize = 12;
+            toastText.resizeTextMaxSize = 19;
 
             // ---- prompts above the cockpit
             hintText = UIFactory.Text(t, "Hint", "", 22, Color.white, TextAnchor.MiddleCenter,
@@ -200,6 +223,7 @@ namespace VCS.UI
             lastBinPrompt = false;
             bannerDur = 0f; bannerGroup.alpha = 0f;
             hintDur = 0f; hintGroup.alpha = 0f;
+            toasts.Clear(); toastT = -1f; toastGroup.alpha = 0f;
             binGroup.alpha = 0f;
             objectivesTimer = 0f;
             scoreText.text = "0";
@@ -317,6 +341,13 @@ namespace VCS.UI
             sparkleBurst = 1f;
         }
 
+        /// <summary>Queues one line on the toast strip; shown for a couple of seconds each, in order.</summary>
+        public void ShowToast(string text)
+        {
+            if (toasts.Count > 6) toasts.Dequeue();   // a flood keeps only the freshest lines
+            toasts.Enqueue(text);
+        }
+
         public void ShowHint(string text, float duration)
         {
             hintText.text = text;
@@ -372,6 +403,19 @@ namespace VCS.UI
                     bannerRays.rectTransform.localScale = Vector3.one * (1f + 0.05f * Mathf.Sin(Time.unscaledTime * 6f));
                 }
                 if (bannerT >= bannerDur) { bannerDur = 0f; bannerGroup.alpha = 0f; }
+            }
+            if (toastT < 0f && toasts.Count > 0)
+            {
+                toastText.text = toasts.Dequeue();
+                toastT = 0f;
+            }
+            if (toastT >= 0f)
+            {
+                toastT += dt;
+                float a = toastT < 0.15f ? toastT / 0.15f : (toastT > ToastDur - 0.3f ? Mathf.Clamp01((ToastDur - toastT) / 0.3f) : 1f);
+                toastGroup.alpha = a;
+                toastRect.anchoredPosition = new Vector2(0f, -156f - 10f * (1f - Mathf.Min(1f, toastT / 0.15f)));
+                if (toastT >= ToastDur) { toastT = -1f; toastGroup.alpha = 0f; }
             }
             if (hintDur > 0f)
             {

@@ -276,7 +276,7 @@ namespace VCS.Player
             {
                 tautReported = true;
                 gm.Objectives.Report("taut");
-                gm.ShowBanner("END OF THE CORD", "All " + MaxLength.ToString("0") + " metres are out. Keep pulling and the plug comes out; R / Y rewinds", 3f);
+                gm.ShowBanner("END OF THE CORD", "All " + MaxLength.ToString("0") + " metres are out. Keep pulling and the plug comes out; R / Y rewinds", 3f, false);
                 gm.Audio.PlayBoing();
                 vac.Visuals.Punch(0.3f);
             }
@@ -292,7 +292,7 @@ namespace VCS.Player
             {
                 gm.Audio.PlayThunk();
                 gm.Fx.Puff(pos[0] + Vector3.up * 0.3f, Color.white, 10);
-                gm.ShowBanner("PLUG YANKED OUT", "You pulled the plug out of the wall. No power: drive to a socket to plug back in", 3f);
+                gm.ShowBanner("PLUG YANKED OUT", "You pulled the plug out of the wall. No power: drive to a socket to plug back in", 3f, false);
                 gm.Objectives.Report("yank");
                 gm.AddScore(50, false);
                 vac.Visuals.Punch(0.5f);
@@ -360,7 +360,7 @@ namespace VCS.Player
                 gm.Fx.Puff(vac.transform.position + Vector3.up * 0.5f, new Color(0.8f, 0.8f, 0.8f), 14);
                 gm.Objectives.Report("rewind", Mathf.RoundToInt(rewound));
                 gm.AddScore(Mathf.RoundToInt(rewound * 3f), false);
-                if (!yanked) gm.ShowBanner("CORD REWOUND", rewound.ToString("0.0") + " m reeled in. No power now: drive to a socket to plug back in", 2.5f);
+                if (!yanked) gm.ShowBanner("CORD REWOUND", rewound.ToString("0.0") + " m reeled in. No power now: drive to a socket to plug back in", 2.5f, false);
                 vac.Visuals.Punch(0.45f);
             }
         }

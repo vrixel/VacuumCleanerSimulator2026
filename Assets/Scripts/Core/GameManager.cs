@@ -53,9 +53,14 @@ namespace VCS.Core
         public EffectsFactory Fx { get; private set; }
         public Telemetry Telemetry { get; } = new Telemetry();
 
-        struct Banner { public string Big; public string Small; public float Duration; }
+        struct Banner { public string Big; public string Small; public float Duration; public bool Must; }
+        // His feedback (2026-09-06): a splash every few seconds in the middle of the screen hid the vacuum. Splashes
+        // are now at most one every SplashInterval seconds, in the upper band; anything that cannot splash right
+        // away becomes a toast under the power strip, so nothing queues up and nothing is lost.
+        const float SplashInterval = 7f;
+        float lastSplashAt = -100f;
 
-        readonly Queue<Banner> banners = new Queue<Banner>();
+        readonly List<Banner> banners = new List<Banner>();
         float bannerTimer;
         bool spotlessShown;
         int seed = 2026;
@@ -221,7 +226,7 @@ namespace VCS.Core
                 {
                     spotlessShown = true;
                     Objectives.Report("clean100");
-                    ShowBanner("SPOTLESS!", "House cleaned in " + FormatTime(PlayTime) + ". Keep wrecking it if you like.", 5f);
+                    ShowBanner("SPOTLESS!", "House cleaned in " + FormatTime(PlayTime) + ". Keep wrecking it if you like.", 5f, true, true);
                     Audio.PlayFanfare();
                     // the finale of every corded run: the cord reels itself in
                     if (Player.Cord != null) StartCoroutine(FinaleRewind());
@@ -257,7 +262,7 @@ namespace VCS.Core
                 if (Player != null) Player.OnPowerUp(PowerLevel);
                 int eats = PowerLevel + (Player != null ? Player.Spec.SizeBonus : 0);
                 Hud.SetPower(Player != null ? Player.Spec.Name : "", PowerLevel, PropFactory.EatLabel(eats));
-                ShowBanner("POWER UP!", "Level " + PowerLevel + ": you can now eat " + PropFactory.EatLabel(eats), 3.5f);
+                ShowBanner("POWER UP!", "Level " + PowerLevel + ": you can now eat " + PropFactory.EatLabel(eats), 2.6f);
                 Audio.PlayLevelUp();
             }
         }
@@ -306,14 +311,14 @@ namespace VCS.Core
             if (bumped && !catHissShown)
             {
                 catHissShown = true;
-                ShowBanner("HISSSS", "You ran into the cat. It will remember this", 2f);
+                ShowBanner("HISSSS", "You ran into the cat. It will remember this", 2f, false);
             }
         }
 
         public void OnBagFull()
         {
             Objectives.Report("bagfull");
-            ShowBanner("BAG FULL!", "Empty it at the bin (F / X) or hold E / B to blow everything back out", 3f);
+            ShowBanner("BAG FULL!", "Empty it at the bin (F / X) or hold E / B to blow everything back out", 3f, false);
             Audio.PlayBagFull();
         }
 
@@ -335,21 +340,43 @@ namespace VCS.Core
         void OnObjectiveCompleted(Objective o)
         {
             AddScore(o.Reward, false);
-            ShowBanner("ACHIEVEMENT: " + o.Title, o.Description + "  (+" + o.Reward + ")", 3f);
+            ShowBanner("ACHIEVEMENT: " + o.Title, o.Description + "  (+" + o.Reward + ")", 2.4f);
             Audio.PlayDing();
         }
 
-        public void ShowBanner(string big, string small, float duration = 2.5f)
+        /// <summary>
+        /// bonus: a reward worth a splash (power up, achievement, trash day, spotless). Status messages (bag full,
+        /// cord, cat) pass bonus = false and go straight to the toast strip. must: wait for a free slot instead of
+        /// degrading to a toast (spotless).
+        /// </summary>
+        public void ShowBanner(string big, string small, float duration = 2.5f, bool bonus = true, bool must = false)
         {
-            banners.Enqueue(new Banner { Big = big, Small = small, Duration = duration });
+            if (!bonus) { ShowToast(big, small); return; }
+            banners.Add(new Banner { Big = big, Small = small, Duration = duration, Must = must });
+        }
+
+        /// <summary>One line on the slim strip under the power strip; queued, never covers the play area.</summary>
+        public void ShowToast(string title, string detail)
+        {
+            if (Hud != null) Hud.ShowToast(string.IsNullOrEmpty(detail) ? title : title + "   " + detail);
         }
 
         void UpdateBanners(float dt)
         {
-            if (bannerTimer > 0f) { bannerTimer -= dt; return; }
+            if (bannerTimer > 0f) bannerTimer -= dt;
             if (banners.Count == 0) return;
-            var b = banners.Dequeue();
+            bool free = bannerTimer <= 0f && Time.unscaledTime - lastSplashAt >= SplashInterval;
+            var b = banners[0];
+            if (!free)
+            {
+                if (b.Must) return;   // spotless waits for its slot
+                banners.RemoveAt(0);
+                ShowToast(b.Big, b.Small);
+                return;
+            }
+            banners.RemoveAt(0);
             Hud.ShowBanner(b.Big, b.Small, b.Duration);
+            lastSplashAt = Time.unscaledTime;
             bannerTimer = b.Duration + 0.3f;
         }
 
