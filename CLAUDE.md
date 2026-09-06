@@ -125,9 +125,18 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
 - Real-product meshes without any account: Objaverse (`pip install objaverse`, the Hugging Face mirror of Sketchfab's
   Creative Commons models; `load_lvis_annotations()["vacuum_cleaner"]`, `load_objects([uid])`, downloads land in
   `~/.objaverse`, copied to `tools/assets/raw/objaverse`). `tools/lowpoly.py` (Blender 4.5 portable, headless)
-  joins, triangulates, decimates to ~4k faces, normalises the size, writes textures next to the FBX in
-  `Assets/Resources/Models`. The gallery renders every model found there (`import-*.png`,
-  `docs/screenshots/models-imported.png`). CC-BY: credit the authors if any ships (docs/research CSV has them).
+  drops named cables, planes and docks, splits loose parts and drops thin ribbons, dust, and optionally tubes
+  (`strip_tubes`), parts hanging beside the body (`side_drop`, the Philips plug) and densely tessellated tubes
+  (`dense_tubes`, its cord loops: cables are tessellated 3-4 times denser than shell panels), joins, triangulates,
+  decimates to ~4k faces, normalises the size, rewires glTF materials so the Image Texture feeds Base Color, writes
+  the textures as PNG and exports OBJ (Y up, -Z forward; FBX was abandoned: Unity mangled axes and scale) into
+  `Assets/Resources/Models`. Philips: `... philips_aquatrio.obj 4000 0.55 0 0.05 50000`. The gallery renders every
+  model found there (`import-*.png`, `docs/screenshots/models-imported.png`).
+- The museum (`ImportedVacuums`): the eleven imported meshes are hidden catalogue entries (`VacuumSpec.Hidden`,
+  `Credit`) instantiated from `Resources/Models/<name>` with runtime normalisation (largest horizontal extent =
+  `Size`, base on the floor, centred). M on the title screen toggles `VacuumCatalog.MuseumUnlocked` (PlayerPrefs
+  `museum`); `VacuumCatalog.Visible` is what the garage lists. CC-BY credits under the name and in `docs/CREDITS.md`;
+  the game's own names, never the product's.
 - Cocoa powder (`PowderSystem`, one `PowderLayer` quad per room at y = 0.012): generated RGBA texture at 36 px/m
   (splats, streaks, dusting), `Resources/Materials/Fade.mat` (Standard Fade, keyword in the asset). `SuctionSystem.Suck`
   calls `Powder.Vacuum(nozzle, radius)` every physics step while grounded and the bag has room: it zeroes alpha in a

@@ -13,6 +13,11 @@ Rated for ages 8 and up: cartoon chaos, no violence.
 ![Rewinding the cord](docs/screenshots/cord-rewind.png)
 ![The vacuum's path through the cocoa powder](docs/screenshots/powder.png)
 
+The museum (M on the title screen): eleven real machines on loan, Creative Commons meshes decimated to game size,
+credited in the garage and in [docs/CREDITS.md](docs/CREDITS.md).
+
+![The museum](docs/screenshots/models-imported.png)
+
 Targets: Steam (Windows 64-bit) first, Xbox / Microsoft Store next. See `docs/PUBLISHING.md` and `docs/STORE.md`.
 Source is published for reference; see `LICENSE.md`.
 
