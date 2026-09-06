@@ -42,8 +42,9 @@ namespace VCS.Core
         static void EnsureVolume()
         {
             if (volume != null) return;
+            bool mobile = Application.isMobilePlatform;
             var ao = ScriptableObject.CreateInstance<AmbientOcclusion>();
-            ao.enabled.Override(true);
+            ao.enabled.Override(!mobile);   // MSVO is the one effect a phone cannot afford
             ao.mode.Override(AmbientOcclusionMode.MultiScaleVolumetricObscurance);
             ao.intensity.Override(0.85f);
             ao.thicknessModifier.Override(1.1f);
@@ -71,7 +72,7 @@ namespace VCS.Core
             vignette.smoothness.Override(0.45f);
 
             var grain = ScriptableObject.CreateInstance<Grain>();
-            grain.enabled.Override(true);
+            grain.enabled.Override(!mobile);
             grain.intensity.Override(0.10f);
             grain.size.Override(1.2f);
             grain.colored.Override(false);

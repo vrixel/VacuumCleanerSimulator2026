@@ -71,6 +71,12 @@ namespace VCS.UI
                 22, new Color(1f, 1f, 1f, 0.85f), TextAnchor.MiddleLeft, left, left, new Vector2(74f, -170f), new Vector2(1250f, -50f), false);
             UIStyle.Style(controls, UIStyle.Body, 22, new Color(1f, 1f, 1f, 0.85f));
             UIStyle.Edge(controls);
+            if (GameInput.TouchMode)
+            {
+                // a phone has no keyboard: the touch layer shows a START plate and the arrows are tappable
+                controls.gameObject.SetActive(false);
+                titlePrompt.text = "TAP START, THEN DRAG TO LOOK AROUND";
+            }
             titleStats = UIFactory.Text(titleRoot.transform, "Stats", "", 22, new Color(1f, 1f, 1f, 0.7f), TextAnchor.LowerLeft,
                 new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(74f, 30f), new Vector2(1250f, 70f), false);
             UIStyle.Style(titleStats, UIStyle.Mono, 20, new Color(1f, 1f, 1f, 0.7f));
@@ -122,6 +128,7 @@ namespace VCS.UI
             var garageHint = UIFactory.Text(titleRoot.transform, "GarageHint", "A / D   or   LB / RB   to choose", 19, new Color(1f, 1f, 1f, 0.65f), TextAnchor.MiddleCenter,
                 right, right, new Vector2(-530f, -456f), new Vector2(-84f, -420f), false);
             UIStyle.Style(garageHint, UIStyle.Body, 19, new Color(1f, 1f, 1f, 0.65f));
+            if (GameInput.TouchMode) garageHint.text = "tap the arrows to choose";
 
             // ---- pause menu
             pauseRoot = new GameObject("Pause", typeof(RectTransform));

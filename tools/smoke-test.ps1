@@ -4,9 +4,10 @@
 # Exit code 1 if the run did not finish, logged an exception, or produced no screenshots.
 # Usage:  powershell -File tools\smoke-test.ps1 [-TimeoutSeconds 60]
 param(
-    [int]$TimeoutSeconds = 60,
+    [int]$TimeoutSeconds = 100,   # 19 garage models and five phases
     [int]$Width = 1280,
-    [int]$Height = 720
+    [int]$Height = 720,
+    [switch]$Touch
 )
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -18,6 +19,7 @@ Remove-Item $log -ErrorAction SilentlyContinue
 Remove-Item (Join-Path $out "smoke-*.png") -ErrorAction SilentlyContinue
 
 $gameArgs = @("-logFile", "`"$log`"", "-screen-fullscreen", "0", "-screen-width", "$Width", "-screen-height", "$Height", "-smoke", "`"$out`"")
+if ($Touch) { $gameArgs += "-touch" }   # the phone layer (stick, buttons, no cockpit) on the PC, for screenshots
 $p = Start-Process -FilePath $exe -ArgumentList $gameArgs -PassThru
 Write-Host "Started pid $($p.Id); waiting up to $TimeoutSeconds s for the smoke run to finish..."
 $finished = $p.WaitForExit($TimeoutSeconds * 1000)

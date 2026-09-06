@@ -218,6 +218,20 @@ namespace VCS.UI
             binGroup.alpha = 0f;
 
             cockpit = Cockpit.Build(t);
+
+            if (GameInput.TouchMode)
+            {
+                // a phone has no room for the cockpit strip and the tapes: the stick and the buttons live there
+                cockpit.Root.SetActive(false);
+                tapesBox.parent.gameObject.SetActive(false);
+                hintText.rectTransform.offsetMin = new Vector2(-900f, 130f);
+                hintText.rectTransform.offsetMax = new Vector2(900f, 170f);
+                binPrompt.rectTransform.offsetMin = new Vector2(-600f, 180f);
+                binPrompt.rectTransform.offsetMax = new Vector2(600f, 234f);
+                var log = logBox.parent.GetComponent<RectTransform>();
+                log.offsetMin = new Vector2(-520f, -120f);
+                log.offsetMax = new Vector2(-30f, 210f);
+            }
         }
 
         public void SetVisible(bool v)

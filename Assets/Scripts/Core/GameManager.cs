@@ -71,14 +71,24 @@ namespace VCS.Core
             I = this;
             DontDestroyOnLoad(gameObject);
             Physics.gravity = new Vector3(0f, -16f, 0f);
+            // phones (2026-09-07): the touch layer, and a lighter picture (the post-processing follows in RenderingSetup)
+            bool touch = Application.isMobilePlatform;
+            foreach (var a in System.Environment.GetCommandLineArgs()) if (a == "-touch") touch = true;
+            GameInput.TouchMode = touch;
+            bool mobile = Application.isMobilePlatform;
             QualitySettings.vSyncCount = 1;
             QualitySettings.shadows = ShadowQuality.All;
-            QualitySettings.shadowResolution = ShadowResolution.VeryHigh;
-            QualitySettings.shadowDistance = 45f;
-            QualitySettings.shadowCascades = 2;
-            QualitySettings.antiAliasing = 4;
+            QualitySettings.shadowResolution = mobile ? ShadowResolution.Medium : ShadowResolution.VeryHigh;
+            QualitySettings.shadowDistance = mobile ? 30f : 45f;
+            QualitySettings.shadowCascades = mobile ? 1 : 2;
+            QualitySettings.antiAliasing = mobile ? 2 : 4;
             QualitySettings.anisotropicFiltering = AnisotropicFiltering.ForceEnable;
             QualitySettings.realtimeReflectionProbes = true;
+            if (mobile)
+            {
+                Application.targetFrameRate = 60;
+                Screen.sleepTimeout = SleepTimeout.NeverSleep;
+            }
         }
 
         void Start()
@@ -92,6 +102,7 @@ namespace VCS.Core
             RenderingSetup.Attach(Cam.Cam);
             Hud = HudController.Create();
             Menu = MenuController.Create();
+            if (GameInput.TouchMode) TouchControls.Create();
             Menu.OnTitleStart = StartGame;
             Menu.OnPauseSelect = OnPauseMenu;
             Level.Build(seed);
@@ -140,13 +151,14 @@ namespace VCS.Core
             Hud.SetPower(Player.Spec.Name, PowerLevel, PropFactory.EatLabel(PowerLevel + Player.Spec.SizeBonus));
             Audio.PlayMusic("game");
             Audio.DuckMusic(false);
-            Hud.ShowHint(Player.Spec.Cordless
+            if (GameInput.TouchMode) Hud.ShowHint("Left stick drives, right buttons act. Drag the free part of the screen to look around.", 8f);
+            else Hud.ShowHint(Player.Spec.Cordless
                 ? "WASD / left stick: drive     SPACE / A: hop     SHIFT / RB: turbo     E / B: blow     F / X: empty bag at the bin     ESC / Start: pause"
                 : "WASD / left stick: drive     SPACE / A: hop     SHIFT / RB: turbo     E / B: blow     F / X: empty bag at the bin     R / Y: rewind the cord     ESC: pause", 14f);
             State = GameState.Playing;
             Time.timeScale = 1f;
-            Cursor.lockState = SmokeMode ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = SmokeMode;
+            Cursor.lockState = SmokeMode || GameInput.TouchMode ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = SmokeMode || GameInput.TouchMode;
             Audio.PlayStart();
             Debug.Log("[VCS] Run started, seed " + seed + ", mess " + Level.MessTotal + ", vacuum " + Player.Spec.Id);
         }
@@ -169,8 +181,8 @@ namespace VCS.Core
             State = GameState.Playing;
             Time.timeScale = 1f;
             Menu.HideAll();
-            Cursor.lockState = SmokeMode ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = SmokeMode;
+            Cursor.lockState = SmokeMode || GameInput.TouchMode ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = SmokeMode || GameInput.TouchMode;
             Audio.DuckMusic(false);
         }
 
