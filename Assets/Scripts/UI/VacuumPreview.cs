@@ -140,6 +140,50 @@ namespace VCS.UI
             model = null;
         }
 
+        /// <summary>Orthographic view straight down, +z up on the picture, +x to the right: the plan of the model
+        /// with the stage floor as the ground. Used by the museum orientation diagnostics.</summary>
+        public void RenderTopDown(VacuumSpec s, int size, string path)
+        {
+            if (model != null) Destroy(model.gameObject);
+            model = new GameObject("StillModel").transform;
+            model.SetParent(stage, false);
+            model.localRotation = Quaternion.identity;
+            s.Build(model, s);
+            var renderers = model.GetComponentsInChildren<Renderer>();
+            Bounds b = new Bounds(stage.position, Vector3.one * 0.5f);
+            bool first = true;
+            foreach (var r in renderers) { if (first) { b = r.bounds; first = false; } else b.Encapsulate(r.bounds); }
+            float cx = stage.position.x, cz = stage.position.z;
+            float half = Mathf.Max(Mathf.Abs(b.max.x - cx), Mathf.Abs(b.min.x - cx), Mathf.Abs(b.max.z - cz), Mathf.Abs(b.min.z - cz)) + 0.1f;
+            var savedPos = cam.transform.position; var savedRot = cam.transform.rotation;
+            bool savedOrtho = cam.orthographic; float savedSize = cam.orthographicSize;
+            cam.orthographic = true;
+            cam.orthographicSize = half;
+            cam.transform.position = new Vector3(cx, b.max.y + 3f, cz);
+            cam.transform.rotation = Quaternion.Euler(90f, 0f, 0f);   // looking down, screen up = +z, screen right = +x
+            var rt = new RenderTexture(size, size, 24);
+            rt.antiAliasing = 8;
+            var saved = cam.targetTexture;
+            cam.targetTexture = rt;
+            cam.Render();
+            cam.targetTexture = saved;
+            var prev = RenderTexture.active;
+            RenderTexture.active = rt;
+            var tex = new Texture2D(size, size, TextureFormat.RGB24, false);
+            tex.ReadPixels(new Rect(0, 0, size, size), 0, 0);
+            tex.Apply();
+            RenderTexture.active = prev;
+            System.IO.File.WriteAllBytes(path, tex.EncodeToPNG());
+            Debug.Log("[VCS] TopDown " + s.Id + ": half extent " + half.ToString("F3") + " m over " + size + " px (" + (size / (2f * half)).ToString("F1") + " px/m)");
+            Destroy(tex);
+            rt.Release();
+            Destroy(rt);
+            cam.orthographic = savedOrtho; cam.orthographicSize = savedSize;
+            cam.transform.position = savedPos; cam.transform.rotation = savedRot;
+            DestroyImmediate(model.gameObject);
+            model = null;
+        }
+
         // Frames the union of the model's renderer bounds so every silhouette fills the picture the same way.
         void Frame()
         {

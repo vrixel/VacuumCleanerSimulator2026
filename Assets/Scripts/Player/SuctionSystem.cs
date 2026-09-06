@@ -84,12 +84,13 @@ namespace VCS.Player
             Blowing = active && powered && GameInput.Blow;
             if (Blowing && !wasBlowing) gm.Audio.PlayWhoosh();
             wasBlowing = Blowing;
-            if (!active) { Activity = 0f; return; }
+            if (!active) { Activity = 0f; gm?.Audio.SetSuction(0f, false); return; }
             if (!powered)
             {
                 Activity = 0f;
                 if (swirl != null) { var em0 = swirl.emission; em0.rateOverTimeMultiplier = 0f; }
                 gm.Audio.SetHum(0f, false);
+                gm.Audio.SetSuction(0f, false);
                 return;
             }
 
@@ -103,6 +104,7 @@ namespace VCS.Player
             float intensity = Mathf.Clamp01(vac.Speed / 12f) * 0.6f + Activity * 0.4f + (vac.Turbo ? 0.2f : 0f);
             float humVolume = spec != null ? spec.HumVolume : 1f;
             gm.Audio.SetHum((0.35f + intensity * 0.65f) * humVolume, Blowing);
+            gm.Audio.SetSuction(Activity, !Blowing && !BagFull && vac.Grounded);
         }
 
         void Suck(GameManager gm)

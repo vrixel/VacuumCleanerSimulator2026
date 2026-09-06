@@ -10,9 +10,13 @@ namespace VCS.Audio
     {
         const int Rate = 44100;
 
-        AudioSource hum, sfx, ui, music;
+        AudioSource hum, sfx, ui, music, suction, reel;
         AudioClip pop, gulp, boing, whoosh, ding, levelUp, clunk, bagFull, start, fanfare, meow;
         AudioClip popReal, bagAlarmReal;
+        // generated with kie.ai (tools/assets/kie_assets.py), all optional: the synthesised sounds stay as fallbacks
+        AudioClip suctionLoop, rewindLoop, rewindEnd, absorbSmall, absorbMedium, absorbBig;
+        float suctionVolTarget, suctionPitchTarget = 1f;
+        float reelVolTarget;
         float humVolTarget;
         float humPitchTarget = 0.85f;
         float musicVolTarget;
@@ -35,6 +39,12 @@ namespace VCS.Audio
             var motor = Resources.Load<AudioClip>("Audio/Sfx/motor_loop");
             popReal = Resources.Load<AudioClip>("Audio/Sfx/pop_real");
             bagAlarmReal = Resources.Load<AudioClip>("Audio/Sfx/bag_alarm");
+            suctionLoop = Resources.Load<AudioClip>("Audio/Sfx/suction_loop");
+            rewindLoop = Resources.Load<AudioClip>("Audio/Sfx/rewind_loop");
+            rewindEnd = Resources.Load<AudioClip>("Audio/Sfx/rewind_end");
+            absorbSmall = Resources.Load<AudioClip>("Audio/Sfx/absorb_small");
+            absorbMedium = Resources.Load<AudioClip>("Audio/Sfx/absorb_medium");
+            absorbBig = Resources.Load<AudioClip>("Audio/Sfx/absorb_big");
 
             music = gameObject.AddComponent<AudioSource>();
             music.loop = true;
@@ -56,6 +66,10 @@ namespace VCS.Audio
             sfx.playOnAwake = false;
             sfx.spatialBlend = 0f;
 
+            // the airflow at the nozzle, louder when things are being pulled; the cord reel while rewinding
+            suction = LoopSource(suctionLoop);
+            reel = LoopSource(rewindLoop);
+
             ui = gameObject.AddComponent<AudioSource>();
             ui.playOnAwake = false;
             ui.spatialBlend = 0f;
@@ -72,6 +86,19 @@ namespace VCS.Audio
             start = Arpeggio("start", new[] { 392f, 523.25f, 659.25f, 783.99f }, 0.09f, 0.5f, 8f, 0.4f);
             fanfare = Arpeggio("fanfare", new[] { 523.25f, 659.25f, 783.99f, 1046.5f, 783.99f, 1046.5f, 1318.5f }, 0.12f, 0.9f, 4f, 0.45f);
             meow = Meow("meow", 0.5f, 520f, 880f, 440f, 0.5f);
+        }
+
+        AudioSource LoopSource(AudioClip clip)
+        {
+            if (clip == null) return null;
+            var src = gameObject.AddComponent<AudioSource>();
+            src.clip = clip;
+            src.loop = true;
+            src.playOnAwake = false;
+            src.spatialBlend = 0f;
+            src.volume = 0f;
+            src.Play();
+            return src;
         }
 
         static AudioClip Make(string name, float[] data)
@@ -214,11 +241,36 @@ namespace VCS.Audio
             humPitchTarget = blowing ? 1.5f : 0.8f + 0.7f * intensity;
         }
 
+        /// <summary>The airflow layer: activity is how much is being pulled (0..1), silent when off the floor or blowing.</summary>
+        public void SetSuction(float activity, bool on)
+        {
+            activity = Mathf.Clamp01(activity);
+            suctionVolTarget = on ? 0.16f + 0.45f * activity : 0f;
+            suctionPitchTarget = on ? 0.92f + 0.25f * activity : 0.92f;
+        }
+
+        /// <summary>The cord reel spinning; the end clack plays when it stops after having run.</summary>
+        public void SetRewind(bool on)
+        {
+            bool was = reelVolTarget > 0f;
+            reelVolTarget = on ? 0.8f : 0f;
+            if (was && !on && rewindEnd != null) { sfx.pitch = Random.Range(0.95f, 1.05f); sfx.PlayOneShot(rewindEnd, 0.8f); }
+        }
+
+        /// <summary>True when the generated reel loop is present, so the cord can skip its per-tooth ratchet clicks.</summary>
+        public bool HasReelLoop => reel != null;
+
         void Update()
         {
             float dt = Time.unscaledDeltaTime;
             hum.volume = Mathf.Lerp(hum.volume, humVolTarget, 1f - Mathf.Exp(-dt * 6f));
             hum.pitch = Mathf.Lerp(hum.pitch, humPitchTarget, 1f - Mathf.Exp(-dt * 5f));
+            if (suction != null)
+            {
+                suction.volume = Mathf.Lerp(suction.volume, suctionVolTarget, 1f - Mathf.Exp(-dt * 5f));
+                suction.pitch = Mathf.Lerp(suction.pitch, suctionPitchTarget, 1f - Mathf.Exp(-dt * 4f));
+            }
+            if (reel != null) reel.volume = Mathf.Lerp(reel.volume, reelVolTarget, 1f - Mathf.Exp(-dt * 12f));
             float mv = ducked ? musicVolTarget * 0.35f : musicVolTarget;
             music.volume = Mathf.Lerp(music.volume, mv, 1f - Mathf.Exp(-dt * 3f));
         }
@@ -251,6 +303,9 @@ namespace VCS.Audio
         {
             bool big = sizeClass >= 3;
             sfx.pitch = Random.Range(0.92f, 1.18f) - sizeClass * 0.06f;
+            // generated hits by size class: socks and crumbs thwip, blocks rattle up the hose, furniture bonks the drum
+            AudioClip real = sizeClass <= 1 ? absorbSmall : (sizeClass == 2 ? absorbMedium : absorbBig);
+            if (real != null) { sfx.PlayOneShot(real, big ? 1.0f : 0.75f); return; }
             if (!big && popReal != null && Random.value < 0.5f) { sfx.PlayOneShot(popReal, 0.6f); return; }
             sfx.PlayOneShot(big ? gulp : pop, big ? 0.9f : 0.55f);
         }

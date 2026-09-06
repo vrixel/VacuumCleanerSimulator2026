@@ -16,6 +16,9 @@ namespace VCS.Player
         float punch;
         float powerScale = 1f;
         float bob;
+        // body extents around the pivot (the floor point under the centre), so leaning never pushes the nose or a
+        // side under the floor: the group is lifted by exactly what the tilt would sink (his feedback, 2026-09-06)
+        float zFront = 0.5f, zBack = 0.5f, xHalf = 0.3f;
 
         public static VacuumVisuals Build(Transform parent, VacuumController vac, VacuumSpec spec)
         {
@@ -30,7 +33,21 @@ namespace VCS.Player
             spec.Build(group, spec);
             VacuumDetails.Add(group, spec);
             if (!RealisticLook) AddEyes(group, spec, out v.leftEye, out v.rightEye);
+            v.MeasureExtents();
             return v;
+        }
+
+        void MeasureExtents()
+        {
+            var rs = group.GetComponentsInChildren<Renderer>();
+            if (rs.Length == 0) return;
+            Bounds b = rs[0].bounds;
+            foreach (var r in rs) b.Encapsulate(r.bounds);
+            // world bounds at build time; the group is unrotated, so the offsets from the pivot are local
+            Vector3 p = group.position;
+            zFront = Mathf.Max(0.05f, b.max.z - p.z);
+            zBack = Mathf.Max(0.05f, p.z - b.min.z);
+            xHalf = Mathf.Max(0.05f, Mathf.Max(b.max.x - p.x, p.x - b.min.x));
         }
 
         /// <summary>Two white spheres with pupils, also used by the garage preview.</summary>
@@ -62,9 +79,12 @@ namespace VCS.Player
             float bobAmp = 0.01f + 0.02f * Mathf.Clamp01(speed / 8f);
 
             Vector3 lv = vac != null ? transform.InverseTransformDirection(vac.Rb.linearVelocity) : Vector3.zero;
-            float pitch = Mathf.Clamp(lv.z * 1.6f, -12f, 12f);
-            float roll = Mathf.Clamp(-lv.x * 1.6f, -12f, 12f);
-            group.localPosition = new Vector3(0f, Mathf.Sin(bob) * bobAmp, 0f);
+            float pitch = Mathf.Clamp(lv.z * 0.7f, -5f, 5f);
+            float roll = Mathf.Clamp(-lv.x * 0.7f, -6f, 6f);
+            // nose-down (pitch > 0) sinks the front by sin(pitch) * zFront, nose-up sinks the back; roll sinks a side
+            float lift = Mathf.Sin(Mathf.Abs(pitch) * Mathf.Deg2Rad) * (pitch > 0f ? zFront : zBack)
+                       + Mathf.Sin(Mathf.Abs(roll) * Mathf.Deg2Rad) * xHalf;
+            group.localPosition = new Vector3(0f, Mathf.Sin(bob) * bobAmp + lift, 0f);
             group.localRotation = Quaternion.Euler(pitch, 0f, roll);
 
             punch = Mathf.Lerp(punch, 0f, dt * 9f);

@@ -128,6 +128,14 @@ SOUNDS = {
     "motor_loop": {"prompt": "A household vacuum cleaner motor running steadily, close microphone, constant hum with airflow, no music, clean loop", "loop": True, "trim": 6.0},
     "pop_real": {"prompt": "A vacuum cleaner nozzle sucking up a small object, one short thwop pop with a rattle inside the hose, no music", "loop": False, "trim": 1.2},
     "bag_alarm": {"prompt": "Small household appliance warning beep, three short electronic beeps, bag full alarm, no music", "loop": False, "trim": 2.0},
+    # 2026-09-06, his feedback "les bruitages sont un peu legers": a suction layer over the motor, a reel loop for the
+    # rewind, and three object-absorption hits by size class.
+    "suction_loop": {"prompt": "Vacuum cleaner nozzle sucking hard on a carpet, powerful airflow roar and hiss with turbulence, close microphone, steady, no motor whine, no music, clean seamless loop", "loop": True, "trim": 5.0},
+    "rewind_loop": {"prompt": "Vacuum cleaner power cord retracting fast into its spring reel, whirring spin, cable sliding and slapping on the floor, fast ratchet ticking, no music, clean seamless loop", "loop": True, "trim": 3.0},
+    "rewind_end": {"prompt": "A vacuum cleaner cord reel stopping, the plug snapping hard into the plastic housing, one sharp clack with a short spring twang, no music", "loop": False, "trim": 1.0},
+    "absorb_small": {"prompt": "A sock sucked into a vacuum cleaner hose, one fast whoosh thwip with a soft flap, no music", "loop": False, "trim": 0.9},
+    "absorb_medium": {"prompt": "A wooden toy block sucked into a vacuum cleaner hose, rattling up the pipe then a hollow thud into the bin, no music", "loop": False, "trim": 1.4},
+    "absorb_big": {"prompt": "A heavy object slamming into a big vacuum cleaner drum, one deep hollow bonk with a rattle and a suction gulp, no music", "loop": False, "trim": 1.5},
 }
 
 

@@ -314,6 +314,7 @@ namespace VCS.Player
             var gm = GameManager.I;
             float rewound = 0f;
             reelAcc = 0f;
+            if (gm != null) gm.Audio.SetRewind(true);
             // the plug jumps out of the socket
             if (count >= 2) prev[0] = pos[0] - (pos[1] - pos[0]).normalized * 0.05f - Vector3.up * 0.04f;
             while (count > 2)
@@ -339,7 +340,7 @@ namespace VCS.Player
                 if (ratchetTimer <= 0f)
                 {
                     ratchetTimer = 0.06f;
-                    if (gm != null) gm.Audio.PlayRatchet();
+                    if (gm != null && !gm.Audio.HasReelLoop) gm.Audio.PlayRatchet();   // synthesised teeth only without the generated reel loop
                     KnockDebris(pos[0]);
                     KnockDebris(pos[Mathf.Max(0, count / 2)]);
                 }
@@ -354,7 +355,8 @@ namespace VCS.Player
             Rewinding = false;
             if (gm != null)
             {
-                gm.Audio.PlayThunk();
+                gm.Audio.SetRewind(false);
+                if (!gm.Audio.HasReelLoop) gm.Audio.PlayThunk();
                 gm.Fx.Puff(vac.transform.position + Vector3.up * 0.5f, new Color(0.8f, 0.8f, 0.8f), 14);
                 gm.Objectives.Report("rewind", Mathf.RoundToInt(rewound));
                 gm.AddScore(Mathf.RoundToInt(rewound * 3f), false);

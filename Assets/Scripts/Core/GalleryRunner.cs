@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 using UnityEngine;
 using VCS.Player;
+using VCS.UI;
 using VCS.World;
 
 namespace VCS.Core
@@ -15,16 +16,18 @@ namespace VCS.Core
     public class GalleryRunner : MonoBehaviour
     {
         string outDir;
+        bool museum;   // "-museum <dir>": orientation diagnostics of the museum pieces instead of the gallery
 
         public static void TryStart(GameManager gm)
         {
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
             {
-                if (args[i] != "-gallery") continue;
+                if (args[i] != "-gallery" && args[i] != "-museum") continue;
                 GameManager.SmokeMode = true;
                 var r = gm.gameObject.AddComponent<GalleryRunner>();
                 r.outDir = args[i + 1];
+                r.museum = args[i] == "-museum";
                 return;
             }
         }
@@ -36,6 +39,11 @@ namespace VCS.Core
             var gm = GameManager.I;
             var preview = gm.Menu.Preview;
             preview.Hide();
+            if (museum)
+            {
+                yield return Museum(preview);
+                yield break;
+            }
             foreach (var look in new[] { false, true })
             {
                 VacuumVisuals.RealisticLook = true;
@@ -95,6 +103,51 @@ namespace VCS.Core
                 yield return null;
             }
             Debug.Log("[VCS] Gallery done");
+            yield return new WaitForSecondsRealtime(0.5f);
+            Application.Quit();
+        }
+
+        /// <summary>
+        /// Each museum piece as the game builds it (yaw and normalisation applied), with a red ball at the nozzle
+        /// point and a yellow bar from the pivot along +z (the driving direction), seen from two sides; the bounds
+        /// go to the log. Used to set ImportedVacuums.Yaw and Nozzle so the head faces where the vacuum drives.
+        /// </summary>
+        IEnumerator Museum(VacuumPreview preview)
+        {
+            VacuumVisuals.RealisticLook = true;
+            Palette.Realistic = true;
+            foreach (var s in VacuumCatalog.All)
+            {
+                if (!s.Hidden) continue;
+                var spec = s;
+                var marked = new VacuumSpec { Id = spec.Id, Name = spec.Name, Height = spec.Height, NozzleLocal = spec.NozzleLocal, Build = (g, s2) =>
+                {
+                    spec.Build(g, spec);
+                    var rs = g.GetComponentsInChildren<Renderer>();
+                    Bounds b = new Bounds(g.position, Vector3.zero);
+                    bool first = true;
+                    foreach (var r in rs) { if (first) { b = r.bounds; first = false; } else b.Encapsulate(r.bounds); }
+                    Vector3 lo = g.InverseTransformPoint(b.min), hi = g.InverseTransformPoint(b.max);
+                    Debug.Log("[VCS] Museum " + spec.Id + " (" + spec.Name + "): local bounds x " + Mathf.Min(lo.x, hi.x).ToString("F2") + ".." + Mathf.Max(lo.x, hi.x).ToString("F2")
+                              + " y " + Mathf.Min(lo.y, hi.y).ToString("F2") + ".." + Mathf.Max(lo.y, hi.y).ToString("F2")
+                              + " z " + Mathf.Min(lo.z, hi.z).ToString("F2") + ".." + Mathf.Max(lo.z, hi.z).ToString("F2") + ", nozzle " + spec.NozzleLocal.ToString("F2"));
+                    PropFactory.Prim(PrimitiveType.Sphere, g, spec.NozzleLocal, Vector3.one * 0.07f, new Color(1f, 0.1f, 0.1f), "NozzleMarker", false);
+                    float len = Mathf.Max(0.3f, Mathf.Max(lo.z, hi.z) + 0.15f);
+                    PropFactory.Prim(PrimitiveType.Cube, g, new Vector3(0f, 0.015f, len * 0.5f), new Vector3(0.03f, 0.03f, len), new Color(1f, 0.85f, 0.1f), "ForwardBar", false);
+                    PropFactory.Prim(PrimitiveType.Cube, g, new Vector3(0f, 0.015f, len), new Vector3(0.12f, 0.03f, 0.06f), new Color(1f, 0.85f, 0.1f), "ForwardTip", false);
+                    // +x in blue, ticks every 0.25 m on both bars so distances can be read off the top view
+                    PropFactory.Prim(PrimitiveType.Cube, g, new Vector3(0.2f, 0.015f, 0f), new Vector3(0.4f, 0.03f, 0.03f), new Color(0.2f, 0.4f, 1f), "RightBar", false);
+                    for (int t = 1; t * 0.25f < len; t++)
+                        PropFactory.Prim(PrimitiveType.Cube, g, new Vector3(0f, 0.02f, t * 0.25f), new Vector3(0.08f, 0.03f, 0.015f), Color.black, "Tick", false);
+                } };
+                preview.RenderStill(marked, -35f, 512, Path.Combine(outDir, "museum-" + spec.Id + "-a.png"));
+                yield return null;
+                preview.RenderStill(marked, 145f, 512, Path.Combine(outDir, "museum-" + spec.Id + "-b.png"));
+                yield return null;
+                preview.RenderTopDown(marked, 512, Path.Combine(outDir, "museum-" + spec.Id + "-top.png"));
+                yield return null;
+            }
+            Debug.Log("[VCS] Museum diagnostics done");
             yield return new WaitForSecondsRealtime(0.5f);
             Application.Quit();
         }
