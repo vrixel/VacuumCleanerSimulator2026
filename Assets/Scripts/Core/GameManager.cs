@@ -84,6 +84,7 @@ namespace VCS.Core
             Objectives.Completed += OnObjectiveCompleted;
             Level = new GameObject("Level").AddComponent<LevelBuilder>();
             Cam = FollowCamera.Create();
+            RenderingSetup.Attach(Cam.Cam);
             Hud = HudController.Create();
             Menu = MenuController.Create();
             Menu.OnTitleStart = StartGame;

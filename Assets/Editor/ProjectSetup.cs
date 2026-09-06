@@ -31,6 +31,7 @@ namespace VCS.Editor
             // Mono player: no need for UnityLinker stripping, and the linker step is what fails on this machine.
             PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.Standalone, ManagedStrippingLevel.Disabled);
             EnsureMaterials();
+            EnsurePostProcessResources();
             EnsureScene();
             ApplyIcon();
             AssetDatabase.SaveAssets();
@@ -62,6 +63,19 @@ namespace VCS.Editor
             for (int i = 0; i < defaultIcons.Length; i++) defaultIcons[i] = tex;
             PlayerSettings.SetIcons(NamedBuildTarget.Unknown, defaultIcons, IconKind.Any);
             Debug.Log("[VCS] Icon applied from " + path);
+        }
+
+        // Post Processing v2 finds its shaders through this asset; copying it under Resources puts it (and the
+        // shaders it references) in the build so RenderingSetup can load it at runtime.
+        static void EnsurePostProcessResources()
+        {
+            const string src = "Packages/com.unity.postprocessing/PostProcessing/PostProcessResources.asset";
+            const string dst = "Assets/Resources/PostProcessResources.asset";
+            if (AssetDatabase.LoadAssetAtPath<Object>(dst) != null) return;
+            if (AssetDatabase.LoadAssetAtPath<Object>(src) == null) { Debug.LogWarning("[VCS] Post-processing package not resolved yet: " + src); return; }
+            Directory.CreateDirectory("Assets/Resources");
+            if (AssetDatabase.CopyAsset(src, dst)) Debug.Log("[VCS] PostProcessResources copied to Resources");
+            else Debug.LogWarning("[VCS] Could not copy PostProcessResources");
         }
 
         static void EnsureMaterials()

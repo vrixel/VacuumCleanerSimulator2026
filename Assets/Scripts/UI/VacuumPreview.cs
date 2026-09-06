@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using VCS.Player;
 using VCS.World;
@@ -24,42 +25,71 @@ namespace VCS.UI
             go.transform.position = new Vector3(0f, -500f, 0f);
             var p = go.AddComponent<VacuumPreview>();
             p.stage = go.transform;
-            p.Texture = new RenderTexture(640, 640, 16);
+            p.Texture = new RenderTexture(1024, 1024, 24);
             p.Texture.name = "VacuumPreview";
 
-            var podium = MeshKit.Part(p.stage, MeshKit.Revolve(new[] { new Vector2(0f, -0.04f), new Vector2(0.7f, -0.04f), new Vector2(0.7f, -0.04f), new Vector2(0.72f, -0.02f), new Vector2(0.72f, 0f), new Vector2(0f, 0f) }, 48, "Podium"),
-                Palette.Glossy(new Color(0.18f, 0.18f, 0.24f)), Vector3.zero, Quaternion.identity, Vector3.one, "Podium");
-            podium.transform.localPosition = Vector3.zero;
+            // Studio: a light grey cyclorama (floor curving up into a back wall, seen from inside), a pale podium.
+            var cyc = new List<Vector2>();
+            cyc.Add(new Vector2(0f, -0.001f)); cyc.Add(new Vector2(3.0f, -0.001f));
+            for (int i = 1; i <= 8; i++)
+            {
+                float a = i / 8f * Mathf.PI * 0.5f;
+                cyc.Add(new Vector2(3.0f + 2.5f * Mathf.Sin(a), 2.5f - 2.5f * Mathf.Cos(a)));
+            }
+            cyc.Add(new Vector2(5.5f, 6f));
+            var cycMesh = MeshKit.Revolve(cyc, 48, "Cyclorama", false);
+            var tris = cycMesh.triangles; System.Array.Reverse(tris); cycMesh.triangles = tris;
+            var norms = cycMesh.normals; for (int i = 0; i < norms.Length; i++) norms[i] = -norms[i]; cycMesh.normals = norms;
+            MeshKit.Part(p.stage, cycMesh, Palette.Mat(new Color(0.80f, 0.80f, 0.82f), 0f, 0.15f), Vector3.zero, Quaternion.identity, Vector3.one, "Cyclorama");
+            var podium = MeshKit.Part(p.stage, MeshKit.Revolve(new[] { new Vector2(0f, 0f), new Vector2(0.72f, 0f), new Vector2(0.72f, 0f), new Vector2(0.74f, 0.02f), new Vector2(0.74f, 0.04f), new Vector2(0f, 0.04f) }, 48, "Podium"),
+                Palette.Mat(new Color(0.70f, 0.70f, 0.73f), 0.1f, 0.5f), Vector3.zero, Quaternion.identity, Vector3.one, "Podium");
+            podium.transform.localPosition = new Vector3(0f, -0.04f, 0f);
 
             var camGo = new GameObject("PreviewCamera");
             camGo.transform.SetParent(p.stage, false);
             p.cam = camGo.AddComponent<Camera>();
             p.cam.targetTexture = p.Texture;
             p.cam.clearFlags = CameraClearFlags.SolidColor;
-            p.cam.backgroundColor = new Color(0.10f, 0.10f, 0.16f);
+            p.cam.backgroundColor = new Color(0.80f, 0.80f, 0.82f);
             p.cam.nearClipPlane = 0.05f;
             p.cam.farClipPlane = 12f;
             p.cam.fieldOfView = 40f;
             p.cam.cullingMask &= ~(1 << 8);
             p.cam.enabled = false;
+            VCS.Core.RenderingSetup.Attach(p.cam);
+
+            // Three-point studio lighting: a soft key spot with shadows, a cool fill, a rim from behind.
+            var keyGo = new GameObject("PreviewKey");
+            keyGo.transform.SetParent(p.stage, false);
+            keyGo.transform.localPosition = new Vector3(1.6f, 2.6f, 2.0f);
+            keyGo.transform.LookAt(p.stage.position + Vector3.up * 0.3f);
+            var key = keyGo.AddComponent<Light>();
+            key.type = LightType.Spot;
+            key.spotAngle = 70f;
+            key.innerSpotAngle = 40f;
+            key.range = 9f;
+            key.intensity = 3.2f;
+            key.color = new Color(1f, 0.96f, 0.9f);
+            key.shadows = LightShadows.Soft;
+            key.shadowStrength = 0.8f;
 
             var fillGo = new GameObject("PreviewFill");
             fillGo.transform.SetParent(p.stage, false);
-            fillGo.transform.localPosition = new Vector3(1.5f, 2f, 1.8f);
+            fillGo.transform.localPosition = new Vector3(-2.2f, 1.4f, 1.6f);
             var fill = fillGo.AddComponent<Light>();
             fill.type = LightType.Point;
-            fill.range = 7f;
-            fill.intensity = 1.6f;
-            fill.color = new Color(1f, 0.97f, 0.9f);
+            fill.range = 8f;
+            fill.intensity = 0.9f;
+            fill.color = new Color(0.85f, 0.9f, 1f);
 
             var rimGo = new GameObject("PreviewRim");
             rimGo.transform.SetParent(p.stage, false);
-            rimGo.transform.localPosition = new Vector3(-1.5f, 1.2f, -1.5f);
+            rimGo.transform.localPosition = new Vector3(-1.0f, 1.8f, -2.2f);
             var rim = rimGo.AddComponent<Light>();
             rim.type = LightType.Point;
-            rim.range = 6f;
-            rim.intensity = 0.9f;
-            rim.color = new Color(0.7f, 0.8f, 1f);
+            rim.range = 7f;
+            rim.intensity = 1.4f;
+            rim.color = new Color(0.9f, 0.95f, 1f);
             return p;
         }
 

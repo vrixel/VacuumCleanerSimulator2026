@@ -30,6 +30,8 @@ if (-not $uiDll) {
 Write-Host "UnityEngine.UI: $uiDll"
 
 $engineRefs = Get-ChildItem $managedEngine -Filter "UnityEngine*.dll" | Select-Object -ExpandProperty FullName
+# Package assemblies (post-processing) as compiled by the last Unity build; absent before the first build.
+$packageDlls = @(Get-ChildItem (Join-Path $RepoRoot "Library\ScriptAssemblies") -Filter "Unity.Postprocessing.Runtime.dll" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName)
 $editorRefs = Get-ChildItem $managedEngine -Filter "UnityEditor*.dll" | Select-Object -ExpandProperty FullName
 
 function New-Csproj {
@@ -72,7 +74,7 @@ $($refs -join "`n")
 
 New-Csproj -Path (Join-Path $check "Runtime.csproj") -AssemblyName "Assembly-CSharp" `
     -CompileGlobs @("$RepoRoot\Assets\Scripts\**\*.cs") `
-    -References ($engineRefs + @($uiDll)) -ExtraDefines "" -Tfm "netstandard2.1"
+    -References ($engineRefs + @($uiDll) + $packageDlls) -ExtraDefines "" -Tfm "netstandard2.1"
 
 # Engine modules target .NET Standard 2.1; the editor modules are .NET Framework, so the editor project stays on net48.
 New-Csproj -Path (Join-Path $check "Editor.csproj") -AssemblyName "Assembly-CSharp-Editor" `
