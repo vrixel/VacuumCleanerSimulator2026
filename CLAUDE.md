@@ -182,7 +182,7 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   on the free right half, START plate on the title, small pause) which writes `GameInput.Touch*`; every input query
   reads them, one-shots are consumed by the first read. The phone HUD hides the cockpit strip and the tapes and
   moves the mission log up; phones drop MSVO and grain, MSAA 2x, medium shadows, 60 fps cap. Player settings in
-  `ProjectSetup.Apply`: IL2CPP (the NDK's clang, no MSVC needed), ARM64, min API 24, Vulkan then GLES3, landscape,
+  `ProjectSetup.Apply`: IL2CPP (the NDK's clang, no MSVC needed), ARM64, min API 25, Vulkan then GLES3, landscape,
   version code = major*10000 + minor*100 + patch, package `com.cosnuau.vacuumcleanersimulator2026`. The keystore
   never enters the repo: `tools/build-android.ps1` reads `D:\Cloclo\Keys\vacuum-android.keystore` and `.pass` into
   `VCS_KEYSTORE*` environment variables for `BuildScript.BuildAndroid`. The Hub refuses modules for this editor, so

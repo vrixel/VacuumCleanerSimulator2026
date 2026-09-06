@@ -131,8 +131,21 @@ def main():
                     shutil.move(src, dst)
                 log(f"   renamed {os.path.relpath(src, unity)} -> {os.path.relpath(dst, unity)}")
         open(marker, "w").write(url)
+    # CMake is not in the manifest but Unity 6 refuses to build without it ("Missing CMake 3.22.1", measured 2026-09-07)
+    cmake = os.path.join(player, "SDK", "cmake", "3.22.1")
+    if not os.path.exists(os.path.join(cmake, "bin", "cmake.exe")):
+        log("[cmake 3.22.1]")
+        zpath = os.path.join(CACHE, "cmake-3.22.1-windows.zip")
+        fetch("https://dl.google.com/android/repository/cmake-3.22.1-windows.zip", zpath)
+        unzip(zpath, cmake)
+        for item in os.listdir(cmake):
+            inner = os.path.join(cmake, item)
+            if os.path.isdir(inner) and os.path.isdir(os.path.join(inner, "bin")):
+                for sub in os.listdir(inner):
+                    shutil.move(os.path.join(inner, sub), os.path.join(cmake, sub))
+                os.rmdir(inner)
     log("ANDROID MODULE OK")
-    for probe in ("OpenJDK/bin/java.exe", "NDK/ndk-build.cmd", "SDK/platform-tools/adb.exe", "SDK/build-tools/36.0.0/aapt2.exe", "SDK/platforms/android-35/android.jar", "SDK/cmdline-tools/16.0/bin/sdkmanager.bat"):
+    for probe in ("OpenJDK/bin/java.exe", "NDK/ndk-build.cmd", "SDK/platform-tools/adb.exe", "SDK/build-tools/36.0.0/aapt2.exe", "SDK/platforms/android-35/android.jar", "SDK/cmdline-tools/16.0/bin/sdkmanager.bat", "SDK/cmake/3.22.1/bin/cmake.exe"):
         log(f"   {'ok ' if os.path.exists(os.path.join(player, probe)) else 'MISSING'} {probe}")
     return 0
 

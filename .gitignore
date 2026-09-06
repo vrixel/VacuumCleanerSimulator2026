@@ -49,3 +49,6 @@ Thumbs.db
 
 # kie raw downloads (regenerable)
 /tools/assets/raw/
+
+# Unity Android build temp (CMake, gradle)
+.utmp/
