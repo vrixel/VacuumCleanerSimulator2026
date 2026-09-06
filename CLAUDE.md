@@ -19,6 +19,7 @@ powershell -File tools\run.ps1               # launch the last build
 powershell -File tools\smoke-test.ps1        # automated run of the build: self-screenshots (Builds\smoke-*.png), drives, logs "[VCS] Smoke result", quits
 powershell -File tools\release.ps1 -Version 0.2.0   # build, zip Builds\Win64, publish GitHub release v0.2.0 with the zip (-SkipBuild to reuse a smoked build, -Draft)
 python tools\marketing.py                   # cut marketing\source\*.png into store sizes (marketing\store), icon sizes + icon.ico (marketing\icon), Assets\Icon\icon.png
+python toolsssets\marketing_real.py --list   # marketing art with the realistic French canister instead of the cartoon face (seedream-v4-edit, two images: picture + docsesearch	raineau-reference.png); cartoon originals kept in marketing\source\cartoon; run tools\marketing.py after
 ```
 
 ```powershell
@@ -209,6 +210,11 @@ Unity 6 API names in use: `Rigidbody.linearVelocity`, `linearDamping`, `angularD
 - The repo is PUBLIC (vrixel/VacuumCleanerSimulator2026) since 2026-09-05, downloads at `releases/latest`; never
   commit kie keys or anything from `D:\Cloclo\Projects\Nazisme`. `LICENSE.md` is all rights reserved (source for
   reference), fonts are OFL. Bump `bundleVersion` in `ProjectSetup` with every release.
+- Marketing (2026-09-06, "plus de visage"): the game is about realistic vacuums, Monsieur Traineau (the imported
+  French canister) is the hero of the key art, hero, portrait, line-up and icon. `tools/assets/marketing_real.py`
+  edits the cartoon pictures with `bytedance/seedream-v4-edit` fed two images (the picture and the canister
+  reference render); nano-banana-edit kept the googly eyes twice and gpt-image-2 reinvented the room. Describe the
+  body part by part and say "no eyes" several times. Then `tools/marketing.py`, then build (exe icon), then `msix.py`.
 - App icon: `Assets/Icon/icon.png` (512, cut by `tools/marketing.py` from the kie icon) is applied to the Standalone
   and default icon slots by `ProjectSetup.ApplyIcon` on every batch build; the exe shows it.
 - The game page on cosnuau.com is `public/vacuum.html` (a flat file: CloudFront serves the home page for folder URLs, assets in `public/vacuum/`) in `D:\Cloclo\Projects\cosnuau.com` (web-sized JPEGs
