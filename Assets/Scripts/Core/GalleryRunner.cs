@@ -51,7 +51,7 @@ namespace VCS.Core
                 VacuumModels.UseV2 = look;
                 foreach (var s in VacuumCatalog.All)
                 {
-                    if (s.Hidden) continue;   // museum pieces are rendered by the import loop below
+                    if (s.Imported) continue;   // imported meshes are rendered by the import loop below
                     string file = Path.Combine(outDir, (look ? "after-" : "before-") + s.Id + ".png");
                     preview.RenderStill(s, -35f, 768, file);
                     Debug.Log("[VCS] Gallery " + file);
@@ -118,7 +118,7 @@ namespace VCS.Core
             Palette.Realistic = true;
             foreach (var s in VacuumCatalog.All)
             {
-                if (!s.Hidden) continue;
+                if (!s.Imported) continue;
                 var spec = s;
                 var marked = new VacuumSpec { Id = spec.Id, Name = spec.Name, Height = spec.Height, NozzleLocal = spec.NozzleLocal, Build = (g, s2) =>
                 {

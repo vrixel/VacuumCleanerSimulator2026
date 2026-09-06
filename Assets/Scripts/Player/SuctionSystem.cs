@@ -20,7 +20,8 @@ namespace VCS.Player
     public class SuctionSystem : MonoBehaviour
     {
         static readonly float[] RadiusByPower = { 0f, 2.4f, 3.0f, 3.8f, 4.6f, 5.5f };
-        static readonly float[] AbsorbByPower = { 0f, 0.8f, 0.95f, 1.15f, 1.45f, 1.8f };
+        // 2026-09-06: shortened by about a third, things vanished too far from the nozzle
+        static readonly float[] AbsorbByPower = { 0f, 0.55f, 0.66f, 0.8f, 1.0f, 1.25f };
         static readonly float[] PullByPower = { 0f, 16f, 20f, 26f, 34f, 44f };
         const float HalfAngle = 65f;
         const float BlowForce = 40f;
@@ -145,7 +146,7 @@ namespace VCS.Player
                 if (!inCone) continue;
 
                 bool edible = d.SizeClass <= maxClass && !BagFull;
-                if (edible && dist < absorb * (1f + d.SizeClass * 0.15f))
+                if (edible && dist < absorb * (1f + d.SizeClass * 0.12f))
                 {
                     Absorb(gm, d);
                     continue;

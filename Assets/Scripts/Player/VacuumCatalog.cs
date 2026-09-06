@@ -50,8 +50,8 @@ namespace VCS.Player
         public float MotorRpmMax = 18000f;
         public Color Accent = new Color(1f, 0.6f, 0.25f);
         public bool Cordless;
-        /// <summary>Museum piece (imported real-product mesh): only listed when the museum is unlocked (M on the title screen).</summary>
-        public bool Hidden;
+        /// <summary>Imported real-product mesh (see ImportedVacuums) rather than a built model; the gallery tools use it.</summary>
+        public bool Imported;
         /// <summary>Attribution line for imported meshes (CC-BY), shown under the name.</summary>
         public string Credit;
         public string ModelCode = "DP-01";
@@ -145,24 +145,8 @@ namespace VCS.Player
             ImportedVacuums.AddTo(All);
         }
 
-        /// <summary>The museum: real machines on loan, imported from Objaverse (see ImportedVacuums).</summary>
-        public static bool MuseumUnlocked
-        {
-            get => PlayerPrefs.GetInt("museum", 0) == 1;
-            set => PlayerPrefs.SetInt("museum", value ? 1 : 0);
-        }
-
-        /// <summary>What the garage shows: the regular eight, plus the museum pieces once unlocked.</summary>
-        public static List<VacuumSpec> Visible
-        {
-            get
-            {
-                var list = new List<VacuumSpec>();
-                bool museum = MuseumUnlocked;
-                foreach (var s in All) if (!s.Hidden || museum) list.Add(s);
-                return list;
-            }
-        }
+        /// <summary>What the garage shows: everything, the eight built models first, then the eleven imported ones.</summary>
+        public static List<VacuumSpec> Visible => All;
 
         public static VacuumSpec Get(string id)
         {

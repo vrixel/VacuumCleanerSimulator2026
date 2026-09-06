@@ -5,10 +5,10 @@ using VCS.World;
 namespace VCS.Player
 {
     /// <summary>
-    /// The museum: real machines on loan. Meshes downloaded from Objaverse (the Hugging Face mirror of Sketchfab's
+    /// Real machines in the collection. Meshes downloaded from Objaverse (the Hugging Face mirror of Sketchfab's
     /// Creative Commons models), decimated to about 4k faces by tools/lowpoly.py into Resources/Models, and listed
-    /// here as hidden catalogue entries (M on the title screen opens the museum). Every entry carries its CC-BY
-    /// credit, shown under the name and repeated in docs/CREDITS.md. Names are the game's own; no brand is claimed.
+    /// after the eight built models. Every entry carries its CC-BY credit for docs/CREDITS.md (the garage shows only
+    /// the game's own name and tagline). Names are the game's own; no brand is claimed.
     /// </summary>
     public static class ImportedVacuums
     {
@@ -25,27 +25,27 @@ namespace VCS.Player
 
         static readonly Entry[] Entries =
         {
-            new Entry { Id = "m_redcanister", Model = "henry", Name = "The Red Canister", Tagline = "A smile, a hose, a bag the size of a pillow.",
+            new Entry { Id = "m_redcanister", Model = "henry", Name = "Hubert the Grin", Tagline = "A smile, a hose, a bag the size of a pillow.",
                         Credit = "Model: Henry Vacuum by rhcreations (CC BY 4.0, Sketchfab)", Size = 0.62f, Height = 0.55f, Nozzle = new Vector3(0.05f, 0.05f, 0.28f), Bag = 160f, Speed = 6.5f },
-            new Entry { Id = "m_cyclone", Model = "dyson_upright", Name = "The Cyclone Upright", Tagline = "Ball, bin, no bag, no mercy.",
+            new Entry { Id = "m_cyclone", Model = "dyson_upright", Name = "Baron Vortex", Tagline = "Ball, bin, no bag, no mercy.",
                         Credit = "Model: Upright Dyson Vacuum Cleaner by rhcreations (CC BY 4.0, Sketchfab)", Size = 0.42f, Height = 1.2f, Nozzle = new Vector3(0f, 0.05f, 0.17f), Speed = 7.5f, Hop = 7f },
-            new Entry { Id = "m_aquastick", Model = "philips_aquatrio", Name = "The Wet Stick", Tagline = "Vacuums, mops, judges.",
+            new Entry { Id = "m_aquastick", Model = "philips_aquatrio", Name = "Sir Mops-a-Lot", Tagline = "Vacuums, mops, judges.",
                         Credit = "Model: PHILIPS AquaTrio Pro by artemtem (CC BY 4.0, Sketchfab)", Size = 0.42f, Height = 1.25f, Nozzle = new Vector3(0f, 0.05f, 0.16f), Cordless = true, Speed = 7.5f, Bag = 60f },
-            new Entry { Id = "m_yellowdrum", Model = "vacuum_4k", Name = "The Yellow Drum", Tagline = "Workshop grade. Eats screws for breakfast.",
+            new Entry { Id = "m_yellowdrum", Model = "vacuum_4k", Name = "Big Bertha", Tagline = "Workshop grade. Eats screws for breakfast.",
                         Credit = "Model: Vacuum Cleaner by rescue3d (CC BY 4.0, Sketchfab)", Size = 0.62f, Height = 0.75f, Yaw = -29f, Nozzle = new Vector3(0f, 0.05f, 0.32f), Bag = 220f, Speed = 5.5f },
-            new Entry { Id = "m_greystick", Model = "sixth_hm", Name = "The Grey Stick", Tagline = "Student project. Surprisingly hungry.",
+            new Entry { Id = "m_greystick", Model = "sixth_hm", Name = "Twiglet", Tagline = "Student project. Surprisingly hungry.",
                         Credit = "Model: Sixth HM XYZ - A vacuum cleaner by nimzuk (CC BY 4.0, Sketchfab)", Size = 0.34f, Height = 1.2f, Yaw = -90f, Nozzle = new Vector3(0f, 0.05f, 0.10f), Speed = 7f, Bag = 50f },
-            new Entry { Id = "m_wand", Model = "vacuum_20k", Name = "The Cordless Wand", Tagline = "Forty minutes of battery, forty years of dust.",
+            new Entry { Id = "m_wand", Model = "vacuum_20k", Name = "Wanda", Tagline = "Forty minutes of battery, forty years of dust.",
                         Credit = "Model: Vacuum Cleaner by kikumi (CC BY 4.0, Sketchfab)", Size = 0.34f, Height = 1.1f, Yaw = 90f, Nozzle = new Vector3(0f, 0.05f, 0.18f), Cordless = true, Speed = 8f, Bag = 45f },
-            new Entry { Id = "m_redsled", Model = "vacuum_82k", Name = "The Red Sled", Tagline = "Un traineau. Glisse, aspire, ne dit rien.",
+            new Entry { Id = "m_redsled", Model = "vacuum_82k", Name = "Monsieur Traineau", Tagline = "Un traineau. Glisse, aspire, ne dit rien.",
                         Credit = "Model: vacuum cleaner by huseyinCG (CC BY 4.0, Sketchfab)", Size = 0.9f, Height = 0.5f, Yaw = 90f, Nozzle = new Vector3(0f, 0.05f, 0.42f), Bag = 140f, Speed = 7f },
-            new Entry { Id = "m_bluedrum", Model = "canister_a", Name = "The Blue Drum", Tagline = "Compact, cheerful, slightly too loud.",
+            new Entry { Id = "m_bluedrum", Model = "canister_a", Name = "Bluebarrel", Tagline = "Compact, cheerful, slightly too loud.",
                         Credit = "Model: Vacuum Cleaner by snowykov (CC BY 4.0, Sketchfab)", Size = 0.5f, Height = 0.6f, Nozzle = new Vector3(0f, 0.05f, 0.32f), Bag = 120f, Speed = 6.5f },
-            new Entry { Id = "m_greyrobot", Model = "robvac", Name = "The Grey Robot", Tagline = "Bumps into everything. On purpose.",
+            new Entry { Id = "m_greyrobot", Model = "robvac", Name = "Bumper", Tagline = "Bumps into everything. On purpose.",
                         Credit = "Model: Robot vacuum Cleaner Rob-vac by darkfrei (CC BY 4.0, Sketchfab)", Size = 0.5f, Height = 0.3f, Nozzle = new Vector3(0f, 0.06f, 0.20f), Cordless = true, Speed = 6f, Hop = 4.5f, Bag = 40f },
-            new Entry { Id = "m_roundone", Model = "roomba_888", Name = "The Round One", Tagline = "Eight hundred and eighty-eight polygons of patience.",
+            new Entry { Id = "m_roundone", Model = "roomba_888", Name = "Puck", Tagline = "Eight hundred and eighty-eight polygons of patience.",
                         Credit = "Model: Low-poly Roomba by Seats (CC BY 4.0, Sketchfab)", Size = 0.5f, Height = 0.3f, Nozzle = new Vector3(0f, 0.06f, 0.20f), Cordless = true, Speed = 6.5f, Hop = 4.5f, Bag = 40f },
-            new Entry { Id = "m_littlered", Model = "henry_lowpoly", Name = "The Little Red One", Tagline = "Five hundred polygons and a grin.",
+            new Entry { Id = "m_littlered", Model = "henry_lowpoly", Name = "Hubert Junior", Tagline = "Five hundred polygons and a grin.",
                         Credit = "Model: Low Poly \"Henry Hoover\" Vacuum Cleaner by TheoClarke (CC BY 4.0, Sketchfab)", Size = 0.55f, Height = 0.55f, Nozzle = new Vector3(0f, 0.05f, 0.25f), Bag = 150f, Speed = 6.5f },
         };
 
@@ -57,9 +57,9 @@ namespace VCS.Player
                 var entry = e;
                 all.Add(new VacuumSpec
                 {
-                    Id = entry.Id, Name = entry.Name, Tagline = entry.Tagline, Credit = entry.Credit, Hidden = true,
+                    Id = entry.Id, Name = entry.Name, Tagline = entry.Tagline, Credit = entry.Credit, Imported = true,
                     Speed = entry.Speed, Hop = entry.Hop, BagCapacity = entry.Bag, Cordless = entry.Cordless,
-                    NozzleLocal = entry.Nozzle, Height = entry.Height, ModelCode = "MUSEUM-" + (++n).ToString("00"),
+                    NozzleLocal = entry.Nozzle, Height = entry.Height, ModelCode = "GUEST-" + (++n).ToString("00"),
                     Accent = new Color(0.85f, 0.85f, 0.9f), Build = (g, s) => Build(entry, g),
                 });
             }
@@ -71,7 +71,7 @@ namespace VCS.Player
             var prefab = Resources.Load<GameObject>("Models/" + e.Model);
             if (prefab == null)
             {
-                Debug.LogWarning("[VCS] Museum model missing: " + e.Model);
+                Debug.LogWarning("[VCS] Imported model missing: " + e.Model);
                 PropFactory.Prim(PrimitiveType.Cube, g, new Vector3(0f, 0.25f, 0f), new Vector3(0.4f, 0.5f, 0.4f), Color.gray, "Missing", false);
                 return;
             }
