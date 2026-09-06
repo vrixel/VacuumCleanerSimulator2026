@@ -24,6 +24,13 @@ esearch	raineau-reference.png); cartoon originals kept in marketing\source\carto
 ```
 
 ```powershell
+python tools\install-android.py                # Android module + SDK/NDK/JDK from the release manifest, no Hub, no UAC (3 GB, cached in D:\Temp\claude\unity-android)
+powershell -File tools\make-keystore.ps1        # once: Play upload keystore in D:\Cloclo\Keys (outside the repo), random password saved next to it
+powershell -File tools\build-android.ps1 [-Aab]  # Android APK (adb) or AAB (Play) -> Builds\Android, IL2CPP ARM64, log in Builds\build-android.log
+powershell -File tools\smoke-test.ps1 -Touch -Width 1920 -Height 864   # the phone layer on the PC (stick, buttons, no cockpit): phone-format screenshots
+```
+
+```powershell
 python tools\assets\kie_assets.py --list                 # generated-asset campaign: what exists, what is missing
 python tools\assets\kie_assets.py --dry-run              # what would be generated and with which model, no spend
 python tools\assets\kie_assets.py                        # generate missing gauges, containers, panel, music, sounds (kie.ai credits)
@@ -169,6 +176,17 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
 - `Palette` caches one material per colour on top of `Resources/Materials/Lit.mat` (Standard shader). That material
   asset exists so the shader is not stripped from builds; `ProjectSetup` creates it. Never enable shader keywords
   at runtime (the variant will be missing in the build).
+
+- Android (2026-09-07, "Go"): the phone build is the same project. `GameInput.TouchMode` (phones, or `-touch` on the
+  PC) turns on `TouchControls` (uGUI canvas 30: virtual stick, HOP / TURBO / BLOW / EMPTY / REWIND pads, look pad
+  on the free right half, START plate on the title, small pause) which writes `GameInput.Touch*`; every input query
+  reads them, one-shots are consumed by the first read. The phone HUD hides the cockpit strip and the tapes and
+  moves the mission log up; phones drop MSVO and grain, MSAA 2x, medium shadows, 60 fps cap. Player settings in
+  `ProjectSetup.Apply`: IL2CPP (the NDK's clang, no MSVC needed), ARM64, min API 24, Vulkan then GLES3, landscape,
+  version code = major*10000 + minor*100 + patch, package `com.cosnuau.vacuumcleanersimulator2026`. The keystore
+  never enters the repo: `tools/build-android.ps1` reads `D:\Cloclo\Keys\vacuum-android.keystore` and `.pass` into
+  `VCS_KEYSTORE*` environment variables for `BuildScript.BuildAndroid`. The Hub refuses modules for this editor, so
+  `tools/install-android.py` reproduces its work from the release manifest. iOS needs a Mac (Xcode): not here.
 
 Input: `GameInput` wraps the legacy Input Manager. Axes live in `ProjectSettings/InputManager.asset` (Horizontal,
 Vertical, CamX, CamY, DPadX, DPadY, TriggerL, TriggerR); buttons are read with `KeyCode.JoystickButtonN`
