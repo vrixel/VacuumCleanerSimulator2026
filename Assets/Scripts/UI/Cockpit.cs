@@ -110,6 +110,11 @@ namespace VCS.UI
         static void Screen(Transform p, float x0, float y0, float x1, float y1)
         {
             var z = Vector2.zero;
+            if (UIStyle.Has("screen_glass"))
+            {
+                UIStyle.Plate(p, "Screen", "screen_glass", Color.white, z, z, new Vector2(x0 - 3f, y0 - 3f), new Vector2(x1 + 3f, y1 + 3f), 8f, UIStyle.Screen, 0.22f);
+                return;
+            }
             UIFactory.Panel(p, "ScreenEdge", new Color(0.3f, 0.34f, 0.4f, 0.9f), z, z, new Vector2(x0 - 2f, y0 - 2f), new Vector2(x1 + 2f, y1 + 2f));
             UIFactory.Panel(p, "Screen", UIStyle.Screen, z, z, new Vector2(x0, y0), new Vector2(x1, y1));
         }
@@ -156,9 +161,7 @@ namespace VCS.UI
         Image MakeBar(Transform t, string name, float x, float y)
         {
             var z = Vector2.zero;
-            var back = UIFactory.Panel(t, name + "Back", new Color(0.12f, 0.13f, 0.17f), z, z, new Vector2(x, y), new Vector2(x + 260f, y + 7f));
-            var fill = UIFactory.Panel(back.transform, name, Color.white, new Vector2(0f, 0f), new Vector2(0.5f, 1f), new Vector2(1f, 1f), new Vector2(-1f, -1f));
-            return fill;
+            return UIStyle.Bar(t, name, Color.white, z, z, new Vector2(x, y - 1f), new Vector2(x + 260f, y + 9f), 1f);
         }
 
         void BuildContainer(Transform t)

@@ -147,6 +147,16 @@ namespace VCS.UI
             return new Color(1f, 1f, 1f, inside ? 1f : 0f);
         }, new Vector2(0.5f, 0.5f));
 
+        static Sprite vignette;
+
+        /// <summary>Soft radial veil: 55 percent in the middle, opaque in the corners. Tint dark for backdrops.</summary>
+        public static Sprite Vignette => vignette != null ? vignette : vignette = Make("vignette", 128, (x, y) =>
+        {
+            float d = Dist(x, y, 128);
+            float a = Mathf.Lerp(0.55f, 1f, Mathf.Clamp01((d - 0.35f) / 0.75f));
+            return new Color(1f, 1f, 1f, a);
+        });
+
         static Sprite radarSweep;
 
         /// <summary>A 70-degree wedge fading behind its leading edge, for the radar sweep.</summary>

@@ -63,8 +63,8 @@ namespace VCS.UI
             sweepImg.sprite = UISprites.RadarSweep;
             r.sweep = sweepImg.rectTransform;
             // bezel
-            var bezel = UIFactory.Panel(holder.transform, "Bezel", new Color(0.62f, 0.68f, 0.78f, 0.9f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            bezel.sprite = UISprites.Ring;
+            var bezel = UIStyle.Simple(holder.transform, "Bezel", "radar_bezel", Color.white, Vector2.zero, Vector2.one, new Vector2(-10f, -10f), new Vector2(10f, 10f), new Color(0.62f, 0.68f, 0.78f, 0.9f), true);
+            if (bezel.sprite == null) { bezel.sprite = UISprites.Ring; UIFactory.Anchor(bezel.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero); }
             return r;
         }
 

@@ -51,7 +51,7 @@ namespace VCS.UI
             titleRoot = new GameObject("Title", typeof(RectTransform));
             titleRoot.transform.SetParent(root, false);
             UIFactory.Anchor(titleRoot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            UIFactory.Panel(titleRoot.transform, "Dim", new Color(0.05f, 0.05f, 0.1f, 0.35f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            UIStyle.Veil(titleRoot.transform, "Dim", 0.4f);
 
             var title = UIFactory.Text(titleRoot.transform, "TitleText", "VACUUM CLEANER\nSIMULATOR <color=#FFD84D>2026</color>", 84, Color.white, TextAnchor.MiddleLeft,
                 left, left, new Vector2(70f, 130f), new Vector2(1250f, 430f), false);
@@ -116,9 +116,8 @@ namespace VCS.UI
                     right, right, new Vector2(-516f, y - 14f), new Vector2(-400f, y + 14f), false);
                 UIStyle.Style(barLabel, UIStyle.Arcade, 15, UIStyle.Steel, FontStyle.Italic);
                 UIStyle.Edge(barLabel);
-                var back = UIFactory.Panel(titleRoot.transform, "BarBack" + i, new Color(0f, 0f, 0f, 0.8f), right, right, new Vector2(-390f, y - 11f), new Vector2(-100f, y + 11f));
                 Color[] barColors = { UIStyle.Green, UIStyle.Red, UIStyle.Yellow, UIStyle.Blue };
-                bars[i] = UIFactory.Panel(back.transform, "BarFill" + i, barColors[i], new Vector2(0f, 0f), new Vector2(0.5f, 1f), new Vector2(3f, 3f), new Vector2(-3f, -3f));
+                bars[i] = UIStyle.Bar(titleRoot.transform, "Bar" + i, barColors[i], right, right, new Vector2(-390f, y - 11f), new Vector2(-100f, y + 11f), 3f);
             }
             var garageHint = UIFactory.Text(titleRoot.transform, "GarageHint", "A / D   or   LB / RB   to choose", 19, new Color(1f, 1f, 1f, 0.65f), TextAnchor.MiddleCenter,
                 right, right, new Vector2(-530f, -456f), new Vector2(-84f, -420f), false);
@@ -128,7 +127,7 @@ namespace VCS.UI
             pauseRoot = new GameObject("Pause", typeof(RectTransform));
             pauseRoot.transform.SetParent(root, false);
             UIFactory.Anchor(pauseRoot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            UIFactory.Panel(pauseRoot.transform, "Dim", new Color(0.02f, 0.02f, 0.06f, 0.65f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            UIStyle.Veil(pauseRoot.transform, "Dim", 0.7f);
             var paused = UIFactory.Text(pauseRoot.transform, "PausedText", "PAUSED", 80, accent, TextAnchor.MiddleCenter,
                 mid, mid, new Vector2(-600f, 230f), new Vector2(600f, 380f), false);
             UIStyle.Style(paused, UIStyle.Arcade, 100, Color.white, FontStyle.Italic);
@@ -138,7 +137,7 @@ namespace VCS.UI
             for (int i = 0; i < PauseLabels.Length; i++)
             {
                 float y = 110f - i * 90f;
-                var back = UIFactory.Panel(pauseRoot.transform, "Item" + i, new Color(0f, 0f, 0f, 0.5f), mid, mid, new Vector2(-260f, y - 35f), new Vector2(260f, y + 35f));
+                var back = UIStyle.Plate(pauseRoot.transform, "Item" + i, "tab_plate", PauseOff, mid, mid, new Vector2(-260f, y - 35f), new Vector2(260f, y + 35f), 10f, new Color(0f, 0f, 0f, 0.5f), 0.34f);
                 back.raycastTarget = true;
                 var btn = back.gameObject.AddComponent<Button>();
                 int idx = i;
@@ -150,10 +149,13 @@ namespace VCS.UI
             }
         }
 
+        // enamel plates are white: this tint is the unlit button, yellow is the lit one
+        static readonly Color PauseOff = new Color(0.30f, 0.32f, 0.36f);
+
         void MakeArrow(Transform parent, string label, Vector2 oMin, Vector2 oMax, int dir)
         {
             var right = new Vector2(1f, 0.5f);
-            var back = UIFactory.Panel(parent, "Arrow" + label, new Color(0f, 0f, 0f, 0.45f), right, right, oMin, oMax);
+            var back = UIStyle.Plate(parent, "Arrow" + label, "button_square", PauseOff, right, right, oMin, oMax, 8f, new Color(0f, 0f, 0f, 0.45f), 0.3f);
             back.raycastTarget = true;
             var btn = back.gameObject.AddComponent<Button>();
             btn.onClick.AddListener(() => { SelectVacuumIndex(vacIndex + dir); var gm = GameManager.I; if (gm != null) gm.Audio.PlayClick(); });
@@ -212,7 +214,7 @@ namespace VCS.UI
             for (int i = 0; i < pauseBacks.Length; i++)
             {
                 bool on = i == sel;
-                pauseBacks[i].color = on ? UIStyle.Yellow : new Color(0f, 0f, 0f, 0.6f);
+                pauseBacks[i].color = on ? UIStyle.Yellow : (UIStyle.Has("tab_plate") ? PauseOff : new Color(0f, 0f, 0f, 0.6f));
                 pauseTexts[i].color = on ? UIStyle.Ink : Color.white;
             }
         }

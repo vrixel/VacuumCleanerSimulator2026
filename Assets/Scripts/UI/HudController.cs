@@ -24,6 +24,7 @@ namespace VCS.UI
         CanvasGroup bannerGroup, hintGroup, binGroup;
         RectTransform bannerRect, scoreRect, comboRect;
         Image[] sparkles;
+        Image bannerRays;
         float[] sparklePhase;
         Cockpit cockpit;
         RadarView radar;
@@ -144,15 +145,31 @@ namespace VCS.UI
             bannerRect = bannerHolder.GetComponent<RectTransform>();
             bannerGroup = bannerHolder.AddComponent<CanvasGroup>();
             bannerGroup.alpha = 0f;
-            var bannerBox = UIStyle.Frame(bannerHolder.transform, "Banner", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, "plate_banner", 1560f, 220f, 34f);
+            // Bonus text deserves a splash, not a black plate (his feedback, 2026-09-06): a slowly turning ray wheel
+            // under a comic bang burst, both generated; the framed plate only when the art is missing.
+            RectTransform bannerBox;
+            if (UIStyle.Has("banner_burst"))
+            {
+                bannerRays = UIStyle.Simple(bannerHolder.transform, "Rays", "banner_rays", new Color(1f, 1f, 1f, 0.7f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-270f, -270f), new Vector2(270f, 270f), Color.clear, true);
+                bannerRays.raycastTarget = false;
+                // the burst is stretched wide so the headline sits inside its core
+                var burst = UIStyle.Simple(bannerHolder.transform, "Burst", "banner_burst", Color.white, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-600f, -215f), new Vector2(600f, 215f), Color.clear, false);
+                burst.raycastTarget = false;
+                var inner = new GameObject("Screen", typeof(RectTransform));
+                inner.transform.SetParent(bannerHolder.transform, false);
+                UIFactory.Anchor(inner, Vector2.zero, Vector2.one, new Vector2(120f, 20f), new Vector2(-120f, -20f));
+                bannerBox = inner.GetComponent<RectTransform>();
+            }
+            else bannerBox = UIStyle.Frame(bannerHolder.transform, "Banner", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, "plate_banner", 1560f, 220f, 34f);
             bannerBig = UIFactory.Text(bannerBox, "Big", "", 84, Color.white, TextAnchor.MiddleCenter,
                 new Vector2(0f, 0.42f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(0f, -2f), false);
             UIStyle.Style(bannerBig, UIStyle.Arcade, 66, Color.white, FontStyle.Italic);
-            UIStyle.ArcadeText(bannerBig, Color.white, UIStyle.Yellow, 5f);
+            // blue edge on the yellow burst, yellow edge on the dark plate
+            UIStyle.ArcadeText(bannerBig, Color.white, UIStyle.Has("banner_burst") ? UIStyle.Blue : UIStyle.Yellow, 5f);
             bannerSmall = UIFactory.Text(bannerBox, "Small", "", 27, Color.white, TextAnchor.MiddleCenter,
                 new Vector2(0f, 0f), new Vector2(1f, 0.42f), new Vector2(0f, 4f), new Vector2(0f, 0f), false);
             UIStyle.Style(bannerSmall, UIStyle.Body, 26, Color.white, FontStyle.Bold);
-            UIStyle.Edge(bannerSmall);
+            UIStyle.Edge(bannerSmall, 3f);
 
             // ---- prompts above the cockpit
             hintText = UIFactory.Text(t, "Hint", "", 22, Color.white, TextAnchor.MiddleCenter,
@@ -349,6 +366,11 @@ namespace VCS.UI
                 bannerGroup.alpha = a;
                 float s = 1f + 0.3f * Mathf.Max(0f, 1f - bannerT / 0.3f);
                 bannerRect.localScale = Vector3.one * s;
+                if (bannerRays != null)
+                {
+                    bannerRays.rectTransform.localEulerAngles = new Vector3(0f, 0f, -Time.unscaledTime * 25f);
+                    bannerRays.rectTransform.localScale = Vector3.one * (1f + 0.05f * Mathf.Sin(Time.unscaledTime * 6f));
+                }
                 if (bannerT >= bannerDur) { bannerDur = 0f; bannerGroup.alpha = 0f; }
             }
             if (hintDur > 0f)

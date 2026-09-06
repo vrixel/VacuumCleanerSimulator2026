@@ -89,6 +89,16 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   annunciators, `Tape` scrolling scales, `Digital` seven-segment readouts (DSEG7 with ghost digits), Share Tech
   Mono for values, Exo 2 for body. No soft glow anywhere: blur was the first complaint. Fonts are OFL in
   `Resources/Fonts` with `OFL-1.1.txt` and `FONTS-README.txt`: keep them when adding fonts.
+- Generated HUD elements (2026-09-06, "plus de rectangles a couleur unie"): `UIStyle.Plate` (nine-sliced, tinted),
+  `Simple`, `Bar` (track + glossy fill), `Veil` (vignette, never a flat dim), `Tab`, `Tile`/`SetTile` (unlit and lit
+  glass are two sprites of one frame) all load `Resources/UI/Hud/<name>` and fall back to the drawn look when the
+  sprite is missing. Elements: `tab_plate`, `button_square`, `tile_off`/`tile_on`, `bar_track`/`bar_fill`,
+  `screen_glass`, `readout_box` (arrow plate), `radar_bezel`, `banner_burst` + `banner_rays` (the bonus banner is a
+  comic bang over a slowly turning ray wheel, no plate). White enamel where the game tints. Campaign lessons in
+  `kie_assets.py`: never write "arcade cabinet" in an element prompt (seedream draws the whole cabinet), dark parts
+  go on a flat green background (black glass on black cannot be keyed), the models answer square so processed
+  sprites are cropped to the object, `largest` keeps one part and cuts the haze the key leaves, an edit borrows the
+  base's silhouette (`mask_from_base`), glows get a `radial_fade`. Look at every sprite on a green sheet before wiring it.
 - The HUD (`HudController`) is spread around the screen: score block top-left, power strip top-centre, timer and
   `RadarView` top-right (a top-down camera into a masked RawImage; markers are quads on layer 8 that the main and
   preview cameras cull), vertical meters left, mission log right, `Cockpit` at the bottom.

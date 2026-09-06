@@ -190,20 +190,76 @@ namespace VCS.UI
             return content.GetComponent<RectTransform>();
         }
 
-        /// <summary>Bold section label: italic arcade type on a yellow tab with a black edge.</summary>
+        // ---- generated HUD elements (2026-09-06, "no more flat-coloured rectangles"): every plate below is a kie sprite
+        // from Resources/UI/Hud, nine-sliced and tinted by the game; when a sprite is missing the drawn look stays.
+
+        /// <summary>
+        /// A nine-sliced generated plate stretched over the rectangle and tinted, or a flat panel in the fallback
+        /// colour when the sprite is missing. borderPx is how thick the plate's bevel renders on screen.
+        /// </summary>
+        public static Image Plate(Transform parent, string name, string sprite, Color tint, Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax,
+            float borderPx, Color fallback, float borderFrac = 0.30f)
+        {
+            var sp = PlateSprite(sprite, borderFrac);
+            var img = UIFactory.Panel(parent, name, sp != null ? tint : fallback, aMin, aMax, oMin, oMax);
+            if (sp != null)
+            {
+                img.sprite = sp;
+                img.type = Image.Type.Sliced;
+                img.pixelsPerUnitMultiplier = Mathf.Max(0.2f, sp.border.x / Mathf.Max(1f, borderPx));
+            }
+            return img;
+        }
+
+        /// <summary>A generated sprite stretched whole over the rectangle (readouts with a chevron, bar fills), tinted.</summary>
+        public static Image Simple(Transform parent, string name, string sprite, Color tint, Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax, Color fallback, bool keepAspect = false)
+        {
+            var sp = Resources.Load<Sprite>("UI/Hud/" + sprite);
+            var img = UIFactory.Panel(parent, name, sp != null ? tint : fallback, aMin, aMax, oMin, oMax);
+            if (sp != null)
+            {
+                img.sprite = sp;
+                img.type = Image.Type.Simple;
+                img.preserveAspect = keepAspect;
+            }
+            return img;
+        }
+
+        public static bool Has(string sprite) => Resources.Load<Sprite>("UI/Hud/" + sprite) != null;
+
+        /// <summary>A dark veil that is darker at the edges (title and pause backdrops), never a flat rectangle.</summary>
+        public static Image Veil(Transform parent, string name, float alpha)
+        {
+            var img = UIFactory.Panel(parent, name, new Color(0.02f, 0.02f, 0.05f, alpha), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            img.sprite = UISprites.Vignette;
+            img.type = Image.Type.Simple;
+            return img;
+        }
+
+        /// <summary>A recessed track with a tinted glossy fill whose width the caller drives through its anchors.</summary>
+        public static Image Bar(Transform parent, string name, Color fill, Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax, float inset = 1f)
+        {
+            var track = Plate(parent, name + "Track", "bar_track", Color.white, aMin, aMax, oMin, oMax, 4f, new Color(0.12f, 0.13f, 0.17f), 0.4f);
+            return Simple(track.transform, name, "bar_fill", fill, new Vector2(0f, 0f), new Vector2(0.5f, 1f), new Vector2(inset, inset), new Vector2(-inset, -inset), fill);
+        }
+
+        /// <summary>Bold section label: italic arcade type on a tinted enamel tab with a black edge.</summary>
         public static Text Tab(Transform parent, string name, string label, Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax, Color? color = null)
         {
             var c = color ?? Yellow;
-            var back = UIFactory.Panel(parent, name + "Tab", c, aMin, aMax, oMin, oMax);
+            var back = Plate(parent, name + "Tab", "tab_plate", c, aMin, aMax, oMin, oMax, 6f, c, 0.34f);
             var t = UIFactory.Text(back.transform, name, label, 16, Ink, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, new Vector2(6f, 0f), new Vector2(-6f, 0f), false);
             Style(t, Arcade, 15, Ink, FontStyle.Italic);
             return t;
         }
 
-        /// <summary>A lit tile: bright fill with black text when on, dark with dim text when off (aviation annunciator).</summary>
+        static readonly Color TileOff = new Color(0.1f, 0.11f, 0.14f);
+
+        /// <summary>A lit tile: bright fill with black text when on, dark with dim text when off (aviation annunciator).
+        /// With the generated tiles the unlit glass and the lit glass are two sprites of the same frame.</summary>
         public static Image Tile(Transform parent, string name, string label, Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax, out Text text)
         {
-            var back = UIFactory.Panel(parent, name, new Color(0.1f, 0.11f, 0.14f), aMin, aMax, oMin, oMax);
+            var back = Plate(parent, name, "tile_off", Color.white, aMin, aMax, oMin, oMax, 5f, TileOff, 0.34f);
             text = UIFactory.Text(back.transform, "Label", label, 14, Dim, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false);
             Style(text, Arcade, 13, Dim);
             return back;
@@ -211,7 +267,14 @@ namespace VCS.UI
 
         public static void SetTile(Image tile, Text text, bool on, Color color)
         {
-            tile.color = on ? color : new Color(0.1f, 0.11f, 0.14f);
+            var off = PlateSprite("tile_off", 0.34f);
+            var lit = PlateSprite("tile_on", 0.34f);
+            if (off != null && lit != null)
+            {
+                tile.sprite = on ? lit : off;
+                tile.color = on ? color : Color.white;
+            }
+            else tile.color = on ? color : TileOff;
             text.color = on ? Ink : Dim;
         }
     }
@@ -237,9 +300,13 @@ namespace VCS.UI
             holder.transform.SetParent(parent, false);
             UIFactory.Anchor(holder, aMin, aMax, oMin, oMax);
             var h = holder.transform;
-            UIFactory.Panel(h, "Back", UIStyle.Screen, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            UIFactory.Panel(h, "EdgeL", color, new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(2f, 0f));
-            UIFactory.Panel(h, "EdgeR", color, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(-2f, 0f), new Vector2(0f, 0f));
+            bool glass = UIStyle.Has("screen_glass");
+            UIStyle.Plate(h, "Back", "screen_glass", Color.white, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, 6f, UIStyle.Screen, 0.22f);
+            if (!glass)
+            {
+                UIFactory.Panel(h, "EdgeL", color, new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(2f, 0f));
+                UIFactory.Panel(h, "EdgeR", color, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(-2f, 0f), new Vector2(0f, 0f));
+            }
             var maskGo = new GameObject("Mask", typeof(RectTransform), typeof(RectMask2D));
             maskGo.transform.SetParent(h, false);
             UIFactory.Anchor(maskGo, Vector2.zero, Vector2.one, new Vector2(3f, 26f), new Vector2(-3f, -26f));
@@ -268,13 +335,18 @@ namespace VCS.UI
                     UIStyle.Style(num, UIStyle.Mono, 15, Color.white);
                 }
             }
-            t.readoutBox = UIFactory.Panel(h, "Readout", color, new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(2f, -15f), new Vector2(-2f, 15f));
-            var chev = UIFactory.Panel(h, "Chevron", color, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-2f, -10f), new Vector2(10f, 10f));
-            chev.sprite = UISprites.Chevron;
-            chev.rectTransform.localEulerAngles = new Vector3(0f, 0f, 180f);
-            t.readout = UIFactory.Text(t.readoutBox.transform, "Value", "", 17, UIStyle.Ink, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false);
+            bool readoutArt = UIStyle.Has("readout_box");
+            // the generated readout plate carries its own chevron on the right, so it overhangs the tape a little
+            t.readoutBox = UIStyle.Simple(h, "Readout", "readout_box", color, new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(2f, -15f), new Vector2(readoutArt ? 12f : -2f, 15f), color);
+            if (!readoutArt)
+            {
+                var chev = UIFactory.Panel(h, "Chevron", color, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-2f, -10f), new Vector2(10f, 10f));
+                chev.sprite = UISprites.Chevron;
+                chev.rectTransform.localEulerAngles = new Vector3(0f, 0f, 180f);
+            }
+            t.readout = UIFactory.Text(t.readoutBox.transform, "Value", "", 17, UIStyle.Ink, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(readoutArt ? -12f : 0f, 0f), false);
             UIStyle.Style(t.readout, UIStyle.Mono, 17, UIStyle.Ink, FontStyle.Bold);
-            var plate = UIFactory.Panel(h, "UnitPlate", color, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(2f, -24f), new Vector2(-2f, -2f));
+            var plate = UIStyle.Plate(h, "UnitPlate", "tab_plate", color, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(2f, -24f), new Vector2(-2f, -2f), 5f, color, 0.34f);
             var unitText = UIFactory.Text(plate.transform, "Unit", unit, 12, UIStyle.Ink, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false);
             UIStyle.Style(unitText, UIStyle.Arcade, 11, UIStyle.Ink);
             return t;
