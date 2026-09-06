@@ -36,3 +36,24 @@ for i, (mid, name) in enumerate(ORDER):
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 sheet.save(OUT, optimize=True)
 print(OUT, sheet.size)
+
+# Imported real-product meshes (Objaverse / Sketchfab CC-BY, decimated): a separate sheet.
+imports = sorted(f for f in os.listdir(SRC) if f.startswith("import-") and f.endswith(".png"))
+if imports:
+    cols2 = 4
+    rows2 = (len(imports) + cols2 - 1) // cols2
+    W2 = cols2 * CELL + (cols2 + 1) * GAP
+    H2 = 70 + rows2 * (CELL + LABEL + GAP) + GAP
+    sh2 = Image.new("RGB", (W2, H2), (18, 18, 24))
+    d2 = ImageDraw.Draw(sh2)
+    d2.text((GAP, 18), "Imported meshes in the game (Objaverse, CC-BY, decimated to ~4k faces by tools/lowpoly.py)", fill=(255, 212, 0), font=font)
+    for i, f in enumerate(imports):
+        r, c = divmod(i, cols2)
+        x = GAP + c * (CELL + GAP)
+        y = 70 + GAP + r * (CELL + LABEL + GAP)
+        im = Image.open(os.path.join(SRC, f)).convert("RGB").resize((CELL, CELL), Image.LANCZOS)
+        sh2.paste(im, (x, y + LABEL))
+        d2.text((x, y + 12), f[len("import-"):-4], fill=(255, 255, 255), font=font)
+    out2 = os.path.join(ROOT, "docs", "screenshots", "models-imported.png")
+    sh2.save(out2, optimize=True)
+    print(out2, sh2.size)

@@ -116,6 +116,18 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   hubs. Same anchors as `VacuumModels`, which now dispatches to V2 unless `VacuumModels.UseV2` is false (the gallery
   renders both: `tools/gallery.ps1` -> `docs/screenshots/models-before-after.png`). `VacuumDetails` only applies
   to the 0.2 shells. Add a vacuum: builder in `VacuumModelsV2`, dispatch line in `VacuumModels`, entry in the catalogue.
+- Rendering (2026-09-06): Post Processing v2 (`com.unity.postprocessing` 3.4.0 in `Packages/manifest.json`, the
+  only package besides uGUI). `RenderingSetup.Attach(camera)` adds a `PostProcessLayer` and one global
+  `PostProcessVolume` on layer 9 (MSVO ambient occlusion, bloom, ACES, vignette, grain), built in code. Its shaders
+  ship because `ProjectSetup.EnsurePostProcessResources` copies `PostProcessResources.asset` into `Resources`.
+  `compile-check.ps1` references `Library/ScriptAssemblies/Unity.Postprocessing.Runtime.dll`, so the check only works
+  after one Unity build has resolved the package. The garage stage is a light cyclorama with key spot, fill and rim.
+- Real-product meshes without any account: Objaverse (`pip install objaverse`, the Hugging Face mirror of Sketchfab's
+  Creative Commons models; `load_lvis_annotations()["vacuum_cleaner"]`, `load_objects([uid])`, downloads land in
+  `~/.objaverse`, copied to `tools/assets/raw/objaverse`). `tools/lowpoly.py` (Blender 4.5 portable, headless)
+  joins, triangulates, decimates to ~4k faces, normalises the size, writes textures next to the FBX in
+  `Assets/Resources/Models`. The gallery renders every model found there (`import-*.png`,
+  `docs/screenshots/models-imported.png`). CC-BY: credit the authors if any ships (docs/research CSV has them).
 - Cocoa powder (`PowderSystem`, one `PowderLayer` quad per room at y = 0.012): generated RGBA texture at 36 px/m
   (splats, streaks, dusting), `Resources/Materials/Fade.mat` (Standard Fade, keyword in the asset). `SuctionSystem.Suck`
   calls `Powder.Vacuum(nozzle, radius)` every physics step while grounded and the bag has room: it zeroes alpha in a

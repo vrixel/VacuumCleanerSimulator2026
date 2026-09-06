@@ -1,4 +1,4 @@
-"""Blender (headless) decimation of a downloaded model into a game-ready FBX.
+"""Blender (headless) decimation of a downloaded model into a game-ready OBJ (+ .mtl and PNG textures).
 
     "D:\Program Files\Blender\blender-4.5.13-windows-x64\blender.exe" -b --python tools\lowpoly.py -- <in.glb|.gltf|.fbx|.obj> <out.fbx> [target_faces=4000] [size_m=0.6]
 
@@ -71,9 +71,56 @@ def main():
     obj.location = (-(max(xs) + min(xs)) / 2, -(max(ys) + min(ys)) / 2, -min(zs))
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
-    os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)
-    bpy.ops.export_scene.fbx(filepath=dst, use_selection=False, path_mode="COPY", embed_textures=False,
-                             mesh_smooth_type="FACE", apply_scale_options="FBX_SCALE_ALL", axis_forward="-Z", axis_up="Y")
+    out_dir = os.path.dirname(os.path.abspath(dst))
+    os.makedirs(out_dir, exist_ok=True)
+    # glTF materials often route the base colour through mix / vertex-colour nodes; the OBJ and FBX exporters only
+    # see an Image Texture wired straight into the Principled base colour. Rewire every material that way.
+    for mat in bpy.data.materials:
+        if not mat.use_nodes or mat.node_tree is None:
+            continue
+        nodes = mat.node_tree.nodes
+        bsdf = next((n for n in nodes if n.type == "BSDF_PRINCIPLED"), None)
+        imgs = [n for n in nodes if n.type == "TEX_IMAGE" and n.image is not None]
+        if bsdf is None or not imgs:
+            continue
+        # prefer the image feeding (directly or not) the base colour; else the first colour image
+        pick = None
+        for n in imgs:
+            nm = (n.image.name + " " + n.label + " " + n.name).lower()
+            if "normal" in nm or "rough" in nm or "metal" in nm or "occlusion" in nm or "emissi" in nm:
+                continue
+            pick = n
+            break
+        if pick is None:
+            continue
+        links = mat.node_tree.links
+        for l in list(bsdf.inputs["Base Color"].links):
+            links.remove(l)
+        links.new(pick.outputs["Color"], bsdf.inputs["Base Color"])
+    # glTF textures arrive packed in memory; write them as PNG next to the FBX so Unity's importer finds them by name.
+    stem = os.path.splitext(os.path.basename(dst))[0]
+    n_tex = 0
+    for img in list(bpy.data.images):
+        if img.users == 0 or img.size[0] == 0:
+            continue
+        safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in os.path.splitext(img.name)[0])
+        path = os.path.join(out_dir, f"{stem}_{safe}.png")
+        img.filepath_raw = path
+        img.file_format = "PNG"
+        try:
+            img.save()
+            n_tex += 1
+        except Exception as e:  # noqa: BLE001
+            print("texture save failed", img.name, e)
+    os.chdir(out_dir)
+    # OBJ, not FBX: no axis metadata for Unity to reinterpret. Written Y-up, -Z forward, metres, with a .mtl that
+    # points at the PNGs next to it; Unity mirrors X on import, which does not matter for a vacuum.
+    if dst.lower().endswith(".fbx"):
+        dst = dst[:-4] + ".obj"
+    bpy.ops.wm.obj_export(filepath=dst, export_selected_objects=False, forward_axis="NEGATIVE_Z", up_axis="Y",
+                          export_materials=True, path_mode="RELATIVE", apply_modifiers=True, export_normals=True,
+                          export_uv=True, export_triangulated_mesh=True)
+    print(f"textures written: {n_tex}")
     print(f"LOWPOLY {os.path.basename(src)}: {before} -> {after} faces, size {size} m -> {dst}")
 
 

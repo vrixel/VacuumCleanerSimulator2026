@@ -19,3 +19,5 @@
 
 # README screenshots stay in plain git so GitHub renders them
 docs/screenshots/*.png -filter -diff -merge
+*.fbx filter=lfs diff=lfs merge=lfs -text
+*.glb filter=lfs diff=lfs merge=lfs -text
