@@ -187,6 +187,8 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   never enters the repo: `tools/build-android.ps1` reads `D:\Cloclo\Keys\vacuum-android.keystore` and `.pass` into
   `VCS_KEYSTORE*` environment variables for `BuildScript.BuildAndroid`. The Hub refuses modules for this editor, so
   `tools/install-android.py` reproduces its work from the release manifest. iOS needs a Mac (Xcode): not here.
+  Play Console: the app exists since 2026-09-07 (account 91Rivers, app id 4972315579361767663); the internal
+  testing status, the in-page AAB upload trick and the hidden-tab lessons are in `docs/PLAY.md`.
 
 Input: `GameInput` wraps the legacy Input Manager. Axes live in `ProjectSettings/InputManager.asset` (Horizontal,
 Vertical, CamX, CamY, DPadX, DPadY, TriggerL, TriggerR); buttons are read with `KeyCode.JoystickButtonN`

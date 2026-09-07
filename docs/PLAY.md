@@ -4,6 +4,15 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 `STORE.md`). The upload is an AAB from `tools\build-android.ps1 -Aab`, signed with the upload key made by
 `tools\make-keystore.ps1` (`D:\Cloclo\Keys`, outside the repo; Play App Signing keeps the app signing key).
 
+## Status
+
+- 2026-09-07: the app exists in Play Console (developer account 91Rivers, app id 4972315579361767663, package
+  `com.cosnuau.vacuumcleanersimulator2026`, Game, Free, default language en-GB: change it in Store settings if
+  wanted; the two creation declarations were ticked on the owner's "coche"). Internal testing holds a draft release
+  "400 (0.4.0)" with the AAB uploaded and release notes written. Still to do: the testers email list (the owner's
+  address) and the publish confirmation; both open dialogs, which need a visible tab (see the lessons below).
+  Play App Signing needed no prompt: new apps are enrolled with a Google-generated key by default.
+
 ## App
 
 - Name: `Vacuum Cleaner Simulator 2026` (30 characters max: 28)
@@ -64,6 +73,22 @@ layer on the PC build; the picture is the same renderer as the phone, minus the 
 4. Release > Production (or Internal testing first) > Create release: Play App Signing (default), upload the AAB,
    release name = the version, release notes = the "What's new" of the matching Windows release. Review and roll out.
 5. Review takes from a few hours to a few days for a new app.
+
+## Console lessons (2026-09-07)
+
+- The AAB goes through the page, not through a file picker: fetch it from a CORS-enabled URL, wrap the blob in a
+  `File`, set it on `input[type=file][accept=".aab"]` with a `DataTransfer` and dispatch `change`. The fetch runs
+  asynchronously (store the promise on `window`, poll it): 45 MB took about 100 s. `raw.githubusercontent.com`
+  sends `Access-Control-Allow-Origin: *`; release assets (`release-assets.githubusercontent.com`) do not. The raw
+  URL came from a temporary branch made with git plumbing (`hash-object --no-filters`, `mktree`, `commit-tree`,
+  `push origin <sha>:refs/heads/aab-upload`) and deleted right after the upload, so nothing touched `main`.
+- Play Console's material buttons ignore synthetic clicks for anything that opens a dialog (Create email list, the
+  publish confirmation) and a hidden tab never renders a dialog at all: a locked Windows session makes Chrome treat
+  every window as occluded, `requestAnimationFrame` stalls, hit-testing stops (a `MessageChannel` rAF polyfill is not
+  enough). Unlock first, then bring the tab in front without stealing focus (`win.ps1` in the session scratchpad:
+  `place` = restore + topmost + no-activate, `untop` + `max` afterwards).
+- Text fields and radios accept DOM writes (`form_input`, the native value setter plus an `input` event); "Check
+  availability" and "Next" work as plain element clicks; release notes take `<en-GB>...</en-GB>` tags (500 chars).
 
 ## Versioning
 
