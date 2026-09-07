@@ -28,6 +28,8 @@ python tools\install-android.py                # Android module + SDK/NDK/JDK fr
 powershell -File tools\make-keystore.ps1        # once: Play upload keystore in D:\Cloclo\Keys (outside the repo), random password saved next to it
 powershell -File tools\build-android.ps1 [-Aab]  # Android APK (adb) or AAB (Play) -> Builds\Android, IL2CPP ARM64, log in Builds\build-android.log
 powershell -File tools\smoke-test.ps1 -Touch -Width 1920 -Height 864   # the phone layer on the PC (stick, buttons, no cockpit): phone-format screenshots
+python tools\install-android.py --target ios       # iOS Build Support module (343 MB, same installer trick): Unity then exports an Xcode project on Windows
+powershell -File toolsuild-ios.ps1 [-Upload]     # export Builds\iOS + Builds\ios-xcode.zip; -Upload puts the zip on the "ios-source" pre-release and dispatches the macOS TestFlight workflow
 ```
 
 ```powershell
@@ -201,8 +203,13 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   never enters the repo: `tools/build-android.ps1` reads `D:\Cloclo\Keys\vacuum-android.keystore` and `.pass` into
   `VCS_KEYSTORE*` environment variables for `BuildScript.BuildAndroid`. The Hub refuses modules for this editor, so
   `tools/install-android.py` reproduces its work from the release manifest. iOS needs a Mac (Xcode): not here.
-  Play Console: the app exists since 2026-09-07 (account 91Rivers, app id 4972315579361767663); the internal
-  testing status, the in-page AAB upload trick and the hidden-tab lessons are in `docs/PLAY.md`.
+  Play Console: the app exists since 2026-09-07 (account 91Rivers, app id 4972315579361767663); listing,
+  declarations and the closed test "Alpha" were completed the same evening and sent for review; PRODUCTION IS
+  GATED by Google's 14-day closed test with 12 testers for this account. Status, the in-page upload tricks and the
+  hidden-tab lessons are in `docs/PLAY.md`. iOS: `tools/build-ios.ps1` exports the Xcode project here (IL2CPP on
+  Windows), `.github/workflows/ios-testflight.yml` archives and uploads on a GitHub macOS runner with the Amityville
+  signing material (AWS Secrets Manager through OIDC: the role's trust policy must list this repo, and the App
+  Store Connect app record must exist before the first upload).
 
 Input: `GameInput` wraps the legacy Input Manager. Axes live in `ProjectSettings/InputManager.asset` (Horizontal,
 Vertical, CamX, CamY, DPadX, DPadY, TriggerL, TriggerR); buttons are read with `KeyCode.JoystickButtonN`

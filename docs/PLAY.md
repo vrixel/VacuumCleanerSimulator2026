@@ -6,6 +6,17 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 ## Status
 
+- 2026-09-07 late evening ("Fini la publication Android"): the app is fully set up in Play Console. Store
+  listing saved (name, short and full description, icon, feature graphic, 8 phone screenshots from the touch smoke
+  run at 1080p), store settings (Game > Simulation, contact email and website), every declaration done (privacy
+  policy, app access: none restricted, ads: none, content rating IARC: PEGI 3 / Everyone, target audience 13+, data
+  safety: nothing collected, advertising ID: none, government: no, financial: none, health: none). The closed
+  testing track "Alpha" carries release 402 (0.4.2), 177 countries, testers = email lists Owner + Testers 91rivers,
+  feedback cosnuau@gmail.com; everything submitted for review from the Publishing overview. PRODUCTION IS GATED:
+  this developer account must run a closed test with at least 12 testers opted in for 14 continuous days, then
+  "Apply for production access" on the dashboard (Google's rule for personal accounts created after November 2023).
+  The two lists hold 4 addresses: 8 more testers are needed for the 14-day clock to count.
+
 - 2026-09-07 evening: 402 (0.4.2) = the phone HUD after his first phone session (domed buttons, no plates, no
   radar or log, container icon, bigger garage arrows), uploaded to the internal track as a new release.
 - 2026-09-07 19:06: INTERNAL TESTING LIVE with 401 (0.4.1): see-through walls, dust bag gauge, bin marker, touch
@@ -90,6 +101,17 @@ layer on the PC build; the picture is the same renderer as the phone, minus the 
   sends `Access-Control-Allow-Origin: *`; release assets (`release-assets.githubusercontent.com`) do not. The raw
   URL came from a temporary branch made with git plumbing (`hash-object --no-filters`, `mktree`, `commit-tree`,
   `push origin <sha>:refs/heads/aab-upload`) and deleted right after the upload, so nothing touched `main`.
+- Store listing images go through the asset library: click the slot's "Add assets", then set the file on the
+  panel's `input[type=file]` (a `DataTransfer` + `change`): the upload lands in the library and is auto-selected
+  for the slot; click the panel's "Add" (bottom right, real click) to attach it. Uploads made while another slot's
+  panel was open only fill the library. Library rows do not respond to synthetic clicks, so re-uploading is the
+  reliable way to select. Text fields of the listing accept the native value setter; "Save" works as a plain click.
+- Every wizard (data safety, financial, health, content rating, target audience) has a last "Save" that opens
+  "Go to Publishing overview? Your change has been saved": that dialog text is the only proof of a save. The word
+  "saved" alone also appears in "If you save, changes will be saved" and misled a first pass; the IARC questionnaire
+  needs its terms checkbox and the summary Save on every reopen.
+- Store settings: category and contact details are two dialogs, each with its own "Save and publish" and a
+  "Publish change on Google Play?" confirmation; the page-level Save only saves the dialog that is open.
 - Play Console's material buttons ignore synthetic clicks for anything that opens a dialog (Create email list, the
   publish confirmation) and a hidden tab never renders a dialog at all: a locked Windows session makes Chrome treat
   every window as occluded, `requestAnimationFrame` stalls, hit-testing stops (a `MessageChannel` rAF polyfill is not
