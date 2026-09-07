@@ -6,8 +6,12 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 ## Status
 
-- 2026-09-07 (later): 0.4.1 (code 401) replaces 400 in the internal test draft: see-through walls, dust bag
-  gauge, bin marker, touch wording of the empty prompt.
+- 2026-09-07 19:06: INTERNAL TESTING LIVE with 401 (0.4.1): see-through walls, dust bag gauge, bin marker, touch
+  wording of the empty prompt. Testers: email list "Owner" (the owner's address); opt-in link
+  https://play.google.com/apps/internaltest/4701366885524013287 (open it with the tester's Google account, accept,
+  then install from the Play Store; a fresh track can take up to an hour to show). The listing is not reviewed
+  yet, so testers see the package name as a temporary app name. Next upload: bump `bundleVersion` (402+), build
+  the AAB, "Create new release" on the internal track, or promote to production once the listing is complete.
 - 2026-09-07: the app exists in Play Console (developer account 91Rivers, app id 4972315579361767663, package
   `com.cosnuau.vacuumcleanersimulator2026`, Game, Free, default language en-GB: change it in Store settings if
   wanted; the two creation declarations were ticked on the owner's "coche"). Internal testing holds a draft release
