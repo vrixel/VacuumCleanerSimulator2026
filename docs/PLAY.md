@@ -6,6 +6,8 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 ## Status
 
+- 2026-09-07 evening: 402 (0.4.2) = the phone HUD after his first phone session (domed buttons, no plates, no
+  radar or log, container icon, bigger garage arrows), uploaded to the internal track as a new release.
 - 2026-09-07 19:06: INTERNAL TESTING LIVE with 401 (0.4.1): see-through walls, dust bag gauge, bin marker, touch
   wording of the empty prompt. Testers: email list "Owner" (the owner's address); opt-in link
   https://play.google.com/apps/internaltest/4701366885524013287 (open it with the tester's Google account, accept,

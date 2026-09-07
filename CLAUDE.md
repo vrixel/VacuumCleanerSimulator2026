@@ -186,10 +186,16 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   at runtime (the variant will be missing in the build).
 
 - Android (2026-09-07, "Go"): the phone build is the same project. `GameInput.TouchMode` (phones, or `-touch` on the
-  PC) turns on `TouchControls` (uGUI canvas 30: virtual stick, HOP / TURBO / BLOW / EMPTY / REWIND pads, look pad
-  on the free right half, START plate on the title, small pause) which writes `GameInput.Touch*`; every input query
-  reads them, one-shots are consumed by the first read. The phone HUD hides the cockpit strip and the tapes and
-  moves the mission log up; phones drop MSVO and grain, MSAA 2x, medium shadows, 60 fps cap. Player settings in
+  PC) turns on `TouchControls` (uGUI canvas 30: virtual stick, domed push buttons TURBO / HOP / BLOW / EMPTY /
+  REWIND in a gamepad diamond bottom-right drawn with `UISprites.Dome` and tinted, look pad on the right half above
+  `TouchControls.ClusterTop`, START plate on the title, small pause) which writes `GameInput.Touch*`; every input
+  query reads them, one-shots are consumed by the first read. The phone HUD (his 2026-09-07 evening feedback: "large
+  juicy buttons like the ones on vacuum cleaners, remove radar and the log, no rectangle backgrounds, big fonts,
+  the bin filling icon") is the desktop HUD stripped by `HudController.Bare`: no cockpit, tapes, radar or mission
+  log, the frames' plates and tabs off, the power tiles replaced by "POWER n" in the line, the bag bar replaced by
+  the vacuum's container sprite (`Resources/UI/Containers/<kind>_empty` + `_full`, vertical fill) next to a big
+  percentage, toasts as edged type, the garage arrows as big domed buttons (`MenuController.MakeArrow`). Phones
+  drop MSVO and grain, MSAA 2x, medium shadows, 60 fps cap. Player settings in
   `ProjectSetup.Apply`: IL2CPP (the NDK's clang, no MSVC needed), ARM64, min API 25, Vulkan then GLES3, landscape,
   version code = major*10000 + minor*100 + patch, package `com.cosnuau.vacuumcleanersimulator2026`. The keystore
   never enters the repo: `tools/build-android.ps1` reads `D:\Cloclo\Keys\vacuum-android.keystore` and `.pass` into
