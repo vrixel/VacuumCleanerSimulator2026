@@ -49,6 +49,36 @@ namespace VCS.Editor
         /// with "-buildTarget Android". The upload keystore is read from the environment: VCS_KEYSTORE (path),
         /// VCS_KEYSTORE_PASS, VCS_KEYALIAS, VCS_KEYALIAS_PASS; without it the build is debug-signed (fine for adb).
         /// </summary>
+        /// <summary>
+        /// Exports the Xcode project to Builds/iOS (IL2CPP sources and the data; Xcode compiles and signs it on a Mac,
+        /// here the GitHub macOS runner of .github/workflows/ios-testflight.yml). Needs the iOS Build Support module
+        /// (python tools/install-android.py --target ios).
+        /// </summary>
+        [MenuItem("VCS/Build iOS Xcode project")]
+        public static void BuildIos()
+        {
+            ProjectSetup.Apply();
+            const string dir = "Builds/iOS";
+            Directory.CreateDirectory(dir);
+            var opts = new BuildPlayerOptions
+            {
+                scenes = new[] { ProjectSetup.ScenePath },
+                locationPathName = dir,
+                target = BuildTarget.iOS,
+                targetGroup = BuildTargetGroup.iOS,
+                options = BuildOptions.None,
+            };
+            var report = BuildPipeline.BuildPlayer(opts);
+            var s = report.summary;
+            Debug.Log("[VCS] Build " + s.result + ": " + (s.totalSize / (1024 * 1024)) + " MB, "
+                      + s.totalErrors + " errors, " + s.totalWarnings + " warnings, " + s.totalTime.TotalSeconds.ToString("F0") + " s -> " + opts.locationPathName);
+            if (s.result != BuildResult.Succeeded)
+            {
+                if (Application.isBatchMode) EditorApplication.Exit(1);
+                else throw new Exception("Build failed: " + s.result);
+            }
+        }
+
         static void BuildAndroid(bool aab)
         {
             ProjectSetup.Apply();

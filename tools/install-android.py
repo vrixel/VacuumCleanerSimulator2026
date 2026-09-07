@@ -8,7 +8,7 @@ build-tools, the platform-tools, the platforms and the command-line tools into
 Editor/Data/PlaybackEngines/AndroidPlayer, applying the manifest's rename rules. About 3 GB of downloads, kept
 in D:/Temp/claude/unity-android so a rerun only fetches what is missing.
 
-    python tools/install-android.py [--version 6000.3.23f1] [--editor "D:/Program Files/Unity/Hub/Editor/6000.3.23f1"] [--dry-run]
+    python tools/install-android.py [--version 6000.3.23f1] [--editor "D:/Program Files/Unity/Hub/Editor/6000.3.23f1"] [--dry-run] [--target ios]
 """
 import argparse
 import json
@@ -73,6 +73,7 @@ def main():
     ap.add_argument("--version", default="6000.3.23f1")
     ap.add_argument("--editor", default=r"D:\Program Files\Unity\Hub\Editor\6000.3.23f1")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--target", default="android", choices=["android", "ios"], help="android (module + SDK/NDK/JDK) or ios (the target support installer only: Unity exports an Xcode project on Windows, Xcode runs on a Mac)")
     a = ap.parse_args()
     unity = a.editor.replace("\\", "/")
     os.makedirs(CACHE, exist_ok=True)
@@ -80,16 +81,19 @@ def main():
     rel = json.load(urllib.request.urlopen(API.format(v=a.version), timeout=60))["results"][0]
     dl = next(d for d in rel["downloads"] if d["platform"] == "WINDOWS")
     mods = []
-    collect(dl.get("modules", []), mods)
+    if a.target == "ios":
+        mods = [m for m in dl.get("modules", []) if m["id"] == "ios"]
+    else:
+        collect(dl.get("modules", []), mods)
     if not mods:
-        log("no android module in the manifest")
+        log("no " + a.target + " module in the manifest")
         return 1
     for m in mods:
         log(f"{m['id']:36} {m['type']:4} {round(m.get('downloadSize', {}).get('value', 0) / 1e6):5} MB -> {m.get('destination', '')}")
     if a.dry_run:
         return 0
 
-    player = os.path.join(unity, "Editor/Data/PlaybackEngines/AndroidPlayer")
+    player = os.path.join(unity, "Editor/Data/PlaybackEngines/" + ("iOSSupport" if a.target == "ios" else "AndroidPlayer"))
     for m in mods:
         url = m["url"]
         name = m["id"] + (".exe" if m["type"] == "EXE" else ".zip")
@@ -131,6 +135,11 @@ def main():
                     shutil.move(src, dst)
                 log(f"   renamed {os.path.relpath(src, unity)} -> {os.path.relpath(dst, unity)}")
         open(marker, "w").write(url)
+    if a.target == "ios":
+        log("IOS MODULE OK" if os.path.isdir(player) else "IOS MODULE MISSING")
+        for probe in ("UnityEditor.iOS.Extensions.dll", "Trampoline/Classes/main.mm", "il2cpp/build/deploy/il2cpp.exe"):
+            log(f"   {'ok ' if os.path.exists(os.path.join(player, probe)) else 'MISSING'} {probe}")
+        return 0
     # CMake is not in the manifest but Unity 6 refuses to build without it ("Missing CMake 3.22.1", measured 2026-09-07)
     cmake = os.path.join(player, "SDK", "cmake", "3.22.1")
     if not os.path.exists(os.path.join(cmake, "bin", "cmake.exe")):

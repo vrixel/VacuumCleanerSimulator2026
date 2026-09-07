@@ -53,6 +53,26 @@ namespace VCS.Editor
             PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { UnityEngine.Rendering.GraphicsDeviceType.Vulkan, UnityEngine.Rendering.GraphicsDeviceType.OpenGLES3 });
+
+            // ---- iOS (2026-09-07 evening, "iPhone version to test"): this PC only exports the Xcode project
+            // (tools/build-ios.ps1); a GitHub macOS runner archives it with automatic signing driven by the App Store
+            // Connect key and uploads it to TestFlight (.github/workflows/ios-testflight.yml). Same identifier as
+            // Android; the build number is the version code, so every upload has to bump bundleVersion.
+            var ios = NamedBuildTarget.iOS;
+            PlayerSettings.SetApplicationIdentifier(ios, "com.cosnuau.vacuumcleanersimulator2026");
+            PlayerSettings.SetScriptingBackend(ios, ScriptingImplementation.IL2CPP);
+            PlayerSettings.SetApiCompatibilityLevel(ios, ApiCompatibilityLevel.NET_Standard);
+            PlayerSettings.SetManagedStrippingLevel(ios, ManagedStrippingLevel.Minimal);
+            PlayerSettings.iOS.buildNumber = VersionCode(PlayerSettings.bundleVersion).ToString();
+            PlayerSettings.iOS.targetOSVersionString = "15.0";
+            PlayerSettings.iOS.targetDevice = iOSTargetDevice.iPhoneAndiPad;
+            PlayerSettings.iOS.sdkVersion = iOSSdkVersion.DeviceSDK;
+            PlayerSettings.iOS.appleEnableAutomaticSigning = false;
+            PlayerSettings.iOS.requiresFullScreen = true;
+            PlayerSettings.iOS.hideHomeButton = true;
+            PlayerSettings.statusBarHidden = true;
+            PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.iOS, false);
+            PlayerSettings.SetGraphicsAPIs(BuildTarget.iOS, new[] { UnityEngine.Rendering.GraphicsDeviceType.Metal });
             EnsureMaterials();
             EnsurePostProcessResources();
             EnsureScene();
