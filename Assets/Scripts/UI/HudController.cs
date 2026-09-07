@@ -42,7 +42,8 @@ namespace VCS.UI
         RectTransform binMarker;
         CanvasGroup binMarkerGroup;
         int lastBagPct = -1;
-        bool lastBagFull;
+        bool lastBagFull, touch;
+        Image bagIconEmpty, bagIconFull;
 
         int targetScore, lastCombo = -1, lastTime = -1, lastPower = -1;
         float displayScore;
@@ -255,24 +256,80 @@ namespace VCS.UI
 
             if (GameInput.TouchMode)
             {
-                // a phone has no room for the cockpit strip and the tapes: the stick and the buttons live there
+                // The phone HUD (his 2026-09-07 evening feedback): no cockpit, tapes, radar or mission log, no plates
+                // at all, just big type over the picture; the bag is the real container icon filling up.
+                touch = true;
                 cockpit.Root.SetActive(false);
                 tapesBox.parent.gameObject.SetActive(false);
-                hintText.rectTransform.offsetMin = new Vector2(-900f, 130f);
-                hintText.rectTransform.offsetMax = new Vector2(900f, 170f);
+                radarBox.parent.gameObject.SetActive(false);
+                logBox.parent.gameObject.SetActive(false);
+                radar.SetActive(false);
+                Bare(scoreBox); Bare(powerBox); Bare(timeBox); Bare(bagBox);
+                var scoreTab = scoreBox.Find("ScoreTabTab"); if (scoreTab != null) scoreTab.gameObject.SetActive(false);
+                var bagTab = bagBox.Find("BagTabTab"); if (bagTab != null) bagTab.gameObject.SetActive(false);
+                // score: the big number alone, the combo line under it
+                comboText.fontSize = 30;
+                comboText.rectTransform.offsetMax = new Vector2(-6f, 40f);
+                // power: one line of type, no tiles (SetPower writes the level into the line)
+                foreach (var tile in powerTiles) tile.gameObject.SetActive(false);
+                powerText.rectTransform.anchorMin = Vector2.zero;
+                powerText.rectTransform.anchorMax = Vector2.one;
+                powerText.rectTransform.offsetMin = Vector2.zero;
+                powerText.rectTransform.offsetMax = Vector2.zero;
+                powerText.fontSize = 30;
+                // time: the digits alone
+                timeLabel.gameObject.SetActive(false);
+                // bag: the container icon filling up, a big percentage next to it, no bar
+                bagFill.transform.parent.gameObject.SetActive(false);
+                var bagHolder = (RectTransform)bagBox.parent;
+                bagHolder.offsetMin = new Vector2(30f, -440f);
+                bagHolder.offsetMax = new Vector2(520f, -250f);
+                bagIconEmpty = UIFactory.Panel(bagBox, "BagIconEmpty", Color.white, new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(150f, 0f));
+                bagIconEmpty.preserveAspect = true;
+                bagIconEmpty.raycastTarget = false;
+                bagIconFull = UIFactory.Panel(bagBox, "BagIconFull", Color.white, new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(150f, 0f));
+                bagIconFull.preserveAspect = true;
+                bagIconFull.raycastTarget = false;
+                bagIconFull.type = Image.Type.Filled;
+                bagIconFull.fillMethod = Image.FillMethod.Vertical;
+                bagIconFull.fillOrigin = (int)Image.OriginVertical.Bottom;
+                bagIconFull.fillAmount = 0f;
+                bagText.rectTransform.anchorMin = Vector2.zero;
+                bagText.rectTransform.anchorMax = Vector2.one;
+                bagText.rectTransform.offsetMin = new Vector2(166f, 0f);
+                bagText.rectTransform.offsetMax = Vector2.zero;
+                bagText.alignment = TextAnchor.MiddleLeft;
+                bagText.fontSize = 64;
+                // toasts: type only, blue edge
+                var toastPlate = toastRect.Find("Plate"); if (toastPlate != null) toastPlate.gameObject.SetActive(false);
+                UIStyle.Style(toastText, UIStyle.Arcade, 26, Color.white, FontStyle.Italic);
+                UIStyle.ArcadeText(toastText, Color.white, UIStyle.Blue, 3f);
+                toastText.resizeTextMinSize = 16;
+                toastText.resizeTextMaxSize = 26;
+                // prompts above the button cluster
+                hintText.rectTransform.offsetMin = new Vector2(-900f, TouchControls.ClusterTop + 20f);
+                hintText.rectTransform.offsetMax = new Vector2(900f, TouchControls.ClusterTop + 60f);
                 binPrompt.text = "TAP EMPTY TO TIP THE BAG INTO THE BIN";
-                binPrompt.rectTransform.offsetMin = new Vector2(-600f, 180f);
-                binPrompt.rectTransform.offsetMax = new Vector2(600f, 234f);
-                var log = logBox.parent.GetComponent<RectTransform>();
-                log.offsetMin = new Vector2(-520f, -120f);
-                log.offsetMax = new Vector2(-30f, 210f);
+                binPrompt.rectTransform.offsetMin = new Vector2(-600f, TouchControls.ClusterTop + 70f);
+                binPrompt.rectTransform.offsetMax = new Vector2(600f, TouchControls.ClusterTop + 124f);
+            }
+        }
+
+        /// <summary>Strips an instrument frame down to its content: every sibling of the screen area (plate, lines) goes.</summary>
+        static void Bare(RectTransform screen)
+        {
+            var holder = screen.parent;
+            for (int i = 0; i < holder.childCount; i++)
+            {
+                var c = holder.GetChild(i);
+                if (c != screen) c.gameObject.SetActive(false);
             }
         }
 
         public void SetVisible(bool v)
         {
             canvas.gameObject.SetActive(v);
-            if (radar != null) radar.SetActive(v);
+            if (radar != null) radar.SetActive(v && !touch);
         }
 
         public void ResetRun()
@@ -301,7 +358,17 @@ namespace VCS.UI
                 var nose = RadarView.Marker(player, UIStyle.Green, 0.7f);
                 nose.transform.localPosition = new Vector3(0f, 25f, 1.1f);
             }
-            radar.SetActive(true);
+            if (!touch) radar.SetActive(true);
+            if (bagIconEmpty != null)
+            {
+                string kind = spec.Container.ToString().ToLowerInvariant();
+                var empty = UISprites.Load("UI/Containers/" + kind + "_empty");
+                var full = UISprites.Load("UI/Containers/" + kind + "_full");
+                bagIconEmpty.sprite = empty;
+                bagIconFull.sprite = full;
+                bagIconEmpty.gameObject.SetActive(empty != null);
+                bagIconFull.gameObject.SetActive(full != null);
+            }
         }
 
         public void SetTelemetry(Telemetry tm, SuctionSystem suction, GameManager gm, float dt)
@@ -327,6 +394,7 @@ namespace VCS.UI
                 lastBagPct = pct;
                 lastBagFull = full;
                 bagFill.rectTransform.anchorMax = new Vector2(Mathf.Max(0.001f, frac), 1f);
+                if (bagIconFull != null) bagIconFull.fillAmount = frac;
                 bagFill.color = full ? UIStyle.Red : (frac >= 0.7f ? UIStyle.Amber : UIStyle.Green);
                 bagText.text = full ? "FULL" : pct + "%";
                 bagText.color = full ? UIStyle.Red : Color.white;
@@ -371,7 +439,9 @@ namespace VCS.UI
 
         public void SetPower(string vacuumName, int level, string canEat)
         {
-            powerText.text = vacuumName.ToUpperInvariant() + "     EATS " + canEat.ToUpperInvariant();
+            powerText.text = touch
+                ? vacuumName.ToUpperInvariant() + "   POWER " + level + "   EATS " + canEat.ToUpperInvariant()
+                : vacuumName.ToUpperInvariant() + "     EATS " + canEat.ToUpperInvariant();
             if (level != lastPower)
             {
                 lastPower = level;
@@ -428,10 +498,10 @@ namespace VCS.UI
             var canvasRect = (RectTransform)canvas.transform;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, new Vector2(sp.x, sp.y), null, out Vector2 local);
             var r = canvasRect.rect;
-            float bottom = GameInput.TouchMode ? 420f : Cockpit.Height + 90f;   // above the cockpit, or the stick and the pads
-            float left = GameInput.TouchMode ? 120f : 330f;                       // right of the instrument tapes
+            float bottom = touch ? TouchControls.ClusterTop + 40f : Cockpit.Height + 90f;   // above the cockpit, or the button cluster
+            float left = touch ? 120f : 330f;                                                  // right of the instrument tapes
             var min = new Vector2(r.xMin + left, r.yMin + bottom);
-            var max = new Vector2(r.xMax - 560f, r.yMax - 330f);                 // left of the timer, radar and log column, under the score and bag plates
+            var max = new Vector2(r.xMax - (touch ? 240f : 560f), r.yMax - (touch ? 300f : 330f));   // under the top line, left of the radar and log column
             var clamped = new Vector2(Mathf.Clamp(local.x, min.x, max.x), Mathf.Clamp(local.y, min.y, max.y));
             bool pinned = sp.z < 0f || (clamped - local).sqrMagnitude > 1f;
             binMarker.anchoredPosition = clamped;

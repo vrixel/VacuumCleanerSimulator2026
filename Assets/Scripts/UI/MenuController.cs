@@ -111,8 +111,17 @@ namespace VCS.UI
             vacuumTagline.resizeTextForBestFit = true;
             vacuumTagline.resizeTextMinSize = 12;
             vacuumTagline.resizeTextMaxSize = 21;
-            MakeArrow(titleRoot.transform, "<", new Vector2(-556f, -172f), new Vector2(-506f, -117f), -1);
-            MakeArrow(titleRoot.transform, ">", new Vector2(-108f, -172f), new Vector2(-58f, -117f), 1);
+            if (GameInput.TouchMode)
+            {
+                // thumbs, not mouse pointers: big domed buttons either side of the name (his 2026-09-07 feedback)
+                MakeArrow(titleRoot.transform, "<", new Vector2(-616f, -206f), new Vector2(-496f, -86f), -1);
+                MakeArrow(titleRoot.transform, ">", new Vector2(-118f, -206f), new Vector2(2f, -86f), 1);
+            }
+            else
+            {
+                MakeArrow(titleRoot.transform, "<", new Vector2(-556f, -172f), new Vector2(-506f, -117f), -1);
+                MakeArrow(titleRoot.transform, ">", new Vector2(-108f, -172f), new Vector2(-58f, -117f), 1);
+            }
 
             bars = new Image[BarLabels.Length];
             for (int i = 0; i < BarLabels.Length; i++)
@@ -162,11 +171,19 @@ namespace VCS.UI
         void MakeArrow(Transform parent, string label, Vector2 oMin, Vector2 oMax, int dir)
         {
             var right = new Vector2(1f, 0.5f);
-            var back = UIStyle.Plate(parent, "Arrow" + label, "button_square", PauseOff, right, right, oMin, oMax, 8f, new Color(0f, 0f, 0f, 0.45f), 0.3f);
+            Image back;
+            if (GameInput.TouchMode)
+            {
+                back = UIFactory.Panel(parent, "Arrow" + label, UIStyle.Yellow, right, right, oMin, oMax);
+                back.sprite = UISprites.Dome;
+                back.preserveAspect = true;
+            }
+            else back = UIStyle.Plate(parent, "Arrow" + label, "button_square", PauseOff, right, right, oMin, oMax, 8f, new Color(0f, 0f, 0f, 0.45f), 0.3f);
             back.raycastTarget = true;
             var btn = back.gameObject.AddComponent<Button>();
             btn.onClick.AddListener(() => { SelectVacuumIndex(vacIndex + dir); var gm = GameManager.I; if (gm != null) gm.Audio.PlayClick(); });
-            UIFactory.Text(back.transform, "Label", label, 40, UIFactory.Accent, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var arrow = UIFactory.Text(back.transform, "Label", label, GameInput.TouchMode ? 64 : 40, GameInput.TouchMode ? UIStyle.Ink : UIFactory.Accent, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            if (GameInput.TouchMode) UIStyle.Style(arrow, UIStyle.Arcade, 64, UIStyle.Ink, FontStyle.Bold);
         }
 
         public void ShowTitle(int best, int achievementsDone, int achievementsTotal)

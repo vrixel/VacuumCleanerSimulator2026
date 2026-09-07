@@ -178,6 +178,38 @@ namespace VCS.UI
             return Mathf.Sqrt(dx * dx + dy * dy) * 2f;
         }
 
+        static Sprite dome;
+
+        /// <summary>
+        /// A big domed push button, the kind on a vacuum cleaner's body: a dark bezel, a glossy dome lit from the
+        /// top-left with a soft specular, darker towards the bottom rim. Drawn in white and greys so the Image tint
+        /// gives it its colour; 256 px, made for buttons 150 to 240 px wide.
+        /// </summary>
+        public static Sprite Dome => dome != null ? dome : dome = Make("dome", 256, (x, y) =>
+        {
+            float u = (x + 0.5f) / 128f - 1f, v = (y + 0.5f) / 128f - 1f;
+            float r = Mathf.Sqrt(u * u + v * v);
+            if (r > 1f) return new Color(0f, 0f, 0f, 0f);
+            float edge = Mathf.Clamp01((1f - r) * 128f);                 // anti-aliased outline
+            if (r > 0.86f)
+            {
+                // bezel: dark chrome ring with a faint lower lip
+                float k = (r - 0.86f) / 0.14f;
+                float g = 0.10f + 0.10f * Mathf.Sin(k * Mathf.PI) + 0.06f * Mathf.Max(0f, -v);
+                return new Color(g, g, g, edge);
+            }
+            float rr = r / 0.86f;
+            float shade = 0.92f - 0.30f * rr * rr;                       // darker towards the rim (curvature)
+            shade += 0.14f * v;                                          // lit from above
+            float hx = (u + 0.22f) / 0.55f, hy = (v - 0.36f) / 0.30f;   // specular ellipse top-left
+            float spec = Mathf.Clamp01(1f - (hx * hx + hy * hy));
+            shade += 0.55f * spec * spec;
+            float lipShadow = Mathf.Clamp01((rr - 0.82f) / 0.18f) * 0.35f * Mathf.Clamp01(-v + 0.3f);
+            shade -= lipShadow;
+            float c = Mathf.Clamp01(shade);
+            return new Color(c, c, c, 1f);
+        });
+
         static Sprite Make(string name, int n, Func<int, int, Color> f) => Make(name, n, n, f, new Vector2(0.5f, 0.5f));
 
         static Sprite Make(string name, int w, int h, Func<int, int, Color> f, Vector2 pivot)
