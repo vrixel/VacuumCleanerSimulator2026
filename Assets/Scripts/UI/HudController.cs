@@ -37,6 +37,12 @@ namespace VCS.UI
         Cockpit cockpit;
         RadarView radar;
         GameObject playerMarker;
+        Image bagFill, binMarkerArrow;
+        Text bagText, binMarkerText;
+        RectTransform binMarker;
+        CanvasGroup binMarkerGroup;
+        int lastBagPct = -1;
+        bool lastBagFull;
 
         int targetScore, lastCombo = -1, lastTime = -1, lastPower = -1;
         float displayScore;
@@ -90,6 +96,17 @@ namespace VCS.UI
                 sparkles[i].sprite = UISprites.Sparkle;
                 sparklePhase[i] = i * 0.37f;
             }
+
+            // ---- top-left, under the score: the dust bag gauge. The cockpit shows the real container, but this
+            // strip reads from the corner of the eye, and it is all a phone gets.
+            var bagBox = UIStyle.Frame(t, "BagBox", tl, tl, new Vector2(30f, -306f), new Vector2(430f, -240f), "frame_wide", 400f, 66f, 12f);
+            UIStyle.Tab(bagBox, "BagTab", "DUST BAG", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -20f), new Vector2(104f, 0f));
+            bagFill = UIStyle.Bar(bagBox, "BagBar", UIStyle.Green, Vector2.zero, Vector2.one, new Vector2(4f, 4f), new Vector2(-80f, -24f), 2f);
+            bagFill.rectTransform.anchorMax = new Vector2(0.001f, 1f);
+            bagText = UIFactory.Text(bagBox, "BagPct", "0%", 26, Color.white, TextAnchor.MiddleRight,
+                new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(-78f, 0f), new Vector2(-4f, 0f), false);
+            UIStyle.Style(bagText, UIStyle.Arcade, 26, Color.white, FontStyle.Italic);
+            UIStyle.ArcadeText(bagText, Color.white, UIStyle.Blue, 2f);
 
             // ---- top-centre: power strip
             var powerBox = UIStyle.Frame(t, "PowerBox", tc, tc, new Vector2(-600f, -126f), new Vector2(600f, -30f), "frame_wide", 1200f, 96f, 22f);
@@ -219,6 +236,23 @@ namespace VCS.UI
 
             cockpit = Cockpit.Build(t);
 
+            // ---- bin marker: floats over the bin once the bag needs emptying, pinned to the screen edge with an
+            // arrow when the bin is off screen, so the way to it reads through the walls. Built last so it draws
+            // over every plate it can meet; the clamp keeps it out of the radar column and the cockpit anyway.
+            var mk = new GameObject("BinMarker", typeof(RectTransform));
+            mk.transform.SetParent(t, false);
+            binMarker = UIFactory.Anchor(mk, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-70f, -34f), new Vector2(70f, 34f));
+            binMarkerGroup = mk.AddComponent<CanvasGroup>();
+            binMarkerGroup.alpha = 0f;
+            binMarkerGroup.blocksRaycasts = false;
+            binMarkerText = UIStyle.Tab(mk.transform, "BinLabel", "BIN", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -32f), new Vector2(0f, 0f));
+            UIStyle.Style(binMarkerText, UIStyle.Arcade, 19, UIStyle.Ink, FontStyle.Italic);
+            binMarkerArrow = UIFactory.Panel(mk.transform, "Arrow", UIStyle.Yellow, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-14f, 2f), new Vector2(14f, 30f));
+            binMarkerArrow.sprite = UISprites.Chevron;
+            binMarkerArrow.raycastTarget = false;
+            binMarkerArrow.rectTransform.localEulerAngles = new Vector3(0f, 0f, -90f);   // the chevron points +x; -90 is down
+
+
             if (GameInput.TouchMode)
             {
                 // a phone has no room for the cockpit strip and the tapes: the stick and the buttons live there
@@ -226,6 +260,7 @@ namespace VCS.UI
                 tapesBox.parent.gameObject.SetActive(false);
                 hintText.rectTransform.offsetMin = new Vector2(-900f, 130f);
                 hintText.rectTransform.offsetMax = new Vector2(900f, 170f);
+                binPrompt.text = "TAP EMPTY TO TIP THE BAG INTO THE BIN";
                 binPrompt.rectTransform.offsetMin = new Vector2(-600f, 180f);
                 binPrompt.rectTransform.offsetMax = new Vector2(600f, 234f);
                 var log = logBox.parent.GetComponent<RectTransform>();
@@ -249,6 +284,8 @@ namespace VCS.UI
             toasts.Clear(); toastT = -1f; toastGroup.alpha = 0f;
             binGroup.alpha = 0f;
             objectivesTimer = 0f;
+            lastBagPct = -1; lastBagFull = false;
+            binMarkerGroup.alpha = 0f;
             scoreText.text = "0";
         }
 
@@ -281,6 +318,22 @@ namespace VCS.UI
                     speedLines.rectTransform.localEulerAngles = new Vector3(0f, 0f, 1.5f * Mathf.Sin(tt * 13f));
                 }
             }
+            // dust bag gauge: green, amber from 70 percent, red and blinking when full
+            float frac = suction.BagCapacity > 0f ? Mathf.Clamp01(suction.BagFill / suction.BagCapacity) : 0f;
+            int pct = Mathf.RoundToInt(frac * 100f);
+            bool full = suction.BagFull;
+            if (pct != lastBagPct || full != lastBagFull)
+            {
+                lastBagPct = pct;
+                lastBagFull = full;
+                bagFill.rectTransform.anchorMax = new Vector2(Mathf.Max(0.001f, frac), 1f);
+                bagFill.color = full ? UIStyle.Red : (frac >= 0.7f ? UIStyle.Amber : UIStyle.Green);
+                bagText.text = full ? "FULL" : pct + "%";
+                bagText.color = full ? UIStyle.Red : Color.white;
+            }
+            if (full) bagText.color = Color.Lerp(UIStyle.Red, Color.white, 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 8f));
+            UpdateBinMarker(gm, frac, full, dt);
+
             tapeSuction.Set(tm.Suction01 * 100f, Mathf.RoundToInt(tm.Suction01 * 100f).ToString());
             tapeTemp.Set(tm.TempC, tm.TempC.ToString("0"));
             tapeTemp.SetColor(tm.Overheat ? UIStyle.Red : UIStyle.Amber);
@@ -357,6 +410,47 @@ namespace VCS.UI
             }
             achievementsText.text = "ACHIEVEMENTS " + os.DoneCount + " / " + os.All.Count;
         }
+
+        // The marker over the bin: its world position projected on the canvas, clamped to a band that keeps clear
+        // of the top plates and of the cockpit or the touch pads; the chevron points at the bin when it is clamped.
+        void UpdateBinMarker(GameManager gm, float frac, bool full, float dt)
+        {
+            var cam = Camera.main;
+            bool has = gm != null && gm.Level != null && gm.Level.Bin != null && gm.Player != null && cam != null;
+            bool want = has && (full || frac >= 0.7f) && !lastBinPrompt;
+            float a = Mathf.MoveTowards(binMarkerGroup.alpha, want ? 1f : 0f, dt * 4f);
+            binMarkerGroup.alpha = a;
+            if (a <= 0f || !has) return;
+
+            Vector3 binPos = gm.Level.Bin.transform.position;
+            Vector3 sp = cam.WorldToScreenPoint(binPos + Vector3.up * 1.3f);
+            if (sp.z < 0f) { sp.x = Screen.width - sp.x; sp.y = Screen.height - sp.y; }
+            var canvasRect = (RectTransform)canvas.transform;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, new Vector2(sp.x, sp.y), null, out Vector2 local);
+            var r = canvasRect.rect;
+            float bottom = GameInput.TouchMode ? 420f : Cockpit.Height + 90f;   // above the cockpit, or the stick and the pads
+            float left = GameInput.TouchMode ? 120f : 330f;                       // right of the instrument tapes
+            var min = new Vector2(r.xMin + left, r.yMin + bottom);
+            var max = new Vector2(r.xMax - 560f, r.yMax - 330f);                 // left of the timer, radar and log column, under the score and bag plates
+            var clamped = new Vector2(Mathf.Clamp(local.x, min.x, max.x), Mathf.Clamp(local.y, min.y, max.y));
+            bool pinned = sp.z < 0f || (clamped - local).sqrMagnitude > 1f;
+            binMarker.anchoredPosition = clamped;
+            float angle = -90f;
+            if (pinned)
+            {
+                Vector2 dir = local - clamped;
+                if (sp.z < 0f) dir = -dir;
+                if (dir.sqrMagnitude > 0.01f) angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            }
+            binMarkerArrow.rectTransform.localEulerAngles = new Vector3(0f, 0f, angle);
+            Vector3 d = binPos - gm.Player.transform.position;
+            d.y = 0f;
+            binMarkerText.text = "BIN " + Mathf.RoundToInt(d.magnitude) + " M";
+        }
+
+        /// <summary>Smoke-test readout of the bin marker.</summary>
+        public string BinMarkerDebug() => "alpha " + binMarkerGroup.alpha.ToString("0.00") + ", at " + binMarker.anchoredPosition.ToString("F0")
+                                          + ", arrow " + binMarkerArrow.rectTransform.localEulerAngles.z.ToString("0") + ", text '" + binMarkerText.text + "'";
 
         public void SetBinPrompt(bool on)
         {

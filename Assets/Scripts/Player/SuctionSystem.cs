@@ -31,6 +31,13 @@ namespace VCS.Player
         public float BagCapacity { get; private set; } = 100f;
         public float BagFill { get; private set; }
         public bool BagFull { get; private set; }
+
+        /// <summary>Test hook (smoke run): fills the bag to a fraction of its capacity without any event.</summary>
+        public void DebugSetBag(float fraction)
+        {
+            BagFill = Mathf.Clamp01(fraction) * BagCapacity;
+            BagFull = BagFill >= BagCapacity;
+        }
         public bool Blowing { get; private set; }
         public float Activity { get; private set; }
         public float Radius => RadiusByPower[PowerLevel] * (spec != null ? spec.SuctionRadiusMult : 1f);

@@ -140,6 +140,28 @@ namespace VCS.Core
                 Debug.Log("[VCS] Cord: rewound " + cord.TotalRewound.ToString("0.0") + " m, plugged=" + cord.Plugged);
             }
 
+            // The bin behind a wall: park next to the bin with the camera south of the z = 12 wall and the bag nearly
+            // full. The wall in between must fade, the gauge must read the fill and the marker must sit over the bin.
+            if (gm.Player != null && gm.Level != null && gm.Level.Bin != null && gm.Suction != null)
+            {
+                GameInput.MoveOverride = Vector2.zero;
+                gm.Suction.DebugSetBag(0.86f);
+                // first from wherever the cord phase ended: the marker must point at the bin through the walls
+                yield return new WaitForSecondsRealtime(0.9f);
+                Debug.Log("[VCS] Bin marker: " + gm.Hud.BinMarkerDebug() + ", vacuum at " + gm.Player.transform.position.ToString("F1"));
+                yield return Capture("smoke-bin-far.png");
+                Vector3 bin = gm.Level.Bin.transform.position;
+                gm.Player.Rb.position = bin + new Vector3(-1.6f, 0.3f, 0.4f);
+                gm.Player.Rb.linearVelocity = Vector3.zero;
+                gm.Player.Rb.angularVelocity = Vector3.zero;
+                gm.Cam.SetYaw(0f);
+                gm.Cam.SetView(42f, 9f);
+                yield return new WaitForSecondsRealtime(1.4f);
+                Debug.Log("[VCS] Bin view: faded walls " + gm.Cam.FadedWalls + ", bag " + Mathf.RoundToInt(100f * gm.Suction.BagFill / gm.Suction.BagCapacity)
+                          + " %, bin at " + bin.ToString("F1") + ", vacuum at " + gm.Player.transform.position.ToString("F1"));
+                yield return Capture("smoke-bin.png");
+            }
+
             var s = gm.Suction;
             string pos = gm.Player != null ? gm.Player.transform.position.ToString("F1") : "none";
             var tm = gm.Telemetry;

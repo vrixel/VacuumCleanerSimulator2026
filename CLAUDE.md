@@ -118,6 +118,14 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
 - The HUD (`HudController`) is spread around the screen: score block top-left, power strip top-centre, timer and
   `RadarView` top-right (a top-down camera into a masked RawImage; markers are quads on layer 8 that the main and
   preview cameras cull), vertical meters left, mission log right, `Cockpit` at the bottom.
+- Seeing through walls (2026-09-07, his phone feedback "we cannot see the bin"): `WallFader`, driven at the end of
+  `FollowCamera.LateUpdate`, sphere-casts (0.45 m) from the camera to the vacuum, and to the bin once the bag is
+  70 % full, and swaps every static box named "Wall" on the way to one shared Fade material dimmed to alpha 0.16
+  through a MaterialPropertyBlock; the original shared material comes back as soon as the line is clear. The HUD
+  got a `DUST BAG` bar under the score (green, amber from 70 %, red and blinking when full) and a `BIN n M` marker
+  projected over the bin, pinned to the screen edge with a chevron when the bin is off screen, hidden while the
+  empty prompt shows. The smoke test fills the bag to 86 % after the cord phase (`smoke-bin-far.png`, marker), then
+  parks at the bin with the camera south of the z = 12 wall (`smoke-bin.png`, log `[VCS] Bin view: faded walls N`).
 - The cord (`PowerCord`, corded vacuums only) is a simulated cable since 2026-09-05 (evening): a chain of points
   (0.22 m segments, Verlet integration, 6 constraint passes, gravity, floor friction) pinned to the `WallSocket`
   and to the reel outlet on the back of the vacuum. Only walls stop it: static colliders taller than 0.3 m, pushed

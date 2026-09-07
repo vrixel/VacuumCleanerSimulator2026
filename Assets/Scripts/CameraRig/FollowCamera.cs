@@ -14,6 +14,11 @@ namespace VCS.CameraRig
         float orbitRadius, orbitHeight, orbitAngle;
         float yaw, pitch = 42f, distance = 9f, shake;
         Vector3 vel;
+        readonly WallFader fader = new WallFader();
+
+        public Transform Target => target;
+        /// <summary>Walls currently dimmed between the camera and the vacuum (or the bin).</summary>
+        public int FadedWalls => fader.FadedCount;
 
         public static FollowCamera Create()
         {
@@ -34,6 +39,7 @@ namespace VCS.CameraRig
 
         public void SetFollow(Transform t)
         {
+            fader.Clear();
             target = t;
             orbit = false;
             yaw = 0f;
@@ -45,6 +51,7 @@ namespace VCS.CameraRig
 
         public void SetOrbit(Vector3 center, float radius, float height)
         {
+            fader.Clear();
             orbit = true;
             target = null;
             orbitCenter = center;
@@ -53,6 +60,9 @@ namespace VCS.CameraRig
         }
 
         public void Shake(float amount) { shake = Mathf.Max(shake, amount); }
+
+        /// <summary>Orbit angle around the vacuum, degrees (0 = camera south of it, looking +z); the smoke test uses it.</summary>
+        public void SetYaw(float deg) { yaw = deg; }
 
         /// <summary>Camera angle and distance (the smoke test looks straight down to photograph the powder trail).</summary>
         public void SetView(float pitchDeg, float dist)
@@ -104,7 +114,19 @@ namespace VCS.CameraRig
                 transform.position += Random.insideUnitSphere * shake * 0.35f;
                 shake = Mathf.Max(0f, shake - dt * 1.5f);
             }
-            transform.LookAt(target.position + Vector3.up * 0.6f);
+            Vector3 focus = target.position + Vector3.up * 0.6f;
+            transform.LookAt(focus);
+
+            // see through the walls in the way, and through the ones hiding the bin once the bag needs emptying
+            Vector3? extra = null;
+            if (gm != null && gm.Level != null && gm.Level.Bin != null && gm.Suction != null)
+            {
+                var s = gm.Suction;
+                Vector3 bin = gm.Level.Bin.transform.position;
+                if ((s.BagFull || s.BagFill >= 0.7f * s.BagCapacity) && Vector3.Distance(bin, target.position) < 16f)
+                    extra = bin + Vector3.up * 0.5f;
+            }
+            fader.Tick(transform.position, focus, extra, dt);
         }
     }
 }
