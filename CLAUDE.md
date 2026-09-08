@@ -235,6 +235,9 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   target including UnityFramework, colliding both onto the same bundle ID (error 90685) instead of the distinct
   per-target identifiers Unity's export already writes. TestFlight builds: com.cosnuau.vacuumcleanersimulator2026,
   402 (0.4.2) then 404 (0.4.4, 2026-09-08 evening, one `toolsuild-ios.ps1 -Upload`, about 25 min end to end).
+  TestFlight distribution: internal group "Owner" (automatic distribution, so every new build reaches it) with the
+  account holder erwan@cosnuau.com invited; App Store Connect dialogs open and submit through synthetic DOM clicks
+  even while the Windows session is locked (unlike Play Console), so that console needs no visible tab.
 
 Input: `GameInput` wraps the legacy Input Manager. Axes live in `ProjectSettings/InputManager.asset` (Horizontal,
 Vertical, CamX, CamY, DPadX, DPadY, TriggerL, TriggerR); buttons are read with `KeyCode.JoystickButtonN`

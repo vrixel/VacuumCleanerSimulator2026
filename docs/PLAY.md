@@ -16,6 +16,12 @@ Everything below is ready to paste into Play Console (the owner's existing devel
   https://play.google.com/apps/testing/com.cosnuau.vacuumcleanersimulator2026, Android
   https://play.google.com/store/apps/details?id=com.cosnuau.vacuumcleanersimulator2026 (the tester's address must
   be on the Owner or Testers 91rivers list). Version codes: 401 and 402 internal, 402 closed, 404 both.
+  The 12 testers: the owner buys a run on https://www.testerscommunity.com (sign-in and payment are his,
+  from 15 USD / 14 EUR, 12 testers for 14 days, testing starts within 6 hours). Their process, from their
+  FAQ: submit the app on their dashboard with the opt-in link above, copy their testers Google Group address
+  from the dashboard, then in Play Console > Testing > Closed testing > Alpha > Testers tab > Google Groups
+  section, add that address (or hand it over and it gets added from here); their testers accept the invite
+  and the 14-day clock runs from the day 12 are opted in. Then "Apply for production access" on the dashboard.
 
 - 2026-09-07 late evening ("Fini la publication Android"): the app is fully set up in Play Console. Store
   listing saved (name, short and full description, icon, feature graphic, 8 phone screenshots from the touch smoke
