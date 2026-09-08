@@ -209,7 +209,14 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   hidden-tab lessons are in `docs/PLAY.md`. iOS: `tools/build-ios.ps1` exports the Xcode project here (IL2CPP on
   Windows), `.github/workflows/ios-testflight.yml` archives and uploads on a GitHub macOS runner with the Amityville
   signing material (AWS Secrets Manager through OIDC: the role's trust policy must list this repo, and the App
-  Store Connect app record must exist before the first upload).
+  Store Connect app record must exist before the first upload). Working end to end since 2026-09-08: the OIDC
+  role's trust policy needs the subject in the owner-ID/repo-ID form GitHub actually issues for this account
+  (`repo:vrixel@<ownerId>/<repo>@<repoId>:ref:refs/heads/main`, found by reading the denied AssumeRoleWithWebIdentity
+  calls in CloudTrail — the plain `repo:vrixel/<repo>:...` form some docs show never matched here), and
+  `PRODUCT_BUNDLE_IDENTIFIER` must never be forced on the whole `xcodebuild archive` command: it applies to every
+  target including UnityFramework, colliding both onto the same bundle ID (error 90685) instead of the distinct
+  per-target identifiers Unity's export already writes. First TestFlight build: com.cosnuau.vacuumcleanersimulator2026,
+  402 (0.4.2).
 
 Input: `GameInput` wraps the legacy Input Manager. Axes live in `ProjectSettings/InputManager.asset` (Horizontal,
 Vertical, CamX, CamY, DPadX, DPadY, TriggerL, TriggerR); buttons are read with `KeyCode.JoystickButtonN`
