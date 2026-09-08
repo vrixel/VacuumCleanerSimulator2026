@@ -233,8 +233,8 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   calls in CloudTrail — the plain `repo:vrixel/<repo>:...` form some docs show never matched here), and
   `PRODUCT_BUNDLE_IDENTIFIER` must never be forced on the whole `xcodebuild archive` command: it applies to every
   target including UnityFramework, colliding both onto the same bundle ID (error 90685) instead of the distinct
-  per-target identifiers Unity's export already writes. First TestFlight build: com.cosnuau.vacuumcleanersimulator2026,
-  402 (0.4.2).
+  per-target identifiers Unity's export already writes. TestFlight builds: com.cosnuau.vacuumcleanersimulator2026,
+  402 (0.4.2) then 404 (0.4.4, 2026-09-08 evening, one `toolsuild-ios.ps1 -Upload`, about 25 min end to end).
 
 Input: `GameInput` wraps the legacy Input Manager. Axes live in `ProjectSettings/InputManager.asset` (Horizontal,
 Vertical, CamX, CamY, DPadX, DPadY, TriggerL, TriggerR); buttons are read with `KeyCode.JoystickButtonN`
