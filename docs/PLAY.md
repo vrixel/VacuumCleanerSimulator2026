@@ -6,6 +6,17 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 ## Status
 
+- 2026-09-08 20:00 ("Allez publie tout"): 404 (0.4.4) LIVE on the internal track (new release, AAB fetched in-page
+  from a temporary branch, "Save and publish" + confirmation at screen coordinates), then promoted to the closed
+  track "Alpha" ("Promote release" > Closed testing > Alpha copies the bundle and the notes; the review page ends
+  with "Save", the "Go to Publishing overview?" dialog, then "Submit 1 change for review" + "Send changes for
+  review"): IN REVIEW. The 16 changes of 2026-09-07 had been approved the same night: 402 went live on the closed
+  track at 22:34 on 2026-09-07 ("Available to selected testers"), so the 14-day clock can run as soon as 12 testers
+  opt in. Tester links (Testers tab of the closed track): web
+  https://play.google.com/apps/testing/com.cosnuau.vacuumcleanersimulator2026, Android
+  https://play.google.com/store/apps/details?id=com.cosnuau.vacuumcleanersimulator2026 (the tester's address must
+  be on the Owner or Testers 91rivers list). Version codes: 401 and 402 internal, 402 closed, 404 both.
+
 - 2026-09-07 late evening ("Fini la publication Android"): the app is fully set up in Play Console. Store
   listing saved (name, short and full description, icon, feature graphic, 8 phone screenshots from the touch smoke
   run at 1080p), store settings (Game > Simulation, contact email and website), every declaration done (privacy

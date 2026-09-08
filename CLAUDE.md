@@ -218,8 +218,12 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   `VCS_KEYSTORE*` environment variables for `BuildScript.BuildAndroid`. The Hub refuses modules for this editor, so
   `tools/install-android.py` reproduces its work from the release manifest. iOS needs a Mac (Xcode): not here.
   Play Console: the app exists since 2026-09-07 (account 91Rivers, app id 4972315579361767663); listing,
-  declarations and the closed test "Alpha" were completed the same evening and sent for review; PRODUCTION IS
-  GATED by Google's 14-day closed test with 12 testers for this account. Status, the in-page upload tricks and the
+  declarations and the closed test "Alpha" were completed the same evening, approved the same night (402 live on
+  the closed track); 404 (0.4.4) is live on the internal track and in review on the closed track since 2026-09-08
+  evening. PRODUCTION IS GATED by Google's 14-day closed test with 12 opted-in testers for this account (the
+  tester links are in `docs/PLAY.md`). Release routine: `toolsuild-android.ps1 -Aab`, push the AAB alone to a
+  temporary branch, fetch it in-page on "Create new release" of the internal track, then "Promote release" to the
+  closed track and "Submit for review" on the Publishing overview. Status, the in-page upload tricks and the
   hidden-tab lessons are in `docs/PLAY.md`. iOS: `tools/build-ios.ps1` exports the Xcode project here (IL2CPP on
   Windows), `.github/workflows/ios-testflight.yml` archives and uploads on a GitHub macOS runner with the Amityville
   signing material (AWS Secrets Manager through OIDC: the role's trust policy must list this repo, and the App

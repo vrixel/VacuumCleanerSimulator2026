@@ -61,6 +61,15 @@ Generated with kie.ai from `tools/assets/kie_assets.py` and cut to store sizes b
 
 ## Microsoft Store (PC first, Xbox later)
 
+**Status 2026-09-08 evening: submission 4 (id 1152921505701838982) carries v0.4.4.0 (Win64 build 0.4.4: coloured
+gamepad buttons in the hints, Henry scale, museum nozzles and yaw, plus the 0.4.1-0.4.2 see-through walls, bag
+gauge and bin marker that had only shipped on GitHub), release notes "0.4.4: ..." in `#releaseNotes`, the
+0.4.1.0 package removed (Save on the Packages page confirms the removal), everything else unchanged; SUBMITTED
+for certification at about 18:00 UTC on the owner's "Allez publie tout" (the "Submit for certification" he-button
+took a plain element click; a hidden "Sign in required" dialog sits in the DOM at all times and means nothing
+while it is not displayed). Both Save buttons (Packages, Store listing) again needed a click at screen coordinates
+and each one lands on the Game overview page when it succeeds. Poll the public catalog for the v0.4.4.0 full name.**
+
 **Status 2026-09-06 night: submission 1 (v0.1.1.0) live on 2026-09-05; submission 2 (v0.2.0.0) live on 2026-09-06
 (mail 14:36 UTC, about 19 h in certification; the public catalog
 `https://displaycatalog.mp.microsoft.com/v7.0/products/9P9HVRJ09PK0?market=US&languages=en-us` lists the package
@@ -104,8 +113,9 @@ python tools\msix.py --identity-name Cosnuau.VacuumCleanerSimulator2026 --publis
    `python tools\msix.py --identity-name <Package/Identity/Name> --publisher "<Package/Identity/Publisher>" --publisher-display <PublisherDisplayName>`. Uses makeappx.exe from the Microsoft.Windows.SDK.BuildTools
    NuGet package under `D:\DevTools\WindowsSDK-BuildTools`; the package is unsigned, the Store signs it.
 4. Upload the MSIX, fill the listing with the copy above, the 300 x 300 icon and the 1920 x 1080 screenshots.
-5. Xbox consoles need a UWP build (IL2CPP, Visual Studio with C++ UWP tools) through the Xbox Live Creators
-   Program, or ID@Xbox with the GDK. Not part of the first release.
+5. Xbox consoles: the Creators Program / UWP route is closed (see `PUBLISHING.md`); the only route is ID@Xbox
+   with the GDK, which needs Microsoft's approval, their Unity Xbox module and a C++ toolchain. The Store package
+   page's "Windows 10/11 Xbox" column cannot be ticked for a Win32 MSIX. Not buildable on this machine.
 
 ## Steam
 
