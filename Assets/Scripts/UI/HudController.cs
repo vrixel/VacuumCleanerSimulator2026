@@ -228,7 +228,7 @@ namespace VCS.UI
             UIStyle.Edge(hintText);
             hintGroup = hintText.gameObject.AddComponent<CanvasGroup>();
             hintGroup.alpha = 0f;
-            binPrompt = UIFactory.Text(t, "BinPrompt", "PRESS F / X TO EMPTY THE BAG INTO THE BIN", 28, UIStyle.Yellow, TextAnchor.MiddleCenter,
+            binPrompt = UIFactory.Text(t, "BinPrompt", "PRESS F / " + UIStyle.Pad("X") + " TO EMPTY THE BAG INTO THE BIN", 28, UIStyle.Yellow, TextAnchor.MiddleCenter,
                 new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-600f, Cockpit.Height + 66f), new Vector2(600f, Cockpit.Height + 120f), false);
             UIStyle.Style(binPrompt, UIStyle.Arcade, 30, UIStyle.Yellow, FontStyle.Italic);
             UIStyle.ArcadeText(binPrompt, UIStyle.Yellow, UIStyle.Blue, 3f);
@@ -274,9 +274,9 @@ namespace VCS.UI
                 foreach (var tile in powerTiles) tile.gameObject.SetActive(false);
                 powerText.rectTransform.anchorMin = Vector2.zero;
                 powerText.rectTransform.anchorMax = Vector2.one;
-                powerText.rectTransform.offsetMin = Vector2.zero;
-                powerText.rectTransform.offsetMax = Vector2.zero;
-                powerText.fontSize = 30;
+                powerText.rectTransform.offsetMin = new Vector2(-160f, 0f);   // wider than the strip: one line on a phone
+                powerText.rectTransform.offsetMax = new Vector2(160f, 0f);
+                powerText.fontSize = 27;
                 // time: the digits alone
                 timeLabel.gameObject.SetActive(false);
                 // bag: the container icon filling up, a big percentage next to it, no bar

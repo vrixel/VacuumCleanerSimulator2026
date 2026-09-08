@@ -11,6 +11,21 @@ namespace VCS.UI
     /// </summary>
     public static class UIStyle
     {
+        static readonly Dictionary<string, string> XboxHex = new Dictionary<string, string>
+        {
+            { "A", "#3DA639" }, { "B", "#D9353A" }, { "X", "#1F6FE0" }, { "Y", "#E8B923" },
+            { "LB", "#8E9BA8" }, { "RB", "#8E9BA8" }, { "START", "#8E9BA8" }, { "BACK", "#8E9BA8" },
+        };
+
+        /// <summary>Wraps a gamepad button name in its real Xbox colour, bold: his 2026-09-08 feedback that "KEY / A"
+        /// hint text reads as two keyboard keys when the second one is a gamepad button. A green, B red, X blue,
+        /// Y yellow, the shoulder buttons and Start/Back a neutral steel (real pads leave them uncoloured too).</summary>
+        public static string Pad(string label)
+        {
+            string hex = XboxHex.TryGetValue(label.ToUpperInvariant(), out var h) ? h : "#8E9BA8";
+            return "<color=" + hex + "><b>" + label + "</b></color>";
+        }
+
         static readonly Dictionary<string, Font> fonts = new Dictionary<string, Font>();
         static readonly Dictionary<string, Sprite> plates = new Dictionary<string, Sprite>();
 

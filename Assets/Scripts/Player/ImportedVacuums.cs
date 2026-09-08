@@ -16,6 +16,11 @@ namespace VCS.Player
         {
             public string Id, Model, Name, Tagline, Credit;
             public float Size = 0.6f;      // largest horizontal extent, metres
+            /// <summary>Normalise by height (metres) instead of by horizontal extent: for a mesh whose raw bounding
+            /// box is dominated by an outstretched hose/wand rather than the body (the two Henry-inspired models,
+            /// measured 2026-09-08: the wand made the body come out at 22 cm, half its neighbours' height). 0 = off,
+            /// use Size as before.</summary>
+            public float TargetHeight;
             public float Yaw;              // degrees to turn the mesh so its head faces +z, the driving direction (read off tools/museum.ps1 top views)
             public bool Cordless;
             public Vector3 Nozzle = new Vector3(0f, 0.05f, 0.35f);
@@ -26,7 +31,7 @@ namespace VCS.Player
         static readonly Entry[] Entries =
         {
             new Entry { Id = "m_redcanister", Model = "henry", Name = "Hubert the Grin", Tagline = "A smile, a hose, a bag the size of a pillow.",
-                        Credit = "Model: Henry Vacuum by rhcreations (CC BY 4.0, Sketchfab)", Size = 0.62f, Height = 0.55f, Nozzle = new Vector3(0.05f, 0.05f, 0.28f), Bag = 160f, Speed = 6.5f },
+                        Credit = "Model: Henry Vacuum by rhcreations (CC BY 4.0, Sketchfab)", TargetHeight = 0.40f, Height = 0.40f, Nozzle = new Vector3(0.05f, 0.05f, 0.28f), Bag = 160f, Speed = 6.5f },
             new Entry { Id = "m_cyclone", Model = "dyson_upright", Name = "Baron Vortex", Tagline = "Ball, bin, no bag, no mercy.",
                         Credit = "Model: Upright Dyson Vacuum Cleaner by rhcreations (CC BY 4.0, Sketchfab)", Size = 0.42f, Height = 1.2f, Nozzle = new Vector3(0f, 0.05f, 0.17f), Speed = 7.5f, Hop = 7f },
             new Entry { Id = "m_aquastick", Model = "philips_aquatrio", Name = "Sir Mops-a-Lot", Tagline = "Vacuums, mops, judges.",
@@ -46,7 +51,7 @@ namespace VCS.Player
             new Entry { Id = "m_roundone", Model = "roomba_888", Name = "Puck", Tagline = "Eight hundred and eighty-eight polygons of patience.",
                         Credit = "Model: Low-poly Roomba by Seats (CC BY 4.0, Sketchfab)", Size = 0.5f, Height = 0.3f, Nozzle = new Vector3(0f, 0.06f, 0.20f), Cordless = true, Speed = 6.5f, Hop = 4.5f, Bag = 40f },
             new Entry { Id = "m_littlered", Model = "henry_lowpoly", Name = "Hubert Junior", Tagline = "Five hundred polygons and a grin.",
-                        Credit = "Model: Low Poly \"Henry Hoover\" Vacuum Cleaner by TheoClarke (CC BY 4.0, Sketchfab)", Size = 0.55f, Height = 0.55f, Nozzle = new Vector3(0f, 0.05f, 0.25f), Bag = 150f, Speed = 6.5f },
+                        Credit = "Model: Low Poly \"Henry Hoover\" Vacuum Cleaner by TheoClarke (CC BY 4.0, Sketchfab)", TargetHeight = 0.40f, Height = 0.40f, Nozzle = new Vector3(0f, 0.05f, 0.25f), Bag = 150f, Speed = 6.5f },
         };
 
         public static void AddTo(List<VacuumSpec> all)
@@ -84,8 +89,9 @@ namespace VCS.Player
             if (rs.Length == 0) return;
             Bounds b = rs[0].bounds;
             foreach (var r in rs) b.Encapsulate(r.bounds);
-            float horiz = Mathf.Max(b.size.x, b.size.z);
-            float k = horiz > 1e-9f ? e.Size / horiz : 1f;
+            float k;
+            if (e.TargetHeight > 0f) k = b.size.y > 1e-9f ? e.TargetHeight / b.size.y : 1f;
+            else { float horiz = Mathf.Max(b.size.x, b.size.z); k = horiz > 1e-9f ? e.Size / horiz : 1f; }
             inst.transform.localScale = Vector3.one * k;
             b = rs[0].bounds;
             foreach (var r in rs) b.Encapsulate(r.bounds);

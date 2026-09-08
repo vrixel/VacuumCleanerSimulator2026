@@ -18,7 +18,7 @@ namespace VCS.Core
     public class GameManager : MonoBehaviour
     {
         public const string GameName = "Vacuum Cleaner Simulator 2026";
-        public const string Version = "0.4.2";
+        public const string Version = "0.4.3";
         public const int MaxPower = 5;
         public static readonly int[] PowerThresholds = { 0, 300, 1000, 2500, 5000 };
 
@@ -153,8 +153,8 @@ namespace VCS.Core
             Audio.DuckMusic(false);
             if (GameInput.TouchMode) Hud.ShowHint("Left stick drives, right buttons act. Drag the free part of the screen to look around.", 8f);
             else Hud.ShowHint(Player.Spec.Cordless
-                ? "WASD / left stick: drive     SPACE / A: hop     SHIFT / RB: turbo     E / B: blow     F / X: empty bag at the bin     ESC / Start: pause"
-                : "WASD / left stick: drive     SPACE / A: hop     SHIFT / RB: turbo     E / B: blow     F / X: empty bag at the bin     R / Y: rewind the cord     ESC: pause", 14f);
+                ? "WASD / left stick: drive     SPACE / " + UIStyle.Pad("A") + ": hop     SHIFT / " + UIStyle.Pad("RB") + ": turbo     E / " + UIStyle.Pad("B") + ": blow     F / " + UIStyle.Pad("X") + ": empty bag at the bin     ESC / " + UIStyle.Pad("Start") + ": pause"
+                : "WASD / left stick: drive     SPACE / " + UIStyle.Pad("A") + ": hop     SHIFT / " + UIStyle.Pad("RB") + ": turbo     E / " + UIStyle.Pad("B") + ": blow     F / " + UIStyle.Pad("X") + ": empty bag at the bin     R / " + UIStyle.Pad("Y") + ": rewind the cord     ESC: pause", 14f);
             State = GameState.Playing;
             Time.timeScale = 1f;
             Cursor.lockState = SmokeMode || GameInput.TouchMode ? CursorLockMode.None : CursorLockMode.Locked;
@@ -330,7 +330,7 @@ namespace VCS.Core
         public void OnBagFull()
         {
             Objectives.Report("bagfull");
-            ShowBanner("BAG FULL!", "Empty it at the bin (F / X) or hold E / B to blow everything back out", 3f, false);
+            ShowBanner("BAG FULL!", "Empty it at the bin (F / " + UIStyle.Pad("X") + ") or hold E / " + UIStyle.Pad("B") + " to blow everything back out", 3f, false);
             Audio.PlayBagFull();
         }
 

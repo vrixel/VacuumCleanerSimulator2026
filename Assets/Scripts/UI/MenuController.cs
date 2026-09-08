@@ -62,12 +62,12 @@ namespace VCS.UI
                 left, left, new Vector2(74f, 70f), new Vector2(1250f, 130f), false, FontStyle.Italic);
             UIStyle.Style(sub, UIStyle.Body, 40, accent, FontStyle.Italic);
             UIStyle.Edge(sub);
-            titlePrompt = UIFactory.Text(titleRoot.transform, "Prompt", "PRESS ENTER OR (A) TO START CLEANING", 34, Color.white, TextAnchor.MiddleLeft,
+            titlePrompt = UIFactory.Text(titleRoot.transform, "Prompt", "PRESS ENTER OR (" + UIStyle.Pad("A") + ") TO START CLEANING", 34, Color.white, TextAnchor.MiddleLeft,
                 left, left, new Vector2(74f, -20f), new Vector2(1250f, 50f), false);
             UIStyle.Style(titlePrompt, UIStyle.Arcade, 28, UIStyle.Yellow, FontStyle.Italic);
             UIStyle.ArcadeText(titlePrompt, UIStyle.Yellow, UIStyle.Blue, 3f);
             var controls = UIFactory.Text(titleRoot.transform, "Controls",
-                "WASD / left stick  drive        SPACE / A  hop        SHIFT / RB  turbo\nE / B  blow        F / X  empty bag at the bin        R / Y  rewind the cord        ESC / Start  pause",
+                "WASD / left stick  drive        SPACE / " + UIStyle.Pad("A") + "  hop        SHIFT / " + UIStyle.Pad("RB") + "  turbo\nE / " + UIStyle.Pad("B") + "  blow        F / " + UIStyle.Pad("X") + "  empty bag at the bin        R / " + UIStyle.Pad("Y") + "  rewind the cord        ESC / " + UIStyle.Pad("Start") + "  pause",
                 22, new Color(1f, 1f, 1f, 0.85f), TextAnchor.MiddleLeft, left, left, new Vector2(74f, -170f), new Vector2(1250f, -50f), false);
             UIStyle.Style(controls, UIStyle.Body, 22, new Color(1f, 1f, 1f, 0.85f));
             UIStyle.Edge(controls);
@@ -134,7 +134,7 @@ namespace VCS.UI
                 Color[] barColors = { UIStyle.Green, UIStyle.Red, UIStyle.Yellow, UIStyle.Blue };
                 bars[i] = UIStyle.Bar(titleRoot.transform, "Bar" + i, barColors[i], right, right, new Vector2(-390f, y - 11f), new Vector2(-100f, y + 11f), 3f);
             }
-            var garageHint = UIFactory.Text(titleRoot.transform, "GarageHint", "A / D   or   LB / RB   to choose", 19, new Color(1f, 1f, 1f, 0.65f), TextAnchor.MiddleCenter,
+            var garageHint = UIFactory.Text(titleRoot.transform, "GarageHint", "A / D   or   " + UIStyle.Pad("LB") + " / " + UIStyle.Pad("RB") + "   to choose", 19, new Color(1f, 1f, 1f, 0.65f), TextAnchor.MiddleCenter,
                 right, right, new Vector2(-530f, -456f), new Vector2(-84f, -420f), false);
             UIStyle.Style(garageHint, UIStyle.Body, 19, new Color(1f, 1f, 1f, 0.65f));
             if (GameInput.TouchMode) garageHint.text = "tap the arrows to choose";
