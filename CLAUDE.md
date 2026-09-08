@@ -120,6 +120,20 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
 - The HUD (`HudController`) is spread around the screen: score block top-left, power strip top-centre, timer and
   `RadarView` top-right (a top-down camera into a masked RawImage; markers are quads on layer 8 that the main and
   preview cameras cull), vertical meters left, mission log right, `Cockpit` at the bottom.
+- Control hints (2026-09-08, his feedback "the first letter is a keyboard key, the other is a gamepad
+  button"): `UIStyle.Pad(label)` wraps a gamepad button name in its real Xbox colour (A green, B red, X blue,
+  Y yellow, shoulders/Start/Back a neutral steel, real pads leave those uncoloured too) as rich text
+  (`<color><b>`, legacy `Text.supportRichText` is on by default in `UIFactory.Text`); every "KEY / BUTTON" hint
+  uses it (title screen legend and garage hint, the in-game reminder, the bin prompt, the bag-full banner) while
+  the keyboard key stays plain text. A / D on the garage hint stays plain too (those are keyboard keys, not A the
+  gamepad button, despite sharing a letter).
+- Imported-mesh scale (2026-09-08, his feedback "the Henry realistic model scale is completely off"): the two
+  Henry-inspired meshes ("Hubert the Grin", "Hubert Junior") have a wand + hose reaching far out in the raw mesh,
+  which the normal horizontal-extent normalisation used as its reference, rendering the body at 22 cm tall (half
+  its neighbours). `ImportedVacuums.Entry.TargetHeight`, when set, normalises that mesh by height instead (used
+  for these two only, 0.40 m each, matching the real Henry Hoover; no other imported mesh showed the defect,
+  checked with a raw-OBJ bounding-box script and `tools/museum.ps1`). The hose still trails proportionally
+  further as a result, non-colliding decoration, no different from the other machines' cords.
 - Seeing through walls (2026-09-07, his phone feedback "we cannot see the bin"): `WallFader`, driven at the end of
   `FollowCamera.LateUpdate`, sphere-casts (0.45 m) from the camera to the vacuum, and to the bin once the bag is
   70 % full, and swaps every static box named "Wall" on the way to one shared Fade material dimmed to alpha 0.16
