@@ -127,8 +127,12 @@ jobs:
           cd "$RUNNER_TEMP/xcode"
           xcodebuild -version
           # Automatic signing driven by the App Store Connect key: Xcode registers the App ID and mints the
-          # App Store profile itself. Applied to the app target only through the scheme; UnityFramework signs
-          # with the team like any embedded framework.
+          # App Store profile itself. PRODUCT_BUNDLE_IDENTIFIER is deliberately NOT forced here: passed on the
+          # xcodebuild command line it applies to every target, including UnityFramework, giving the app and
+          # its embedded framework the same identifier ("CFBundleIdentifier Collision", error 90685, measured
+          # 2026-09-08). Unity's export already writes the right per-target identifier (the app from
+          # PlayerSettings.applicationIdentifier, UnityFramework as com.unity3d.framework); DEVELOPMENT_TEAM
+          # is safe to force because every target shares the team, only the bundle ID must not be shared.
           xcodebuild -project Unity-iPhone.xcodeproj -scheme Unity-iPhone \
             -configuration Release -archivePath "$RUNNER_TEMP/app.xcarchive" \
             -destination "generic/platform=iOS" \
@@ -138,7 +142,6 @@ jobs:
             -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="$TEAM_ID" \
-            PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
             archive | tee "$RUNNER_TEMP/archive.log" | grep -E "error|warning: .*sign|Signing Identity|\*\* ARCHIVE" || true
           test -d "$RUNNER_TEMP/app.xcarchive"
 
