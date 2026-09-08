@@ -18,7 +18,7 @@ namespace VCS.Core
     public class GameManager : MonoBehaviour
     {
         public const string GameName = "Vacuum Cleaner Simulator 2026";
-        public const string Version = "0.4.3";
+        public const string Version = "0.4.4";
         public const int MaxPower = 5;
         public static readonly int[] PowerThresholds = { 0, 300, 1000, 2500, 5000 };
 

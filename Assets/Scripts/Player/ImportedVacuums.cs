@@ -21,9 +21,11 @@ namespace VCS.Player
             /// measured 2026-09-08: the wand made the body come out at 22 cm, half its neighbours' height). 0 = off,
             /// use Size as before.</summary>
             public float TargetHeight;
-            public float Yaw;              // degrees to turn the mesh so its head faces +z, the driving direction (read off tools/museum.ps1 top views)
+            public float Yaw;              // degrees to turn the mesh so its head faces +z, the driving direction (read off tools/museum.ps1 top views;
+                                           // Wanda was -90 off, driving handle first, caught on the 2026-09-08 sheet)
             public bool Cordless;
-            public Vector3 Nozzle = new Vector3(0f, 0.05f, 0.35f);
+            public Vector3 Nozzle = new Vector3(0f, 0.05f, 0.35f);   // the red ball of the museum sheet: on the floor tool for hose machines,
+                                                                    // the front edge of the body otherwise
             public float Height = 0.6f;
             public float Speed = 7f, Hop = 6f, Bag = 100f;
         }
@@ -31,7 +33,7 @@ namespace VCS.Player
         static readonly Entry[] Entries =
         {
             new Entry { Id = "m_redcanister", Model = "henry", Name = "Hubert the Grin", Tagline = "A smile, a hose, a bag the size of a pillow.",
-                        Credit = "Model: Henry Vacuum by rhcreations (CC BY 4.0, Sketchfab)", TargetHeight = 0.40f, Height = 0.40f, Nozzle = new Vector3(0.05f, 0.05f, 0.28f), Bag = 160f, Speed = 6.5f },
+                        Credit = "Model: Henry Vacuum by rhcreations (CC BY 4.0, Sketchfab)", TargetHeight = 0.40f, Height = 0.40f, Nozzle = new Vector3(0.10f, 0.05f, 0.50f), Bag = 160f, Speed = 6.5f },
             new Entry { Id = "m_cyclone", Model = "dyson_upright", Name = "Baron Vortex", Tagline = "Ball, bin, no bag, no mercy.",
                         Credit = "Model: Upright Dyson Vacuum Cleaner by rhcreations (CC BY 4.0, Sketchfab)", Size = 0.42f, Height = 1.2f, Nozzle = new Vector3(0f, 0.05f, 0.17f), Speed = 7.5f, Hop = 7f },
             new Entry { Id = "m_aquastick", Model = "philips_aquatrio", Name = "Sir Mops-a-Lot", Tagline = "Vacuums, mops, judges.",
@@ -41,7 +43,7 @@ namespace VCS.Player
             new Entry { Id = "m_greystick", Model = "sixth_hm", Name = "Twiglet", Tagline = "Student project. Surprisingly hungry.",
                         Credit = "Model: Sixth HM XYZ - A vacuum cleaner by nimzuk (CC BY 4.0, Sketchfab)", Size = 0.34f, Height = 1.2f, Yaw = -90f, Nozzle = new Vector3(0f, 0.05f, 0.10f), Speed = 7f, Bag = 50f },
             new Entry { Id = "m_wand", Model = "vacuum_20k", Name = "Wanda", Tagline = "Forty minutes of battery, forty years of dust.",
-                        Credit = "Model: Vacuum Cleaner by kikumi (CC BY 4.0, Sketchfab)", Size = 0.34f, Height = 1.1f, Yaw = 90f, Nozzle = new Vector3(0f, 0.05f, 0.18f), Cordless = true, Speed = 8f, Bag = 45f },
+                        Credit = "Model: Vacuum Cleaner by kikumi (CC BY 4.0, Sketchfab)", Size = 0.34f, Height = 1.1f, Yaw = -90f, Nozzle = new Vector3(0f, 0.05f, 0.18f), Cordless = true, Speed = 8f, Bag = 45f },
             new Entry { Id = "m_redsled", Model = "vacuum_82k", Name = "Monsieur Traineau", Tagline = "Un traineau. Glisse, aspire, ne dit rien.",
                         Credit = "Model: vacuum cleaner by huseyinCG (CC BY 4.0, Sketchfab)", Size = 0.9f, Height = 0.5f, Yaw = 90f, Nozzle = new Vector3(0f, 0.05f, 0.42f), Bag = 140f, Speed = 7f },
             new Entry { Id = "m_bluedrum", Model = "canister_a", Name = "Bluebarrel", Tagline = "Compact, cheerful, slightly too loud.",
@@ -51,7 +53,7 @@ namespace VCS.Player
             new Entry { Id = "m_roundone", Model = "roomba_888", Name = "Puck", Tagline = "Eight hundred and eighty-eight polygons of patience.",
                         Credit = "Model: Low-poly Roomba by Seats (CC BY 4.0, Sketchfab)", Size = 0.5f, Height = 0.3f, Nozzle = new Vector3(0f, 0.06f, 0.20f), Cordless = true, Speed = 6.5f, Hop = 4.5f, Bag = 40f },
             new Entry { Id = "m_littlered", Model = "henry_lowpoly", Name = "Hubert Junior", Tagline = "Five hundred polygons and a grin.",
-                        Credit = "Model: Low Poly \"Henry Hoover\" Vacuum Cleaner by TheoClarke (CC BY 4.0, Sketchfab)", TargetHeight = 0.40f, Height = 0.40f, Nozzle = new Vector3(0f, 0.05f, 0.25f), Bag = 150f, Speed = 6.5f },
+                        Credit = "Model: Low Poly \"Henry Hoover\" Vacuum Cleaner by TheoClarke (CC BY 4.0, Sketchfab)", TargetHeight = 0.40f, Height = 0.40f, Nozzle = new Vector3(0f, 0.05f, 0.42f), Bag = 150f, Speed = 6.5f },
         };
 
         public static void AddTo(List<VacuumSpec> all)
