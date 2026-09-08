@@ -68,7 +68,8 @@ gauge and bin marker that had only shipped on GitHub), release notes "0.4.4: ...
 for certification at about 18:00 UTC on the owner's "Allez publie tout" (the "Submit for certification" he-button
 took a plain element click; a hidden "Sign in required" dialog sits in the DOM at all times and means nothing
 while it is not displayed). Both Save buttons (Packages, Store listing) again needed a click at screen coordinates
-and each one lands on the Game overview page when it succeeds. Poll the public catalog for the v0.4.4.0 full name.**
+and each one lands on the Game overview page when it succeeds. LIVE: the public catalog listed
+`Cosnuau.VacuumCleanerSimulator2026_0.4.4.0_x64__be04n9vkbk9wc` at 18:48 UTC, about 50 minutes after the submission.**
 
 **Status 2026-09-06 night: submission 1 (v0.1.1.0) live on 2026-09-05; submission 2 (v0.2.0.0) live on 2026-09-06
 (mail 14:36 UTC, about 19 h in certification; the public catalog
