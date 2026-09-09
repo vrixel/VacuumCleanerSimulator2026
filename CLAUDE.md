@@ -236,8 +236,14 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   per-target identifiers Unity's export already writes. TestFlight builds: com.cosnuau.vacuumcleanersimulator2026,
   402 (0.4.2) then 404 (0.4.4, 2026-09-08 evening, one `toolsuild-ios.ps1 -Upload`, about 25 min end to end).
   TestFlight distribution: internal group "Owner" (automatic distribution, so every new build reaches it) with the
-  account holder erwan@cosnuau.com invited; App Store Connect dialogs open and submit through synthetic DOM clicks
-  even while the Windows session is locked (unlike Play Console), so that console needs no visible tab.
+  account holder erwan@cosnuau.com invited, and external group "iPhone" for any address that is not on the App
+  Store Connect team (his work Apple Account): an external group needs Beta App Review, so adding a build there
+  walks a three-step wizard (build, Test Information, What to Test) and the build goes to "Waiting for Review"
+  before the invitation emails leave. Test Information reuses the Amityville answers (feedback and contact
+  cosnuau@gmail.com, +41784476300, no sign-in required). App Store Connect dialogs open and submit through
+  synthetic DOM clicks even while the Windows session is locked (unlike Play Console), so that console needs no
+  visible tab; its long text fields (beta description, What to Test) are contenteditable divs, filled with
+  `document.execCommand('insertText')` after focus, not the value setter.
 
 Input: `GameInput` wraps the legacy Input Manager. Axes live in `ProjectSettings/InputManager.asset` (Horizontal,
 Vertical, CamX, CamY, DPadX, DPadY, TriggerL, TriggerR); buttons are read with `KeyCode.JoystickButtonN`
