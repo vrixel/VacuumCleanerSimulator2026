@@ -148,7 +148,15 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   them up on par with the first 5"), because the built shells are cartoon-chunky and carry much more volume at the
   same height. Final sizes: imported uprights 1.20-1.32 m (built 1.18-1.26), canisters and drums 0.74-0.92 m (built
   0.55-0.79), floor robots 0.12-0.25 m tall over 0.95 m wide (Roomboo 0.18 over 0.95). When in doubt, go bigger:
-  the machines share the level with 1.4 m furniture, and the first five are the reference. Changing a scale moves the suction point with it:
+  the machines share the level with 1.4 m furniture, and the first five are the reference. Third pass, his rule for
+  the cylinders ("le modele importe jaune a une barre au dessus de l'aspi, si tu t'alignes verticalement c'est tout
+  petit"): on a trolley drum or a sled the mesh height counts a push handle or a hose arch standing over the body,
+  so matching total heights leaves the drum small. Judge those on the BODY, and set `TargetHeight` well above the
+  built machines to compensate: Big Bertha 1.45 m total for a 0.75 m drum, Monsieur Traineau 1.35 m for its sled,
+  Bluebarrel 0.95 m. Measuring the body automatically was tried and abandoned: a percentile of vertex radius in the
+  lower part of the mesh reads the sprawling hose on one model and the trolley wheels on the next, and gave a
+  machine twice too big beside one three times too small (imported meshes also come back with an empty vertex array
+  in a player build unless the model importer is set readable). The line-up sheet and an eye are the reliable pair. Changing a scale moves the suction point with it:
   scale `Nozzle` by the same factor and check the red ball on `tools\museum.ps1` afterwards. The physics body is a
   fixed 0.5 m sphere, so none of this touches handling.
 - Seeing through walls (2026-09-07, his phone feedback "we cannot see the bin"): `WallFader`, driven at the end of
