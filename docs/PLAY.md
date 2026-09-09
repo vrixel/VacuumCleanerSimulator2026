@@ -8,7 +8,7 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 - 2026-09-08 20:00 ("Allez publie tout"): 404 (0.4.4) LIVE on the internal track (new release, AAB fetched in-page
   from a temporary branch, "Save and publish" + confirmation at screen coordinates), then promoted to the closed
-  track "Alpha" ("Promote release" > Closed testing > Alpha copies the bundle and the notes; the review page ends
+  track "Alpha" (approved overnight: 404 reads "Available to selected testers", released 8 Sept 20:20) ("Promote release" > Closed testing > Alpha copies the bundle and the notes; the review page ends
   with "Save", the "Go to Publishing overview?" dialog, then "Submit 1 change for review" + "Send changes for
   review"): IN REVIEW. The 16 changes of 2026-09-07 had been approved the same night: 402 went live on the closed
   track at 22:34 on 2026-09-07 ("Available to selected testers"), so the 14-day clock can run as soon as 12 testers
