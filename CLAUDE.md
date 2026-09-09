@@ -143,9 +143,12 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   wand or a trailing cord, which is most of them; `Size` is kept only for the two floor robots, where width is the
   honest dimension. `tools\lineup.ps1` is the measurement: it builds all nineteen machines side by side on one floor
   in front of a 0.25 m grid, photographs them with an orthographic camera and logs `w h d` for each, so a claim about
-  relative size can be checked instead of argued. The families settled on 2026-09-09: uprights and sticks 1.18-1.22 m,
-  canisters 0.55-0.77 m, workshop drums 0.78-0.79 m (Big Bertha was 0.46 m next to Shop Drum 3000's 0.79 m, which is
-  what he saw), floor robots 0.10-0.21 m tall over 0.80-0.95 m wide. Changing a scale moves the suction point with it:
+  relative size can be checked instead of argued. Two passes were needed on 2026-09-09: matching the built machines
+  family by family still left the imported ones looking like toys ("the vacuums really suck in terms of scale, scale
+  them up on par with the first 5"), because the built shells are cartoon-chunky and carry much more volume at the
+  same height. Final sizes: imported uprights 1.20-1.32 m (built 1.18-1.26), canisters and drums 0.74-0.92 m (built
+  0.55-0.79), floor robots 0.12-0.25 m tall over 0.95 m wide (Roomboo 0.18 over 0.95). When in doubt, go bigger:
+  the machines share the level with 1.4 m furniture, and the first five are the reference. Changing a scale moves the suction point with it:
   scale `Nozzle` by the same factor and check the red ball on `tools\museum.ps1` afterwards. The physics body is a
   fixed 0.5 m sphere, so none of this touches handling.
 - Seeing through walls (2026-09-07, his phone feedback "we cannot see the bin"): `WallFader`, driven at the end of
