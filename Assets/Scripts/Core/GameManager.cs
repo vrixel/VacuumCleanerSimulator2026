@@ -18,7 +18,7 @@ namespace VCS.Core
     public class GameManager : MonoBehaviour
     {
         public const string GameName = "Vacuum Cleaner Simulator 2026";
-        public const string Version = "0.4.4";
+        public const string Version = "0.4.5";
         public const int MaxPower = 5;
         public static readonly int[] PowerThresholds = { 0, 300, 1000, 2500, 5000 };
 
@@ -134,6 +134,7 @@ namespace VCS.Core
             Score = 0; PowerLevel = 1; ComboCount = 0; ComboTimeLeft = 0f; PlayTime = 0f;
             spotlessShown = false;
             catHissShown = false;
+            turboNagTimer = 0f;
             powderScore = 0f; powderReported = 0f;
             banners.Clear(); bannerTimer = 0f;
             Objectives.ResetProgress();
@@ -206,11 +207,37 @@ namespace VCS.Core
 #endif
         }
 
+        // The boost is the one control nobody finds on their own (his 2026-09-09 report "no reminder on screen about
+        // how to use the turbo"): until the player has held it once, ever, the reminder comes back every 25 s of play.
+        // The first press writes the PlayerPref, so a player who knows the game never sees it again.
+        const string TurboLearnedKey = "turbo_used";
+        float turboNagTimer;
+
+        void TeachTurbo(float dt)
+        {
+            if (Player == null || PlayerPrefs.GetInt(TurboLearnedKey, 0) != 0) return;
+            if (Player.Turbo)
+            {
+                PlayerPrefs.SetInt(TurboLearnedKey, 1);
+                PlayerPrefs.Save();
+                Hud.ShowHint(GameInput.TouchMode ? "That is the boost. Hold TURBO to keep it." : "That is the boost. Hold it to keep going.", 3f);
+                return;
+            }
+            turboNagTimer += dt;
+            if (turboNagTimer < 25f) return;
+            turboNagTimer = 0f;
+            Hud.ShowHint(GameInput.TouchMode
+                ? "Hold the big blue TURBO button to boost"
+                : "Hold SHIFT / " + UIStyle.Pad("RB") + " to boost",
+                5f);
+        }
+
         void Update()
         {
             if (State == GameState.Playing)
             {
                 PlayTime += Time.deltaTime;
+                TeachTurbo(Time.deltaTime);
                 if (GameInput.PauseDown) { Pause(); return; }
                 if (ComboTimeLeft > 0f)
                 {

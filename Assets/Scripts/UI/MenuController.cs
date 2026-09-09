@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using VCS.Core;
 using VCS.Player;
@@ -156,8 +157,9 @@ namespace VCS.UI
                 var back = UIStyle.Plate(pauseRoot.transform, "Item" + i, "tab_plate", PauseOff, mid, mid, new Vector2(-260f, y - 35f), new Vector2(260f, y + 35f), 10f, new Color(0f, 0f, 0f, 0.5f), 0.34f);
                 back.raycastTarget = true;
                 var btn = back.gameObject.AddComponent<Button>();
+                btn.navigation = new Navigation { mode = Navigation.Mode.None };
                 int idx = i;
-                btn.onClick.AddListener(() => { sel = idx; Highlight(); OnPauseSelect?.Invoke(idx); });
+                btn.onClick.AddListener(() => { sel = idx; Highlight(); Deselect(); OnPauseSelect?.Invoke(idx); });
                 pauseBacks[i] = back;
                 pauseTexts[i] = UIFactory.Text(back.transform, "Label", PauseLabels[i], 36, Color.white, TextAnchor.MiddleCenter,
                     Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false);
@@ -181,7 +183,8 @@ namespace VCS.UI
             else back = UIStyle.Plate(parent, "Arrow" + label, "button_square", PauseOff, right, right, oMin, oMax, 8f, new Color(0f, 0f, 0f, 0.45f), 0.3f);
             back.raycastTarget = true;
             var btn = back.gameObject.AddComponent<Button>();
-            btn.onClick.AddListener(() => { SelectVacuumIndex(vacIndex + dir); var gm = GameManager.I; if (gm != null) gm.Audio.PlayClick(); });
+            btn.navigation = new Navigation { mode = Navigation.Mode.None };
+            btn.onClick.AddListener(() => { SelectVacuumIndex(vacIndex + dir); Deselect(); var gm = GameManager.I; if (gm != null) gm.Audio.PlayClick(); });
             var arrow = UIFactory.Text(back.transform, "Label", label, GameInput.TouchMode ? 64 : 40, GameInput.TouchMode ? UIStyle.Ink : UIFactory.Accent, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             if (GameInput.TouchMode) UIStyle.Style(arrow, UIStyle.Arcade, 64, UIStyle.Ink, FontStyle.Bold);
         }
@@ -194,6 +197,7 @@ namespace VCS.UI
             pauseVisible = false;
             titleStats.text = "Best score " + best.ToString("N0") + "     Achievements " + achievementsDone + "/" + achievementsTotal + "     v" + GameManager.Version;
             SelectVacuumIndex(VacuumCatalog.IndexOf(VacuumCatalog.SelectedId));
+            Deselect();
         }
 
         public void ShowPause()
@@ -214,6 +218,17 @@ namespace VCS.UI
             titleVisible = false;
             pauseVisible = false;
             preview.Hide();
+        }
+
+        /// <summary>
+        /// Drops the EventSystem's selected object. uGUI keeps the last clicked Button selected and the
+        /// StandaloneInputModule sends it a Submit on Enter / Space / gamepad A, so clicking a garage arrow with the
+        /// mouse and then pressing Enter to start fired that arrow again and the run began with the next vacuum in
+        /// the list (his 2026-09-09 report "the hoover selector picks the wrong hoover when I press enter").
+        /// </summary>
+        static void Deselect()
+        {
+            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
         }
 
         public void SelectVacuumIndex(int i)

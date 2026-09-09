@@ -17,17 +17,19 @@ namespace VCS.Core
     {
         string outDir;
         bool museum;   // "-museum <dir>": orientation diagnostics of the museum pieces instead of the gallery
+        bool lineup;   // "-lineup <dir>": every vacuum side by side at one scale, on a metre grid
 
         public static void TryStart(GameManager gm)
         {
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
             {
-                if (args[i] != "-gallery" && args[i] != "-museum") continue;
+                if (args[i] != "-gallery" && args[i] != "-museum" && args[i] != "-lineup") continue;
                 GameManager.SmokeMode = true;
                 var r = gm.gameObject.AddComponent<GalleryRunner>();
                 r.outDir = args[i + 1];
                 r.museum = args[i] == "-museum";
+                r.lineup = args[i] == "-lineup";
                 return;
             }
         }
@@ -42,6 +44,11 @@ namespace VCS.Core
             if (museum)
             {
                 yield return Museum(preview);
+                yield break;
+            }
+            if (lineup)
+            {
+                yield return Lineup();
                 yield break;
             }
             foreach (var look in new[] { false, true })
@@ -105,6 +112,118 @@ namespace VCS.Core
             Debug.Log("[VCS] Gallery done");
             yield return new WaitForSecondsRealtime(0.5f);
             Application.Quit();
+        }
+
+        /// <summary>
+        /// Every vacuum of the garage, built exactly as the game builds it, standing side by side on one floor in
+        /// front of a metre grid, photographed with an orthographic camera: the only picture that tells whether the
+        /// nineteen machines are the same kind of size. Sheets of eight, all at the same metres-per-pixel, plus one
+        /// log line per model with its real width, height and depth. Answers his 2026-09-09 report "there are still
+        /// scale issues, they should all be same size".
+        /// </summary>
+        IEnumerator Lineup()
+        {
+            VacuumVisuals.RealisticLook = true;
+            Palette.Realistic = true;
+            VacuumModels.UseV2 = true;
+
+            const float Spacing = 1.45f;     // metres between two models
+            const int PerSheet = 5;
+            const float OrthoHalf = 0.85f;   // half the picture height in metres (the view is 4x as wide)
+            const int SheetW = 2400, SheetH = 600;
+
+            var stage = new GameObject("LineupStage").transform;
+            stage.position = new Vector3(0f, -1000f, 0f);
+
+            PropFactory.Prim(PrimitiveType.Cube, stage, new Vector3(0f, -0.025f, 0f), new Vector3(60f, 0.05f, 6f), new Color(0.62f, 0.63f, 0.66f), "Floor", false);
+            PropFactory.Prim(PrimitiveType.Cube, stage, new Vector3(0f, 1.6f, -1.6f), new Vector3(60f, 4f, 0.1f), new Color(0.82f, 0.83f, 0.86f), "Backdrop", false);
+            for (int g = 1; g <= 8; g++)
+            {
+                float y = g * 0.25f;
+                bool half = g % 2 == 0;
+                PropFactory.Prim(PrimitiveType.Cube, stage, new Vector3(0f, y, -1.54f), new Vector3(60f, half ? 0.012f : 0.006f, 0.02f),
+                    half ? new Color(0.35f, 0.38f, 0.45f) : new Color(0.62f, 0.64f, 0.70f), "Grid" + g, false);
+            }
+
+            var lightGo = new GameObject("LineupKey");
+            lightGo.transform.SetParent(stage, false);
+            lightGo.transform.localRotation = Quaternion.Euler(38f, 205f, 0f);
+            var key = lightGo.AddComponent<Light>();
+            key.type = LightType.Directional;
+            key.intensity = 1.35f;
+            key.color = new Color(1f, 0.97f, 0.93f);
+            key.shadows = LightShadows.Soft;
+
+            var camGo = new GameObject("LineupCamera");
+            camGo.transform.SetParent(stage, false);
+            var cam = camGo.AddComponent<Camera>();
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.82f, 0.83f, 0.86f);
+            cam.orthographic = true;
+            cam.orthographicSize = OrthoHalf;
+            cam.nearClipPlane = 0.05f;
+            cam.farClipPlane = 30f;
+            cam.cullingMask &= ~(1 << 8);
+            cam.enabled = false;
+            VCS.Core.RenderingSetup.Attach(cam);
+
+            var specs = VacuumCatalog.All;
+            int sheets = (specs.Count + PerSheet - 1) / PerSheet;
+            for (int sheet = 0; sheet < sheets; sheet++)
+            {
+                int from = sheet * PerSheet, to = Mathf.Min(from + PerSheet, specs.Count);
+                var built = new System.Collections.Generic.List<Transform>();
+                for (int i = from; i < to; i++)
+                {
+                    var spec = specs[i];
+                    var t = new GameObject("Lineup_" + spec.Id).transform;
+                    t.SetParent(stage, false);
+                    t.localPosition = new Vector3(-(i - from) * Spacing, 0f, 0f);
+                    spec.Build(t, spec);
+                    VacuumDetails.Add(t, spec);
+                    built.Add(t);
+
+                    var rs = t.GetComponentsInChildren<Renderer>();
+                    if (rs.Length == 0) { Debug.Log("[VCS] Lineup " + spec.Id + ": no renderer"); continue; }
+                    Bounds b = rs[0].bounds;
+                    foreach (var r in rs) b.Encapsulate(r.bounds);
+                    Debug.Log("[VCS] Lineup " + spec.Id.PadRight(14) + " " + (spec.Imported ? "mesh " : "built") + " w " + b.size.x.ToString("F2")
+                              + " h " + b.size.y.ToString("F2") + " d " + b.size.z.ToString("F2")
+                              + " floor " + (b.min.y - stage.position.y).ToString("F2") + "   " + spec.Name);
+                }
+                yield return null;
+
+                float mid = -(to - from - 1) * 0.5f * Spacing;
+                cam.transform.localPosition = new Vector3(mid, OrthoHalf * 0.94f, 6f);
+                cam.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+                string file = Path.Combine(outDir, "lineup-" + (sheet + 1) + ".png");
+                Shoot(cam, SheetW, SheetH, file);
+                Debug.Log("[VCS] Lineup sheet " + file);
+                foreach (var t in built) DestroyImmediate(t.gameObject);
+                yield return null;
+            }
+            Debug.Log("[VCS] Lineup done");
+            yield return new WaitForSecondsRealtime(0.5f);
+            Application.Quit();
+        }
+
+        static void Shoot(Camera cam, int w, int h, string path)
+        {
+            var rt = new RenderTexture(w, h, 24);
+            rt.antiAliasing = 8;
+            cam.targetTexture = rt;
+            cam.Render();
+            cam.targetTexture = null;
+            var prev = RenderTexture.active;
+            RenderTexture.active = rt;
+            var tex = new Texture2D(w, h, TextureFormat.RGB24, false);
+            tex.ReadPixels(new Rect(0, 0, w, h), 0, 0);
+            tex.Apply();
+            RenderTexture.active = prev;
+            File.WriteAllBytes(path, tex.EncodeToPNG());
+            Destroy(tex);
+            rt.Release();
+            Destroy(rt);
         }
 
         /// <summary>

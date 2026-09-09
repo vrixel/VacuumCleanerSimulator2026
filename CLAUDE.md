@@ -16,6 +16,7 @@ powershell -File tools\compile-check.ps1     # compile all scripts against Unity
 powershell -File tools\build.ps1             # batch-mode Win64 build -> Builds\Win64\VacuumCleanerSimulator2026.exe, log in Builds\build.log
 powershell -File tools\build.ps1 -Run        # same, then launch the exe (player log in Builds\player.log)
 powershell -File tools\run.ps1               # launch the last build
+powershell -File tools\lineup.ps1           # every vacuum side by side at one scale on a 0.25 m grid -> docs\screenshots\models-lineup.png, sizes in the log
 powershell -File tools\smoke-test.ps1        # automated run of the build: self-screenshots (Builds\smoke-*.png), drives, logs "[VCS] Smoke result", quits
 powershell -File tools\release.ps1 -Version 0.2.0   # build, zip Builds\Win64, publish GitHub release v0.2.0 with the zip (-SkipBuild to reuse a smoked build, -Draft)
 python tools\marketing.py                   # cut marketing\source\*.png into store sizes (marketing\store), icon sizes + icon.ico (marketing\icon), Assets\Icon\icon.png
@@ -126,14 +127,27 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   (`<color><b>`, legacy `Text.supportRichText` is on by default in `UIFactory.Text`); every "KEY / BUTTON" hint
   uses it (title screen legend and garage hint, the in-game reminder, the bin prompt, the bag-full banner) while
   the keyboard key stays plain text. A / D on the garage hint stays plain too (those are keyboard keys, not A the
-  gamepad button, despite sharing a letter).
-- Imported-mesh scale (2026-09-08, his feedback "the Henry realistic model scale is completely off"): the two
-  Henry-inspired meshes ("Hubert the Grin", "Hubert Junior") have a wand + hose reaching far out in the raw mesh,
-  which the normal horizontal-extent normalisation used as its reference, rendering the body at 22 cm tall (half
-  its neighbours). `ImportedVacuums.Entry.TargetHeight`, when set, normalises that mesh by height instead (used
-  for these two only, 0.40 m each, matching the real Henry Hoover; no other imported mesh showed the defect,
-  checked with a raw-OBJ bounding-box script and `tools/museum.ps1`). The hose still trails proportionally
-  further as a result, non-colliding decoration, no different from the other machines' cords.
+  gamepad button, despite sharing a letter). The boost is the one control players never find (his 2026-09-09
+  "no reminder on screen about how to use the turbo"): `GameManager.TeachTurbo` brings the reminder back every 25 s
+  of play until the first time turbo is held, then writes the PlayerPref `turbo_used` and never shows it again.
+- uGUI Submit steals the Enter key (2026-09-09, his "the hoover selector picks the wrong hoover when I press enter"):
+  clicking a garage arrow with the mouse leaves that Button selected in the EventSystem, and StandaloneInputModule
+  sends a Submit to the selected object on Enter / Space / gamepad A, so the same Enter that started the run also
+  clicked the arrow again and the game began with the next vacuum in the list. Every Button of the title and pause
+  screens now clears the selection in its own handler (`MenuController.Deselect`) and carries
+  `Navigation.Mode.None`. Any new Button in this project must do the same, or Enter will fire it.
+- Imported-mesh scale (2026-09-08 "the Henry realistic model scale is completely off", finished 2026-09-09 "there
+  are still scale issues, the 2 powerful yellow vacuums, the realistic one is tiny, they should all be same size"):
+  a mesh is normalised at runtime either by its largest horizontal extent (`Entry.Size`) or, when `Entry.TargetHeight`
+  is set, by its height. Height is the right reference for anything whose raw bounding box is inflated by a hose, a
+  wand or a trailing cord, which is most of them; `Size` is kept only for the two floor robots, where width is the
+  honest dimension. `tools\lineup.ps1` is the measurement: it builds all nineteen machines side by side on one floor
+  in front of a 0.25 m grid, photographs them with an orthographic camera and logs `w h d` for each, so a claim about
+  relative size can be checked instead of argued. The families settled on 2026-09-09: uprights and sticks 1.18-1.22 m,
+  canisters 0.55-0.77 m, workshop drums 0.78-0.79 m (Big Bertha was 0.46 m next to Shop Drum 3000's 0.79 m, which is
+  what he saw), floor robots 0.10-0.21 m tall over 0.80-0.95 m wide. Changing a scale moves the suction point with it:
+  scale `Nozzle` by the same factor and check the red ball on `tools\museum.ps1` afterwards. The physics body is a
+  fixed 0.5 m sphere, so none of this touches handling.
 - Seeing through walls (2026-09-07, his phone feedback "we cannot see the bin"): `WallFader`, driven at the end of
   `FollowCamera.LateUpdate`, sphere-casts (0.45 m) from the camera to the vacuum, and to the bin once the bag is
   70 % full, and swaps every static box named "Wall" on the way to one shared Fade material dimmed to alpha 0.16
@@ -187,7 +201,13 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   `Resources/Models/<name>` with runtime normalisation (largest horizontal extent = `Size`, base on the floor,
   centred), `Yaw` and `Nozzle` per entry read off `tools/museum.ps1`. Parody names of the game's own (Hubert the
   Grin, Baron Vortex, Monsieur Traineau...), never the product's; the garage shows no credit line, the CC-BY credits
-  live in `docs/CREDITS.md`. The former museum toggle (M) is gone.
+  live in `docs/CREDITS.md`. The former museum toggle (M) is gone. Downloaded meshes carry the real brand baked into
+  their textures: on 2026-09-09 the word "Henry" was painted out of `henry_Image_4.png` and
+  `henry_lowpoly_Image_0.png`, and "PHILIPS", "AquaTrio Pro", "TriActive Aqua" and the rating label out of
+  `philips_aquatrio_Image_6/7.png` (copy a clean patch of the same texture over the mark, or fill with the median
+  colour of a ring around it; that atlas is 93 % transparent, so a transparent fill is the correct result there).
+  Check every new mesh the same way: a contact sheet of `Assets/Resources/Models/*.png` shows the wordmarks at a
+  glance. The model author's own watermark (Big Bertha's "Rescue3D Assets") stays: it is attribution, not a brand.
 - Cocoa powder (`PowderSystem`, one `PowderLayer` quad per room at y = 0.012): generated RGBA texture at 36 px/m
   (splats, streaks, dusting), `Resources/Materials/Fade.mat` (Standard Fade, keyword in the asset). `SuctionSystem.Suck`
   calls `Powder.Vacuum(nozzle, radius)` every physics step while grounded and the bag has room: it zeroes alpha in a
