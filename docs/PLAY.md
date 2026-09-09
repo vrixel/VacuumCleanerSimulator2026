@@ -6,6 +6,19 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 ## Status
 
+- 2026-09-09 ("go testerscommunity"): THE 12-TESTER RUN IS BOOKED. On testerscommunity.com (his account,
+  cosnuau@gmail.com, one Starter credit already paid) the app was submitted: name, plan Starter (15 testers), the
+  join link https://play.google.com/apps/testing/com.cosnuau.vacuumcleanersimulator2026, the 256 px icon (fetched
+  in-page from media.githubusercontent.com, which serves the real bytes of an LFS file with CORS, unlike
+  raw.githubusercontent.com which returns the pointer text) and a note saying the game needs no login. Day 0 of 16,
+  credit balance now zero. Their step 1 was done first in Play Console: the closed track "Alpha" now takes its
+  testers from the Google Group testers-community@googlegroups.com. CAREFUL: Play's Testers tab is a radio between
+  "Email lists" and "Google Groups", so switching to the group DROPPED the Owner and Testers 91rivers lists from
+  the CLOSED track; the owner keeps his own access through the INTERNAL track, which still carries 404 and both
+  lists. The change went to review from the Publishing overview (one change, "Set testers to be managed by Google
+  Groups"). Countries were already at the maximum: the track filter reads "All countries/regions (177), Targeted
+  (177), Not targeted (0)", so 177 IS every country Play offers here.
+
 - 2026-09-08 20:00 ("Allez publie tout"): 404 (0.4.4) LIVE on the internal track (new release, AAB fetched in-page
   from a temporary branch, "Save and publish" + confirmation at screen coordinates), then promoted to the closed
   track "Alpha" (approved overnight: 404 reads "Available to selected testers", released 8 Sept 20:20) ("Promote release" > Closed testing > Alpha copies the bundle and the notes; the review page ends
