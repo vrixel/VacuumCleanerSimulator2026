@@ -61,6 +61,12 @@ Generated with kie.ai from `tools/assets/kie_assets.py` and cut to store sizes b
 
 ## Microsoft Store (PC first, Xbox later)
 
+**Status 2026-09-09 evening: submission 5 (id 1152921505701850054) carries v0.4.7.0 (one size family in the garage,
+the turbo reminder, the garage-selector fix, the brand names painted out of two meshes), notes in `#releaseNotes`,
+0.4.4.0 removed; SUBMITTED for certification at about 19:10 UTC on his "Push everywhere". Same routine as
+submission 4 and no surprises: MSIX on a temporary branch, in-page fetch, one screen-coordinate click per Save,
+"Submit for certification" as a plain element click.**
+
 **Status 2026-09-08 evening: submission 4 (id 1152921505701838982) carries v0.4.4.0 (Win64 build 0.4.4: coloured
 gamepad buttons in the hints, Henry scale, museum nozzles and yaw, plus the 0.4.1-0.4.2 see-through walls, bag
 gauge and bin marker that had only shipped on GitHub), release notes "0.4.4: ..." in `#releaseNotes`, the

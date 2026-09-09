@@ -6,6 +6,10 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 ## Status
 
+- 2026-09-09 21:15 ("Push everywhere"): 407 (0.4.7) live on the internal track and sent for review on the closed
+  track "Alpha", where the paid testers are. Same routine as 404. The paid run keeps going: a new build on a closed
+  track does not restart Google's 14-day clock, it is the track staying active with opted-in testers that counts.
+
 - 2026-09-09 ("go testerscommunity"): THE 12-TESTER RUN IS BOOKED. On testerscommunity.com (his account,
   cosnuau@gmail.com, one Starter credit already paid) the app was submitted: name, plan Starter (15 testers), the
   join link https://play.google.com/apps/testing/com.cosnuau.vacuumcleanersimulator2026, the 256 px icon (fetched
