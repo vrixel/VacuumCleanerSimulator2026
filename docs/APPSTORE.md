@@ -40,8 +40,9 @@ whole garage is finally the same scale.
 You are the vacuum cleaner. The house is filthy. Eat crumbs, socks, chairs and eventually the toilet, then blow it
 all back out.
 
-Vacuum Cleaner Simulator 2026 is a physics sandbox in the spirit of Goat Simulator, except you are the machine and
-the mess is not going to clean itself. Drive through a six-room house, suck up crumbs, dust bunnies, socks, toy
+Vacuum Cleaner Simulator 2026 is a comedy physics sandbox where you are the machine and the mess is not going to
+clean itself. (Do not name another game here: App Review treats a competitor's trademark in the metadata as a
+rejection, which is why "in the spirit of Goat Simulator" and the mention of the Microsoft Store were dropped.) Drive through a six-room house, suck up crumbs, dust bunnies, socks, toy
 bricks and coins, then level up until chairs, the couch, the fridge and the toilet fit in the nozzle. When the bag
 is full, empty it into the bin, or blow everything back out at high speed and start again.
 
@@ -67,11 +68,10 @@ bag needs emptying.
 
 - Family friendly: cartoon chaos, no violence, no language, no ads, no purchases.
 - No account, no sign-in, nothing collected. Your score stays on your device.
-- Also on Windows through the Microsoft Store.
 
 ## Keywords (100 characters max, comma separated, no spaces after commas)
 
-`vacuum,cleaner,simulator,physics,sandbox,funny,silly,cleaning,house,goat,chaos,family,offline,no ads`
+`vacuum,cleaner,simulator,physics,sandbox,funny,silly,cleaning,house,chaos,family,offline,no ads` (95 of 100)
 
 ## What's New in this version
 
