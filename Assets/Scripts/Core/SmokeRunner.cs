@@ -179,11 +179,23 @@ namespace VCS.Core
             GameManager.QuitApp();
         }
 
+        // "-super <n>": the shots come out n times the window size. A player window cannot exceed the monitor, so
+        // store screenshots at 2868 x 1320 or 2752 x 2064 are rendered as a half-size window at super 2.
+        static int SuperSize()
+        {
+            var args = System.Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length - 1; i++)
+                if (args[i] == "-super" && int.TryParse(args[i + 1], out int n) && n >= 1 && n <= 4) return n;
+            return 1;
+        }
+
         IEnumerator Capture(string file)
         {
             string path = Path.Combine(outDir, file);
             yield return new WaitForEndOfFrame();
-            ScreenCapture.CaptureScreenshot(path);
+            int super = SuperSize();
+            if (super > 1) ScreenCapture.CaptureScreenshot(path, super);
+            else ScreenCapture.CaptureScreenshot(path);
             yield return new WaitForSecondsRealtime(0.8f);
             Debug.Log("[VCS] Screenshot " + path);
         }

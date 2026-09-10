@@ -29,6 +29,7 @@ python tools\install-android.py                # Android module + SDK/NDK/JDK fr
 powershell -File tools\make-keystore.ps1        # once: Play upload keystore in D:\Cloclo\Keys (outside the repo), random password saved next to it
 powershell -File tools\build-android.ps1 [-Aab]  # Android APK (adb) or AAB (Play) -> Builds\Android, IL2CPP ARM64, log in Builds\build-android.log
 powershell -File tools\smoke-test.ps1 -Touch -Width 1920 -Height 864   # the phone layer on the PC (stick, buttons, no cockpit): phone-format screenshots
+powershell -File tools\smoke-test.ps1 -Touch -Width 1434 -Height 660 -Super 2   # App Store iPhone 6.9" shots (2868x1320); iPad 13": -Width 1376 -Height 1032 -Super 2
 python tools\install-android.py --target ios       # iOS Build Support module (343 MB, same installer trick): Unity then exports an Xcode project on Windows
 powershell -File toolsuild-ios.ps1 [-Upload]     # export Builds\iOS + Builds\ios-xcode.zip; -Upload puts the zip on the "ios-source" pre-release and dispatches the macOS TestFlight workflow
 ```
@@ -329,6 +330,15 @@ Unity 6 API names in use: `Rigidbody.linearVelocity`, `linearDamping`, `angularD
   ("Need for Speed, aspi detaille et technique en mouvement"): `--style race` builds each picture from the reference
   render alone (drift, sparks, wet reflections, the jump over the dust mountain; icon on flat edge-to-edge yellow).
   Then `tools/marketing.py` (also cuts the Store poster, box art and heroes), then build (exe icon), then `msix.py`.
+- Store screenshots above the monitor size: a player window cannot exceed the display, so `ScreenCapture` is fed a
+  multiplier instead (`-super <n>`, `smoke-test.ps1 -Super 2`): a 1434 x 660 window gives the 2868 x 1320 iPhone 6.9"
+  shot, 1376 x 1032 gives the 2752 x 2064 iPad 13" one. Sets live in `marketing/appstore`; the listing copy, the
+  privacy answers and the remaining steps are in `docs/APPSTORE.md`.
+- The .NET SDK host disappeared from `D:\Program Files\dotnet` (collateral of the ProgramFilesDir incident): the
+  folder kept `sdk/`, `packs/` and the PATH entry but `dotnet.exe` itself was gone, so `compile-check.ps1` failed
+  with "the term 'dotnet' is not recognized" while Unity builds kept working. Restored on 2026-09-10 by unzipping
+  `dotnet-sdk-10.0.400-win-x64.zip` over that folder, no admin needed. If the fast check ever dies that way again,
+  look for the missing host before doubting the script.
 - App icon: `Assets/Icon/icon.png` (512, cut by `tools/marketing.py` from the kie icon) is applied to the Standalone
   and default icon slots by `ProjectSetup.ApplyIcon` on every batch build; the exe shows it.
 - The game page on cosnuau.com is `public/vacuum.html` (a flat file: CloudFront serves the home page for folder URLs, assets in `public/vacuum/`) in `D:\Cloclo\Projects\cosnuau.com` (web-sized JPEGs

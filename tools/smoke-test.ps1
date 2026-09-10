@@ -7,7 +7,8 @@ param(
     [int]$TimeoutSeconds = 100,   # 19 garage models and five phases
     [int]$Width = 1280,
     [int]$Height = 720,
-    [switch]$Touch
+    [switch]$Touch,
+    [int]$Super = 1
 )
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -19,7 +20,8 @@ Remove-Item $log -ErrorAction SilentlyContinue
 Remove-Item (Join-Path $out "smoke-*.png") -ErrorAction SilentlyContinue
 
 $gameArgs = @("-logFile", "`"$log`"", "-screen-fullscreen", "0", "-screen-width", "$Width", "-screen-height", "$Height", "-smoke", "`"$out`"")
-if ($Touch) { $gameArgs += "-touch" }   # the phone layer (stick, buttons, no cockpit) on the PC, for screenshots
+if ($Touch) { $gameArgs += "-touch" }
+if ($Super -gt 1) { $gameArgs += @("-super", "$Super") }   # store screenshots: half-size window, double capture   # the phone layer (stick, buttons, no cockpit) on the PC, for screenshots
 $p = Start-Process -FilePath $exe -ArgumentList $gameArgs -PassThru
 Write-Host "Started pid $($p.Id); waiting up to $TimeoutSeconds s for the smoke run to finish..."
 $finished = $p.WaitForExit($TimeoutSeconds * 1000)
