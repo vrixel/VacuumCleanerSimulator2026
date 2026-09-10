@@ -270,7 +270,11 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   account holder erwan@cosnuau.com invited, and external group "iPhone" for any address that is not on the App
   Store Connect team (his work Apple Account): an external group needs Beta App Review, so adding a build there
   walks a three-step wizard (build, Test Information, What to Test) and the build goes to "Waiting for Review"
-  before the invitation emails leave. Test Information reuses the Amityville answers (feedback and contact
+  before the invitation emails leave, which took over a day on 2026-09-09 and delivered nothing in the meantime. The
+  fast route for someone outside the team is the other way round: invite the address as an App Store Connect user
+  (Users and Access, the "+" button, role Customer Support, access limited to this app), have them accept the team
+  invitation, then add them to the INTERNAL group, where every build is installable at once with no review. A
+  pending user does not show up in the internal tester picker until the invitation is accepted. Test Information reuses the Amityville answers (feedback and contact
   cosnuau@gmail.com, +41784476300, no sign-in required). App Store Connect dialogs open and submit through
   synthetic DOM clicks even while the Windows session is locked (unlike Play Console), so that console needs no
   visible tab; its long text fields (beta description, What to Test) are contenteditable divs, filled with
