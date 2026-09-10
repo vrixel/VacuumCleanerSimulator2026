@@ -8,7 +8,7 @@ the listing, the privacy answers and App Review.
 Screenshots are rendered from the game itself by `tools\smoke-test.ps1 -Touch -Width 1434 -Height 660 -Super 2`
 (iPhone) and `-Width 1376 -Height 1032 -Super 2` (iPad); the player cannot open a window bigger than the monitor,
 so the shots are captured at double the window size. They live in `marketing\appstore`:
-iPhone 6.9" 2868 x 1320 and iPad 13" 2752 x 2064, six each (title, game, turbo, bin, cat, powder).
+iPhone 6.5" 2688 x 1242 and iPad 13" 2752 x 2064, six each (title, game, turbo, bin, cat, powder).
 Apple wants at least one iPhone 6.9" set, and an iPad 13" set because the build ships as iPhone + iPad.
 
 ## App information
