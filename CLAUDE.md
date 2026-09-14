@@ -8,6 +8,8 @@ Vacuum Cleaner Simulator 2026: a Goat-Simulator-style physics sandbox where the 
 Unity 6000.3.23f1, C#, built-in render pipeline, legacy Input Manager. Targets Steam (Windows 64-bit) first,
 Xbox / Microsoft Store second (see `docs/PUBLISHING.md`). Audience 8+, so no violence, no language.
 Repo: https://github.com/vrixel/VacuumCleanerSimulator2026 (private). The repo root is the Unity project root.
+Gameplay ideas waiting for a go (the owner's list of 2026-09-14 and later) live in `docs/IDEAS.md`, each with the
+existing system to build on; when one is built, its notes move into the Architecture section below.
 
 ## Commands
 
@@ -368,6 +370,8 @@ refresh this block. Everything below is a copy, not a second opinion.
 > Vacuum Cleaner Simulator 2026 (Unity, Goat-Simulator-like) — état au 08/09/2026 soir : 0.4.4 partout (Store 0.4.4.0 en ligne, Play interne + test fermé 404 en ligne, TestFlight 404 livré), Xbox impossible ici (ID@Xbox + GDK)
 
 Jeu Unity 6.3 « Vacuum Cleaner Simulator 2026 », dossier D:\Cloclo\Projects\VacuumCleanerSimulator, repo PUBLIC vrixel/VacuumCleanerSimulator2026.
+
+14/09/2026 : sa liste d'idées de gameplay (eau = électrocution, robots qui rentrent à la base, crotte étalée ou nettoyée selon le modèle et qui gicle au vidage, escaliers, robots emmêlés dans des écouteurs, nouveaux niveaux, brillance « squeaky clean », casse qui répand miettes et poussière, animaux, assiettes cassées, autres salissures) notée dans docs/IDEAS.md avec, pour chacune, le système existant sur lequel bâtir et une taille S/M/L. Rien de construit : il choisit, je construis sur son go.
 
 État au 10/09/2026 (14h) :
 - 0.4.7 EN LIGNE PARTOUT : Store 0.4.7.0 publié dans le catalogue public (certification passée dans la nuit),

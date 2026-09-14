@@ -77,3 +77,5 @@ skip all of this and worry about their battery instead.
 - A cat that runs away from the nozzle. A rival robot vacuum.
 - More houses (office, school, spaceship). Mutators unlocked by achievements (magnet mode, giant mode, jet vacuum).
 - Steamworks achievements mirroring `ObjectiveSystem`.
+- The owner's gameplay ideas of 2026-09-14 (water shocks, docking robots, pet mess, stairs, tangled cables, pets,
+  breakables, the clean shine, new levels) are sorted in `docs/IDEAS.md`.
