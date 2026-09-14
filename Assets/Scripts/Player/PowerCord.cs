@@ -37,6 +37,7 @@ namespace VCS.Player
         /// <summary>Cord paid out from the reel, in metres.</summary>
         public float Length { get; private set; }
         public bool Plugged { get; private set; }
+        bool everPlugged;
         public bool Rewinding { get; private set; }
         public bool Taut { get; private set; }
         public WallSocket Socket { get; private set; }
@@ -106,6 +107,9 @@ namespace VCS.Player
 
         public void PlugInto(WallSocket s)
         {
+            // plugging back in after a yank switches the motor on again (the first plug is the run start's)
+            if (everPlugged && !Plugged && GameManager.I != null) GameManager.I.Audio.PlayMotorStart();
+            everPlugged = true;
             Socket = s;
             Plugged = true;
             Rewinding = false;
@@ -291,6 +295,7 @@ namespace VCS.Player
             if (gm != null)
             {
                 gm.Audio.PlayThunk();
+                gm.Audio.PlayMotorStop();
                 gm.Fx.Puff(pos[0] + Vector3.up * 0.3f, Color.white, 10);
                 gm.ShowBanner("PLUG YANKED OUT", "You pulled the plug out of the wall. No power: drive to a socket to plug back in", 3f, false);
                 gm.Objectives.Report("yank");

@@ -1,31 +1,42 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace VCS.Audio
 {
     /// <summary>
-    /// All sound is synthesised at startup (no audio assets): a looping vacuum hum whose pitch follows the action,
-    /// plus short one-shots for pops, hops, blowing, achievements and menus.
+    /// Every sound has a synthesised fallback made at startup (a looping hum whose pitch follows the action, short
+    /// one-shots for pops, hops, blowing, achievements and menus), and most are replaced by generated recordings
+    /// from Resources/Audio/Sfx when present (tools/assets/kie_assets.py). Numbered clips (meow_1, meow_2...) are
+    /// variant sets: one is picked at random each time, so a chase never repeats the same meow twice in a row.
     /// </summary>
     public class GameAudio : MonoBehaviour
     {
         const int Rate = 44100;
 
-        AudioSource hum, sfx, ui, music, suction, reel, turbo;
+        AudioSource hum, sfx, ui, music, suction, reel, turbo, strain, choke, cat;
         AudioClip turboUp, turboLoop, turboDown, turboUpSynth, turboDownSynth;
         float turboVolTarget;
         bool turboOn;
         AudioClip pop, gulp, boing, whoosh, ding, levelUp, clunk, bagFull, start, fanfare, meow;
         AudioClip popReal, bagAlarmReal;
         // generated with kie.ai (tools/assets/kie_assets.py), all optional: the synthesised sounds stay as fallbacks
-        AudioClip suctionLoop, rewindLoop, rewindEnd, absorbSmall, absorbMedium, absorbBig;
+        AudioClip suctionLoop, rewindLoop, rewindEnd;
+        // second generation (2026-09-14, "improve the sound effects"): variant sets for the hose and the cat, the
+        // labouring motor and the choked intake of a full bag, the switch on and off
+        AudioClip[] meows, absorbSmall, absorbMedium, absorbBig;
+        AudioClip yowlReal, motorFull, suctionChoke, motorStart, motorStop;
         float suctionVolTarget, suctionPitchTarget = 1f;
         float reelVolTarget;
         float humVolTarget;
         float humPitchTarget = 0.85f;
+        // how far past 70 % the bag is (0..1): the healthy motor gives way to the labouring one, the intake wheezes
+        float bagK;
+        bool intakeOpen;
         float musicVolTarget;
         const float MusicVolume = 0.32f;
         string currentMusic;
         bool ducked;
+        int loaded, wanted;
 
         public static GameAudio Create(Transform parent)
         {
@@ -36,21 +47,54 @@ namespace VCS.Audio
             return a;
         }
 
+        AudioClip Load(string name)
+        {
+            wanted++;
+            var clip = Resources.Load<AudioClip>("Audio/Sfx/" + name);
+            if (clip != null) loaded++;
+            return clip;
+        }
+
+        /// <summary>name_1, name_2... until one is missing.</summary>
+        AudioClip[] LoadSet(string name)
+        {
+            var list = new List<AudioClip>();
+            for (int i = 1; i <= 8; i++)
+            {
+                var clip = Resources.Load<AudioClip>("Audio/Sfx/" + name + "_" + i);
+                if (clip == null) break;
+                list.Add(clip);
+            }
+            wanted++;
+            if (list.Count > 0) loaded++;
+            return list.ToArray();
+        }
+
+        static AudioClip Pick(AudioClip[] set) => set == null || set.Length == 0 ? null : set[Random.Range(0, set.Length)];
+
         void Init()
         {
             // a real motor recording (generated with kie.ai) replaces the synthesised hum when present
-            var motor = Resources.Load<AudioClip>("Audio/Sfx/motor_loop");
-            popReal = Resources.Load<AudioClip>("Audio/Sfx/pop_real");
-            bagAlarmReal = Resources.Load<AudioClip>("Audio/Sfx/bag_alarm");
-            suctionLoop = Resources.Load<AudioClip>("Audio/Sfx/suction_loop");
-            rewindLoop = Resources.Load<AudioClip>("Audio/Sfx/rewind_loop");
-            rewindEnd = Resources.Load<AudioClip>("Audio/Sfx/rewind_end");
-            absorbSmall = Resources.Load<AudioClip>("Audio/Sfx/absorb_small");
-            absorbMedium = Resources.Load<AudioClip>("Audio/Sfx/absorb_medium");
-            absorbBig = Resources.Load<AudioClip>("Audio/Sfx/absorb_big");
-            turboUp = Resources.Load<AudioClip>("Audio/Sfx/turbo_up");
-            turboLoop = Resources.Load<AudioClip>("Audio/Sfx/turbo_loop");
-            turboDown = Resources.Load<AudioClip>("Audio/Sfx/turbo_down");
+            var motor = Load("motor_loop");
+            motorFull = Load("motor_full");
+            motorStart = Load("motor_start");
+            motorStop = Load("motor_stop");
+            popReal = Load("pop_real");
+            bagAlarmReal = Load("bag_alarm");
+            suctionLoop = Load("suction_loop");
+            suctionChoke = Load("suction_choke");
+            rewindLoop = Load("rewind_loop");
+            rewindEnd = Load("rewind_end");
+            absorbSmall = LoadSet("absorb_small");
+            absorbMedium = LoadSet("absorb_medium");
+            absorbBig = LoadSet("absorb_big");
+            meows = LoadSet("meow");
+            yowlReal = Load("yowl");
+            turboUp = Load("turbo_up");
+            turboLoop = Load("turbo_loop");
+            turboDown = Load("turbo_down");
+            Debug.Log("[VCS] Audio: " + loaded + "/" + wanted + " generated sounds, " + meows.Length + " meows, "
+                      + absorbSmall.Length + "/" + absorbMedium.Length + "/" + absorbBig.Length + " hose hits");
 
             music = gameObject.AddComponent<AudioSource>();
             music.loop = true;
@@ -72,10 +116,18 @@ namespace VCS.Audio
             sfx.playOnAwake = false;
             sfx.spatialBlend = 0f;
 
+            // the cat has its own source: PlayOneShot clips follow their source's pitch, so the cat's jitter must
+            // never bend a hose hit that is still ringing, nor the other way round
+            cat = gameObject.AddComponent<AudioSource>();
+            cat.playOnAwake = false;
+            cat.spatialBlend = 0f;
+
             // the airflow at the nozzle, louder when things are being pulled; the cord reel while rewinding
             suction = LoopSource(suctionLoop);
             reel = LoopSource(rewindLoop);
             turbo = LoopSource(turboLoop);
+            strain = LoopSource(motorFull);
+            choke = LoopSource(suctionChoke);
             // without the generated clips the boost still speaks: a rising and a falling sweep
             turboUpSynth = Sweep("turboup", 0.7f, 220f, 1100f, 1.2f, 0.45f, 0.25f);
             turboDownSynth = Sweep("turbodown", 0.8f, 1100f, 260f, 2.2f, 0.4f, 0.25f);
@@ -259,6 +311,17 @@ namespace VCS.Audio
             suctionPitchTarget = on ? 0.92f + 0.25f * activity : 0.92f;
         }
 
+        /// <summary>
+        /// How full the bag is (0..1) and whether the intake is on the floor and sucking. From 70 % the healthy
+        /// motor loop gives way to the labouring one and the nozzle airflow thins into a choked whistle; at 100 %
+        /// the motor is all strain and the intake all wheeze. Nothing here touches physics: that is the bag itself.
+        /// </summary>
+        public void SetBag(float fill01, bool open)
+        {
+            bagK = Mathf.SmoothStep(0f, 1f, (Mathf.Clamp01(fill01) - 0.7f) / 0.3f);
+            intakeOpen = open;
+        }
+
         /// <summary>The cord reel spinning; the end clack plays when it stops after having run.</summary>
         public void SetRewind(bool on)
         {
@@ -284,12 +347,26 @@ namespace VCS.Audio
         void Update()
         {
             float dt = Time.unscaledDeltaTime;
-            hum.volume = Mathf.Lerp(hum.volume, humVolTarget, 1f - Mathf.Exp(-dt * 6f));
-            hum.pitch = Mathf.Lerp(hum.pitch, humPitchTarget, 1f - Mathf.Exp(-dt * 5f));
+            // the labouring loop takes over from the healthy one as the bag fills; both follow the same intensity
+            float humVol = humVolTarget * (strain != null ? 1f - 0.6f * bagK : 1f);
+            hum.volume = Mathf.Lerp(hum.volume, humVol, 1f - Mathf.Exp(-dt * 6f));
+            hum.pitch = Mathf.Lerp(hum.pitch, humPitchTarget * (1f + 0.06f * bagK), 1f - Mathf.Exp(-dt * 5f));
+            if (strain != null)
+            {
+                strain.volume = Mathf.Lerp(strain.volume, humVolTarget * 1.2f * bagK, 1f - Mathf.Exp(-dt * 4f));
+                strain.pitch = Mathf.Lerp(strain.pitch, 0.9f + 0.2f * bagK, 1f - Mathf.Exp(-dt * 3f));
+            }
             if (suction != null)
             {
-                suction.volume = Mathf.Lerp(suction.volume, suctionVolTarget, 1f - Mathf.Exp(-dt * 5f));
+                float sv = suctionVolTarget * (choke != null ? 1f - 0.7f * bagK : 1f);
+                suction.volume = Mathf.Lerp(suction.volume, sv, 1f - Mathf.Exp(-dt * 5f));
                 suction.pitch = Mathf.Lerp(suction.pitch, suctionPitchTarget, 1f - Mathf.Exp(-dt * 4f));
+            }
+            if (choke != null)
+            {
+                // the intake keeps wheezing once the bag is full, when SetSuction has been told to go quiet
+                float cv = intakeOpen && humVolTarget > 0f ? 0.55f * bagK : 0f;
+                choke.volume = Mathf.Lerp(choke.volume, cv, 1f - Mathf.Exp(-dt * 4f));
             }
             if (reel != null) reel.volume = Mathf.Lerp(reel.volume, reelVolTarget, 1f - Mathf.Exp(-dt * 12f));
             if (turbo != null)
@@ -328,17 +405,41 @@ namespace VCS.Audio
         public void PlayPop(int sizeClass)
         {
             bool big = sizeClass >= 3;
+            // generated hits by size class, one variant at random: socks and coins race up the hose, blocks and
+            // books rattle up the pipe, furniture bonks the drum; recordings take only a small pitch jitter
+            AudioClip real = Pick(sizeClass <= 1 ? absorbSmall : (sizeClass == 2 ? absorbMedium : absorbBig));
+            if (real != null)
+            {
+                sfx.pitch = Random.Range(0.94f, 1.08f) - (big ? 0.04f : 0f);
+                sfx.PlayOneShot(real, big ? 1.0f : 0.8f);
+                return;
+            }
             sfx.pitch = Random.Range(0.92f, 1.18f) - sizeClass * 0.06f;
-            // generated hits by size class: socks and crumbs thwip, blocks rattle up the hose, furniture bonks the drum
-            AudioClip real = sizeClass <= 1 ? absorbSmall : (sizeClass == 2 ? absorbMedium : absorbBig);
-            if (real != null) { sfx.PlayOneShot(real, big ? 1.0f : 0.75f); return; }
             if (!big && popReal != null && Random.value < 0.5f) { sfx.PlayOneShot(popReal, 0.6f); return; }
             sfx.PlayOneShot(big ? gulp : pop, big ? 0.9f : 0.55f);
         }
 
         public void PlayBoing() { sfx.pitch = Random.Range(0.95f, 1.1f); sfx.PlayOneShot(boing, 0.5f); }
-        public void PlayMeow() { sfx.pitch = Random.Range(0.9f, 1.15f); sfx.PlayOneShot(meow, 0.6f); }
-        public void PlayYowl() { sfx.pitch = 0.72f; sfx.PlayOneShot(meow, 0.9f); }
+
+        /// <summary>One cat cry, a different recording each time; the synthesised meow when none is present.</summary>
+        public void PlayMeow()
+        {
+            var real = Pick(meows);
+            if (real != null) { cat.pitch = Random.Range(0.96f, 1.06f); cat.PlayOneShot(real, 0.75f); return; }
+            cat.pitch = Random.Range(0.9f, 1.15f); cat.PlayOneShot(meow, 0.6f);
+        }
+
+        public void PlayYowl()
+        {
+            if (yowlReal != null) { cat.pitch = Random.Range(0.97f, 1.03f); cat.PlayOneShot(yowlReal, 0.95f); return; }
+            cat.pitch = 0.72f; cat.PlayOneShot(meow, 0.9f);
+        }
+
+        /// <summary>The switch: the motor spinning up from silence (run start, plugging back in).</summary>
+        public void PlayMotorStart() { if (motorStart != null) { sfx.pitch = 1f; sfx.PlayOneShot(motorStart, 0.8f); } }
+        /// <summary>The motor winding down to silence (plug yanked out, back to the title).</summary>
+        public void PlayMotorStop() { if (motorStop != null) { sfx.pitch = 1f; sfx.PlayOneShot(motorStop, 0.8f); } }
+
         public void PlayClick() { ui.pitch = 1.35f; ui.PlayOneShot(pop, 0.35f); }
         /// <summary>One tooth of the cord reel: a tiny click, pitch jittered so the run sounds mechanical.</summary>
         public void PlayRatchet() { sfx.pitch = Random.Range(1.6f, 2.1f); sfx.PlayOneShot(clunk, 0.18f); }

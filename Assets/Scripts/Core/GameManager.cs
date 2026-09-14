@@ -18,7 +18,7 @@ namespace VCS.Core
     public class GameManager : MonoBehaviour
     {
         public const string GameName = "Vacuum Cleaner Simulator 2026";
-        public const string Version = "0.4.7";
+        public const string Version = "0.4.8";
         public const int MaxPower = 5;
         public static readonly int[] PowerThresholds = { 0, 300, 1000, 2500, 5000 };
 
@@ -116,6 +116,7 @@ namespace VCS.Core
         void EnterTitle()
         {
             Debug.Log("[VCS] Title screen");
+            if (State == GameState.Playing || State == GameState.Paused) Audio.PlayMotorStop();
             State = GameState.Title;
             Time.timeScale = 1f;
             if (Player != null) { Destroy(Player.gameObject); Player = null; }
@@ -161,6 +162,7 @@ namespace VCS.Core
             Cursor.lockState = SmokeMode || GameInput.TouchMode ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = SmokeMode || GameInput.TouchMode;
             Audio.PlayStart();
+            Audio.PlayMotorStart();
             Debug.Log("[VCS] Run started, seed " + seed + ", mess " + Level.MessTotal + ", vacuum " + Player.Spec.Id);
         }
 

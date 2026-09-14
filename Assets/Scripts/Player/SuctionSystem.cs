@@ -92,13 +92,14 @@ namespace VCS.Player
             Blowing = active && powered && GameInput.Blow;
             if (Blowing && !wasBlowing) gm.Audio.PlayWhoosh();
             wasBlowing = Blowing;
-            if (!active) { Activity = 0f; gm?.Audio.SetSuction(0f, false); return; }
+            if (!active) { Activity = 0f; gm?.Audio.SetSuction(0f, false); gm?.Audio.SetBag(0f, false); return; }
             if (!powered)
             {
                 Activity = 0f;
                 if (swirl != null) { var em0 = swirl.emission; em0.rateOverTimeMultiplier = 0f; }
                 gm.Audio.SetHum(0f, false);
                 gm.Audio.SetSuction(0f, false);
+                gm.Audio.SetBag(0f, false);
                 return;
             }
 
@@ -113,6 +114,8 @@ namespace VCS.Player
             float humVolume = spec != null ? spec.HumVolume : 1f;
             gm.Audio.SetHum((0.35f + intensity * 0.65f) * humVolume, Blowing);
             gm.Audio.SetSuction(Activity, !Blowing && !BagFull && vac.Grounded);
+            // the motor labours and the intake wheezes as the bag fills, and keeps wheezing once it is full
+            gm.Audio.SetBag(BagCapacity > 0f ? BagFill / BagCapacity : 0f, !Blowing && vac.Grounded);
         }
 
         void Suck(GameManager gm)

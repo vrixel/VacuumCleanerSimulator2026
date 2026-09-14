@@ -36,6 +36,9 @@ namespace VCS.World
         float fleeTimer;
         float gait;
         float scaredCooldown;
+        // the chase soundtrack (2026-09-14, "chat qui miaule quand tu le poursuis"): while fleeing with the vacuum
+        // close behind, a cry every second or so, a different recording each time
+        float meowTimer;
         float hopCooldown;
         readonly RaycastHit[] hits = new RaycastHit[16];
         LevelBuilder level;
@@ -157,6 +160,12 @@ namespace VCS.World
                         Vector3 dir = dist > 0.01f ? away / dist : transform.forward;
                         wish = Steer(dir, 2.2f);
                         speed = FleeSpeed;
+                        meowTimer -= dt;
+                        if (meowTimer <= 0f && active && dist < scareRadius * 1.6f)
+                        {
+                            meowTimer = Random.Range(0.9f, 1.7f);
+                            gm.Audio.PlayMeow();
+                        }
                         // Nearly caught: a panic hop sideways gets it out from under the nozzle.
                         if (dist < 1.3f && hopCooldown <= 0f)
                         {
@@ -240,6 +249,8 @@ namespace VCS.World
             if ((wasCalm || bumped) && scaredCooldown <= 0f)
             {
                 scaredCooldown = bumped ? 0.8f : 3f;
+                meowTimer = 1.1f; // the scare itself cries out below; the chase cries start after
+
                 var gm = GameManager.I;
                 if (gm != null) gm.OnCatScared(this, bumped);
             }
