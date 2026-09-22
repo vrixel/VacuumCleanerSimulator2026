@@ -6,13 +6,18 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 ## Status
 
-- 2026-09-22 (the 0.4.9 publish pass, "make sure the marketplaces are all good and publish it all"): the 409 AAB
-  (`app_v049_d.aab`, navy icon, tutorial, store links) is built and parked on the temporary branch `aab-upload`.
-  The internal release "409 (0.4.9)" with **WN** as notes, the promotion to the closed test Alpha, the listing
-  refresh (**S2**, **D** + **P-TOUCH**, the navy feature graphic, phone-01..08, the fused pictures at the head)
-  and "Submit for review" all wait for an UNLOCKED Windows session with the tab visible: the Play dialogs never
-  open in a hidden tab (lesson below). Delete `aab-upload` afterwards. Production access stays his click after
-  the 14-day closed test (about 2026-09-25).
+- 2026-09-22 evening ("finalise", session unlocked): 409 (0.4.9) DONE ON PLAY. The AAB went up on the internal
+  track, the release was promoted to the closed test Alpha ("start full rollout"), and the listing was refreshed
+  from the matrix: **S2** as the short description (76 characters), **D** + **P-TOUCH** + the credits line as the
+  full description (2438), the navy icon (`marketing/icon/icon_512.png`, his "N'oublie pas l'icône de l'app": the
+  yellow one was still in the slot), the navy feature graphic, phone pictures = the six fused pictures 01-toilet,
+  02-garage, 03-cat, 04-turbo, 05-cord, 06-blowout then phone-01-game and phone-08-tutorial, and the eight touch
+  captures phone-1..8 in both tablet slots. "Send 8 changes for review" confirmed: the Publishing overview shows
+  "Changes in review" (the Alpha rollout plus seven listing changes). Lessons: the order of a slot is the order of
+  the individual Add clicks, a multi-file drop lands in processing order, so add one asset per Add; the footer
+  Save button is laid out off screen but a DOM click on `button[debug-id="main-button"]` works and the "Go to
+  Publishing overview?" dialog confirms the save. Temporary branch `aab-upload` deleted. Production access stays
+  his click after the 14-day closed test (about 2026-09-25), questionnaire answers below.
 - 2026-09-22 ("take their feedback in consideration and implement the recommendations"): THE TESTERS COMMUNITY
   REPORT IS IN (mail of 2026-09-15, two PDFs, copies in Drive under 91 Rivers Labs / Active Projects /
   VacuumCleanerSimulator: the feedback report and the "Production Access Questionnaire" answers). Verdict: no

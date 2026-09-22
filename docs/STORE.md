@@ -42,6 +42,21 @@ store sizes by `tools/marketing.py`; screenshots, gallery, wordmark and trailer 
 
 ## Microsoft Store (PC first, Xbox later)
 
+**Status 2026-09-22 evening: submission 7 (id 1152921505701954365) adds THE TRAILER to the live 0.4.9 listing,
+everything else unchanged (package v0.4.9.0 validated). SUBMITTED for certification about 16:40 UTC on his
+"finalise", status "In certification" (pre-processing). How the trailer pane took the files, in a VISIBLE tab:
+the mp4 (fetched in page from the temporary branch, wrapped in a `File`) goes on the hidden
+`#video-upload-input` with a dispatched `change` AND a `DragEvent('drop')` carrying the same `DataTransfer` on the
+pane's drop zone; each of the two fires once, so the table showed the trailer twice and one row was deleted
+(row checkbox, Delete, "From this Store listing only"). The thumbnail needs the SAME pair on the pane's own
+`input#image-upload-input` (set the files, dispatch `change`, then the drop on its `.asset-card`): the drop alone
+did nothing. Then "Add image caption" (required; caption "Vacuum Cleaner Simulator 2026 trailer"), OK by a DOM
+click on the dialog's button (a screen click on it closed the whole pane and lost the thumbnail), close the pane
+with its X (in the `he-fly-in-panel` shadow root, a screen click at its top-right corner), choose the trailer in
+"Choose a trailer to play at the top of your Store listing", Save at screen coordinates (lands on the Game
+overview). The trailer and the choice survive a reload. "Submit for certification" needed a real screen click this
+time (the DOM click on the freshly rendered he-button did nothing). Temporary branch `msix-upload` deleted.**
+
 **Status 2026-09-22: submission 6 (id 1152921505701949322) carries v0.4.9.0 (tutorial, store links, rating
 nudge, the navy icon) with the matrix texts (`STORE-MATRIX.md`: **S1** as the short title, **D** + **P-PC** and the
 credits line, 2362 characters, **WN** as the release notes; LIVE in the public catalogue at 10:27 UTC the same
