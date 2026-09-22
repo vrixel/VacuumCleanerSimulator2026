@@ -35,9 +35,10 @@ iPad 13" 2752 x 2064 (`ipad13-NN-slug.png`), eight each, the same eight subjects
 
 All in `STORE-MATRIX.md` (2026-09-22, one source for the three stores): **S3** the subtitle (30 max, 22),
 **PROMO** (170 max, 162), **D** with the touch paragraph **P-TOUCH** and no URL, **KW** (100 max, 97, no word of
-the title), **WN** for 0.4.9, and the review notes. What the version 1.0 page holds today is the 0.4.7 text ("New
-in 0.4.7", "twenty silly achievements"): replace it from the matrix before "Add for Review". Never name another
-game or another store in the metadata: App Review treats a competitor's trademark as a rejection.
+the title), **WN** for 0.4.9, and the review notes. The version 1.0 page holds the matrix text since 2026-09-22 (promo 162,
+description 2224 without the credits line, keywords 97, review notes 389; the React fields take the native value
+setter plus input and change events, and Save turns on). Never name another game or another store in the
+metadata: App Review treats a competitor's trademark as a rejection.
 
 ## The steps left, in order
 
@@ -46,6 +47,20 @@ game or another store in the metadata: App Review treats a competitor's trademar
 3. Pricing and Availability: Free, all territories.
 4. App Privacy: "Data Not Collected", publish.
 5. Version 1.0: description, keywords, promotional text, support URL, screenshots from `marketing\appstore`,
-   the build (pick 407), review notes, export compliance.
+   the build (409), review notes, export compliance. DONE 2026-09-22 (screenshots: "Delete All" per device, then
+   the eight files on the media input, fetched in-page from the temporary branch `ios-shots`; build: "Delete" on
+   the 407 row, "Add Build", the 409 radio, Done, Save).
 6. "Add for Review", then Submit. Review is usually a day or two; there is no tester requirement and no waiting
-   period. Rejections at this stage are usually metadata, not code.
+   period. Rejections at this stage are usually metadata, not code. The first "Add for Review" of 2026-09-22
+   refused for one missing item, Content Rights in App Information: set to "contains third-party content, rights
+   held" (CC-BY meshes, OFL fonts). Hidden-tab lesson (the Windows session was
+   locked): the SPA's localisation request `/WebObjects/iTunesConnect.woa/ra/l10n-managed` times out at 10 s in a
+   throttled hidden tab, so the header primary button and every dialog render with empty labels and nothing can be
+   clicked with meaning. The console's own JSON API works from the page instead (`fetch` with `credentials:
+   'include'`, Accept/Content-Type application/json, no CSRF header): `POST /iris/v1/reviewSubmissions`
+   (platform IOS, relationship app) + `POST /iris/v1/reviewSubmissionItems` (relationships reviewSubmission and
+   appStoreVersion) = "Add for Review" (done 2026-09-22, submission d0bffbf7-6a99-42d9-8155-519529054c1b,
+   version READY_FOR_REVIEW); `PATCH /iris/v1/reviewSubmissions/{id}` with `attributes.submitted=true` = "Submit
+   to App Review", which is exactly what the button sends (read in the bundle's `PatchReviewSubmissionAPI`) and
+   which returned HTTP 504 from Apple's edge four times on 2026-09-22 (about 21 s each, state unchanged). LEFT TO
+   HIM: "Submit to App Review" on App Store Connect > App Review. Review then takes a day or two.

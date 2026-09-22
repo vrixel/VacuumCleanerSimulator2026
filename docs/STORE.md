@@ -42,6 +42,21 @@ store sizes by `tools/marketing.py`; screenshots, gallery, wordmark and trailer 
 
 ## Microsoft Store (PC first, Xbox later)
 
+**Status 2026-09-22: submission 6 (id 1152921505701949322) carries v0.4.9.0 (tutorial, store links, rating
+nudge, the navy icon) with the matrix texts (`STORE-MATRIX.md`: **S1** as the short title, **D** + **P-PC** and the
+credits line, 2362 characters, **WN** as the release notes; LIVE in the public catalogue at 10:27 UTC the same
+morning, certification took about an hour), ten desktop screenshots (the eight fused pictures
+01-08, then 01-game and 08-tutorial of `marketing/store/screens`), poster, box art, 300 px icon and super hero from
+the navy set; 0.4.7.0 removed. SUBMITTED for certification about 09:30 UTC with the Windows session LOCKED: every
+click was a DOM click, every upload an in-page fetch from the temporary branch `msix-upload`. Lessons: (1) the
+desktop screenshot slot caps at TEN, the overflow of a twelve-file drop lands in the Xbox tab, which then has to
+be emptied (Xbox screenshots on a PC-only listing are a certification warning); (2) the trailer pane
+(`#video-upload-input` after the visible "Upload" button of "Trailers and additional assets") never processes a
+video in a hidden tab, so the trailer waits for submission 7 in a VISIBLE tab after his unlock
+(`img6_video_trailer_1920x1080.mp4` + `img6_video_trailer_poster.png` are still on `msix-upload`, keep the branch
+until then); (3) "Submission options" is a span router link with no href and the direct URL redirects to the
+overview: not needed, the certification notes carry over from earlier submissions.**
+
 **Status 2026-09-09 evening: submission 5 (id 1152921505701850054) carries v0.4.7.0 (one size family in the garage,
 the turbo reminder, the garage-selector fix, the brand names painted out of two meshes), notes in `#releaseNotes`,
 0.4.4.0 removed; SUBMITTED for certification at about 19:10 UTC on his "Push everywhere". Same routine as

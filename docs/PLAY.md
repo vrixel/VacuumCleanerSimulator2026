@@ -6,6 +6,13 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 ## Status
 
+- 2026-09-22 (the 0.4.9 publish pass, "make sure the marketplaces are all good and publish it all"): the 409 AAB
+  (`app_v049_d.aab`, navy icon, tutorial, store links) is built and parked on the temporary branch `aab-upload`.
+  The internal release "409 (0.4.9)" with **WN** as notes, the promotion to the closed test Alpha, the listing
+  refresh (**S2**, **D** + **P-TOUCH**, the navy feature graphic, phone-01..08, the fused pictures at the head)
+  and "Submit for review" all wait for an UNLOCKED Windows session with the tab visible: the Play dialogs never
+  open in a hidden tab (lesson below). Delete `aab-upload` afterwards. Production access stays his click after
+  the 14-day closed test (about 2026-09-25).
 - 2026-09-22 ("take their feedback in consideration and implement the recommendations"): THE TESTERS COMMUNITY
   REPORT IS IN (mail of 2026-09-15, two PDFs, copies in Drive under 91 Rivers Labs / Active Projects /
   VacuumCleanerSimulator: the feedback report and the "Production Access Questionnaire" answers). Verdict: no

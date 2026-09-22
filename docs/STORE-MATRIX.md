@@ -165,15 +165,25 @@ a low motor hum) into `marketing/video/trailer_1920x1080.mp4` with a poster fram
 
 ## Gaps and next clicks
 
-- Microsoft Store: the live listing has four uncaptioned 0.4.0-era screenshots and the racing-style key art. Next
-  submission (0.4.9): the ten captioned screens, the trailer, **S1** and **D** + **P-PC**, **WN**.
-- Google Play: the live listing has the eight 0.4.2 phone shots and the old feature graphic. On the production
-  release: the eight captioned phone shots, the new feature graphic, the YouTube link to the trailer, **S2** and
-  **D** + **P-TOUCH**, **WN**. The Play name and the App Store name are the same 29 characters.
-- App Store: the version 1.0 page carries the 0.4.7 shots, the 0.4.7 promo text and "twenty achievements". Before
-  "Add for Review": the eight iPhone 6.5" and eight iPad 13" captioned shots, **PROMO**, **D** + **P-TOUCH**, **KW**,
-  **WN**, and build 409 once it is on TestFlight.
-- The icon: chosen and cut (2026-09-22); the Win64 build, the MSIX and the AAB carry it. The iOS export
-  (`tools\build-ios.ps1 -Upload`) still has to run for TestFlight build 409 to carry it.
+- Microsoft Store (2026-09-22): submission 6 LIVE (0.4.9.0 in the public catalogue at 10:27 UTC) with **S1**, **D** + **P-PC**, **WN**, the
+  ten screens (fused 01-08 + 01-game + 08-tutorial: the desktop slot caps at ten, so the two cockpit-only screens
+  stay out) and the navy images. The trailer is NOT in it: the upload pane needs a visible tab (see `STORE.md`),
+  submission 7 after his unlock.
+- Google Play: the live listing has the eight 0.4.2 phone shots and the old feature graphic. The 409 AAB is on the
+  temporary branch `aab-upload`; the internal release, the promotion to the closed test and the listing (the eight
+  captioned phone shots, the new feature graphic, the YouTube link to the trailer, **S2** and **D** + **P-TOUCH**,
+  **WN**) wait for an UNLOCKED session with a visible tab. The Play name and the App Store name are the same 29
+  characters.
+- App Store (2026-09-22): the version 1.0 page carries **PROMO**, **D** + **P-TOUCH** (no credits line), **KW**,
+  the review notes, the eight iPhone 6.5" and eight iPad 13" captioned shots (from the temporary branch
+  `ios-shots`, in-page fetch onto the media input, "Delete All" first: the slot refuses a drop that would exceed
+  ten), build 409, automatic release. Content Rights in App Information was the one item "Add for Review" still
+  demanded: set to "contains third-party content, rights held" (the CC-BY meshes and the OFL fonts).
+  "Add for Review" DONE 2026-09-22 about 11:00 UTC through the console's own JSON API (same-origin
+  `/iris/v1/reviewSubmissions` + `reviewSubmissionItems`, see `APPSTORE.md`): the version is READY_FOR_REVIEW inside
+  review submission d0bffbf7-6a99-42d9-8155-519529054c1b. "Submit to App Review" (the PATCH `submitted=true` the
+  button itself sends) came back HTTP 504 from Apple's edge four times in forty minutes with the state unchanged,
+  so that last click is HIS: App Store Connect > App Review, the submission is prepared with version 1.0 in it.
+- The icon: chosen and cut (2026-09-22); the Win64 build, the MSIX, the AAB and TestFlight 409 carry it.
 - App Preview video for the App Store: needs device-size footage (the record mode can run the touch layer at the
   iPhone window size); not started.
