@@ -18,7 +18,7 @@ namespace VCS.Core
     public class GameManager : MonoBehaviour
     {
         public const string GameName = "Vacuum Cleaner Simulator 2026";
-        public const string Version = "0.4.8";
+        public const string Version = "0.4.9";
         public const int MaxPower = 5;
         public static readonly int[] PowerThresholds = { 0, 300, 1000, 2500, 5000 };
 
@@ -52,6 +52,7 @@ namespace VCS.Core
         public GameAudio Audio { get; private set; }
         public EffectsFactory Fx { get; private set; }
         public Telemetry Telemetry { get; } = new Telemetry();
+        public Tutorial Tutorial { get; private set; }
 
         struct Banner { public string Big; public string Small; public float Duration; public bool Must; }
         // His feedback (2026-09-06): a splash every few seconds in the middle of the screen hid the vacuum. Splashes
@@ -102,6 +103,7 @@ namespace VCS.Core
             RenderingSetup.Attach(Cam.Cam);
             Hud = HudController.Create();
             Menu = MenuController.Create();
+            Tutorial = new Tutorial(Hud);
             if (GameInput.TouchMode) TouchControls.Create();
             Menu.OnTitleStart = StartGame;
             Menu.OnPauseSelect = OnPauseMenu;
@@ -153,7 +155,9 @@ namespace VCS.Core
             Hud.SetPower(Player.Spec.Name, PowerLevel, PropFactory.EatLabel(PowerLevel + Player.Spec.SizeBonus));
             Audio.PlayMusic("game");
             Audio.DuckMusic(false);
-            if (GameInput.TouchMode) Hud.ShowHint("Left stick drives, right buttons act. Drag the free part of the screen to look around.", 8f);
+            Tutorial.Begin(false);
+            if (Tutorial.Active) { }   // the walkthrough owns the hint line for its six steps
+            else if (GameInput.TouchMode) Hud.ShowHint("Left stick drives, right buttons act. Drag the free part of the screen to look around.", 8f);
             else Hud.ShowHint(Player.Spec.Cordless
                 ? "WASD / left stick: drive     SPACE / " + UIStyle.Pad("A") + ": hop     SHIFT / " + UIStyle.Pad("RB") + ": turbo     E / " + UIStyle.Pad("B") + ": blow     F / " + UIStyle.Pad("X") + ": empty bag at the bin     ESC / " + UIStyle.Pad("Start") + ": pause"
                 : "WASD / left stick: drive     SPACE / " + UIStyle.Pad("A") + ": hop     SHIFT / " + UIStyle.Pad("RB") + ": turbo     E / " + UIStyle.Pad("B") + ": blow     F / " + UIStyle.Pad("X") + ": empty bag at the bin     R / " + UIStyle.Pad("Y") + ": rewind the cord     ESC: pause", 14f);
@@ -172,6 +176,7 @@ namespace VCS.Core
             State = GameState.Paused;
             Time.timeScale = 0f;
             Menu.ShowPause();
+            Hud.SetBinPrompt(false);   // it drew over the menu plates (smoke-pause.png, 2026-09-22); the next Playing frame brings it back
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             Audio.SetHum(0f, false);
@@ -195,7 +200,13 @@ namespace VCS.Core
             {
                 case 0: Resume(); break;
                 case 1: Time.timeScale = 1f; StartGame(); break;
-                case 2: EnterTitle(); break;
+                case 2:
+                    // skip the running walkthrough, or replay it from the start on a finished one
+                    if (Tutorial.Active) Tutorial.Skip(); else Tutorial.Begin(true);
+                    Resume();
+                    break;
+                case 3: StoreLinks.OpenRate(); break;
+                case 4: EnterTitle(); break;
                 default: QuitApp(); break;
             }
         }
@@ -218,6 +229,7 @@ namespace VCS.Core
         void TeachTurbo(float dt)
         {
             if (Player == null || PlayerPrefs.GetInt(TurboLearnedKey, 0) != 0) return;
+            if (Tutorial.Active) { turboNagTimer = 0f; return; }   // the walkthrough teaches it in its own turn
             if (Player.Turbo)
             {
                 PlayerPrefs.SetInt(TurboLearnedKey, 1);
@@ -239,7 +251,9 @@ namespace VCS.Core
             if (State == GameState.Playing)
             {
                 PlayTime += Time.deltaTime;
+                Tutorial.Tick(this, Time.deltaTime);
                 TeachTurbo(Time.deltaTime);
+                NudgeRating();
                 if (GameInput.PauseDown) { Pause(); return; }
                 if (ComboTimeLeft > 0f)
                 {
@@ -315,6 +329,7 @@ namespace VCS.Core
             Telemetry.OnItemIngested(d.SizeClass);
             Objectives.Report("absorb:" + d.Kind);
             Objectives.Report("absorb:any");
+            Tutorial.Report("absorb");
             Audio.PlayPop(d.SizeClass);
             Fx.Puff(d.transform.position, d.PuffColor, 6 + d.SizeClass * 4);
             if (d.SizeClass >= 3)
@@ -376,6 +391,19 @@ namespace VCS.Core
             ShowBanner("TRASH DAY!", "+" + bonus + " bonus for " + items + " things thrown away", 2f);
             Audio.PlayClunk();
             Fx.Puff(Level.Bin.transform.position + Vector3.up, new Color(0.5f, 0.5f, 0.5f), 30);
+        }
+
+        // The rating invitation (Testers Community, 2026-09-15): once ever, after a few minutes of play and a few
+        // achievements, to every player alike, no sentiment filter. It is a toast, never a dialog, and it names the
+        // pause menu, where RATE THIS GAME lives on every platform.
+        const string RateNudgedKey = "rate_nudged";
+
+        void NudgeRating()
+        {
+            if (PlayTime < 240f || Objectives.DoneCount < 3 || Tutorial.Active || PlayerPrefs.GetInt(RateNudgedKey, 0) != 0) return;
+            PlayerPrefs.SetInt(RateNudgedKey, 1);
+            PlayerPrefs.Save();
+            ShowToast("ENJOYING THE CHAOS?", "Rate the game from the pause menu, it helps a lot");
         }
 
         void OnObjectiveCompleted(Objective o)

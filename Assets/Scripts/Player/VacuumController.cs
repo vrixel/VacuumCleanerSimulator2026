@@ -88,7 +88,7 @@ namespace VCS.Player
         void Update()
         {
             var gm = GameManager.I;
-            if (gm != null && gm.State == GameState.Playing && GameInput.HopDown) hopQueued = true;
+            if (gm != null && gm.State == GameState.Playing && GameInput.HopDown) { hopQueued = true; gm.Tutorial.Report("hop"); }
         }
 
         void FixedUpdate()

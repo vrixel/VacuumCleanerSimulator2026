@@ -553,6 +553,12 @@ namespace VCS.UI
             hintDur = duration;
         }
 
+        public void HideHint()
+        {
+            hintDur = 0f;
+            hintGroup.alpha = 0f;
+        }
+
         void Update()
         {
             float dt = Time.unscaledDeltaTime;

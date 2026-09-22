@@ -48,6 +48,11 @@ namespace VCS.Core
             yield return new WaitForSecondsRealtime(0.3f);
             gm.StartGame();
             yield return new WaitForSecondsRealtime(1f);
+            // the first-run walkthrough, forced so the shot does not depend on this PC's PlayerPrefs: step 1 on
+            // the hint line, then the drive below must complete it (checked in the log before it is skipped)
+            gm.Tutorial.Begin(true);
+            yield return new WaitForSecondsRealtime(0.4f);
+            yield return Capture("smoke-tutorial.png");
             GameInput.MoveOverride = new Vector2(0f, 1f);
             yield return new WaitForSecondsRealtime(1.5f);
             GameInput.MoveOverride = new Vector2(1f, 0f);
@@ -64,6 +69,9 @@ namespace VCS.Core
             GameInput.MoveOverride = new Vector2(-1f, 0.3f);
             yield return new WaitForSecondsRealtime(2f);
             GameInput.MoveOverride = Vector2.zero;
+            Debug.Log("[VCS] Tutorial: step " + gm.Tutorial.Step + " of " + gm.Tutorial.StepCount + " after the drive, active " + gm.Tutorial.Active);
+            gm.Tutorial.Skip();
+            yield return new WaitForSecondsRealtime(0.3f);
             yield return Capture("smoke-game.png");
 
             // The cat: drive at it for a few seconds, it should bolt; shoot it while it runs and log its state.
@@ -161,6 +169,13 @@ namespace VCS.Core
                           + " %, bin at " + bin.ToString("F1") + ", vacuum at " + gm.Player.transform.position.ToString("F1"));
                 yield return Capture("smoke-bin.png");
             }
+
+            // the pause menu with its six entries (tutorial, rate the game)
+            gm.Pause();
+            yield return new WaitForSecondsRealtime(0.5f);
+            yield return Capture("smoke-pause.png");
+            gm.Resume();
+            yield return new WaitForSecondsRealtime(0.3f);
 
             var s = gm.Suction;
             string pos = gm.Player != null ? gm.Player.transform.position.ToString("F1") : "none";

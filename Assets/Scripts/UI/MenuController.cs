@@ -12,7 +12,8 @@ namespace VCS.UI
         public System.Action OnTitleStart;
         public System.Action<int> OnPauseSelect;
 
-        static readonly string[] PauseLabels = { "RESUME", "RESTART", "TITLE SCREEN", "QUIT GAME" };
+        // index 2 reads SKIP TUTORIAL or REPLAY TUTORIAL depending on the walkthrough (set in ShowPause)
+        static readonly string[] PauseLabels = { "RESUME", "RESTART", "TUTORIAL", "RATE THIS GAME", "TITLE SCREEN", "QUIT GAME" };
         static readonly string[] BarLabels = { "SPEED", "SUCTION", "BAG", "HOP" };
 
         Canvas canvas;
@@ -82,6 +83,9 @@ namespace VCS.UI
                 new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(74f, 30f), new Vector2(1250f, 70f), false);
             UIStyle.Style(titleStats, UIStyle.Mono, 20, new Color(1f, 1f, 1f, 0.7f));
             UIStyle.Edge(titleStats);
+            // the store door and the feedback address (Testers Community, 2026-09-15): two small plates on the bottom row
+            MakeLink(titleRoot.transform, "RATE THIS GAME", new Vector2(780f, 26f), new Vector2(1010f, 72f), StoreLinks.OpenRate);
+            MakeLink(titleRoot.transform, "SEND FEEDBACK", new Vector2(1026f, 26f), new Vector2(1250f, 72f), StoreLinks.OpenFeedback);
 
             // ---- garage (right column): an instrument frame
             UIStyle.Frame(titleRoot.transform, "GarageBack", right, right, new Vector2(-600f, -500f), new Vector2(-14f, 340f), "frame_square", 586f, 840f, 30f);
@@ -146,15 +150,15 @@ namespace VCS.UI
             UIFactory.Anchor(pauseRoot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             UIStyle.Veil(pauseRoot.transform, "Dim", 0.7f);
             var paused = UIFactory.Text(pauseRoot.transform, "PausedText", "PAUSED", 80, accent, TextAnchor.MiddleCenter,
-                mid, mid, new Vector2(-600f, 230f), new Vector2(600f, 380f), false);
+                mid, mid, new Vector2(-600f, 250f), new Vector2(600f, 400f), false);
             UIStyle.Style(paused, UIStyle.Arcade, 100, Color.white, FontStyle.Italic);
             UIStyle.ArcadeText(paused, Color.white, UIStyle.Yellow, 7f);
             pauseTexts = new Text[PauseLabels.Length];
             pauseBacks = new Image[PauseLabels.Length];
             for (int i = 0; i < PauseLabels.Length; i++)
             {
-                float y = 110f - i * 90f;
-                var back = UIStyle.Plate(pauseRoot.transform, "Item" + i, "tab_plate", PauseOff, mid, mid, new Vector2(-260f, y - 35f), new Vector2(260f, y + 35f), 10f, new Color(0f, 0f, 0f, 0.5f), 0.34f);
+                float y = 150f - i * 78f;
+                var back = UIStyle.Plate(pauseRoot.transform, "Item" + i, "tab_plate", PauseOff, mid, mid, new Vector2(-260f, y - 32f), new Vector2(260f, y + 32f), 10f, new Color(0f, 0f, 0f, 0.5f), 0.34f);
                 back.raycastTarget = true;
                 var btn = back.gameObject.AddComponent<Button>();
                 btn.navigation = new Navigation { mode = Navigation.Mode.None };
@@ -169,6 +173,18 @@ namespace VCS.UI
 
         // enamel plates are white: this tint is the unlit button, yellow is the lit one
         static readonly Color PauseOff = new Color(0.30f, 0.32f, 0.36f);
+
+        void MakeLink(Transform parent, string label, Vector2 oMin, Vector2 oMax, System.Action open)
+        {
+            var bl = new Vector2(0f, 0f);
+            var back = UIStyle.Plate(parent, "Link" + label, "tab_plate", PauseOff, bl, bl, oMin, oMax, 8f, new Color(0f, 0f, 0f, 0.45f), 0.3f);
+            back.raycastTarget = true;
+            var btn = back.gameObject.AddComponent<Button>();
+            btn.navigation = new Navigation { mode = Navigation.Mode.None };
+            btn.onClick.AddListener(() => { Deselect(); var gm = GameManager.I; if (gm != null) gm.Audio.PlayClick(); open(); });
+            var text = UIFactory.Text(back.transform, "Label", label, 18, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false);
+            UIStyle.Style(text, UIStyle.Arcade, 17, Color.white, FontStyle.Italic);
+        }
 
         void MakeArrow(Transform parent, string label, Vector2 oMin, Vector2 oMax, int dir)
         {
@@ -208,6 +224,8 @@ namespace VCS.UI
             titleVisible = false;
             preview.Hide();
             sel = 0;
+            var gm = GameManager.I;
+            pauseTexts[2].text = gm != null && gm.Tutorial != null && gm.Tutorial.Active ? "SKIP TUTORIAL" : "REPLAY TUTORIAL";
             Highlight();
         }
 
