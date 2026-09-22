@@ -7,31 +7,9 @@ Steamworks charges 100 USD per game (Steam Direct fee, refunded once the game ea
 
 ## Listing copy
 
-**Title:** Vacuum Cleaner Simulator 2026
-
-**Short description (under 200 characters):**
-You are the vacuum cleaner. The house is filthy. Eat crumbs, socks, chairs and eventually the toilet, then blow it
-all back out. A silly physics sandbox with a suspiciously serious cockpit.
-
-**Long description:**
-Vacuum Cleaner Simulator 2026 is a physics sandbox in the spirit of Goat Simulator, except you are a vacuum
-cleaner and the mess is not going to clean itself. Drive through a six-room house, suck up crumbs, dust bunnies,
-socks, toy bricks and coins, then level up until chairs, the couch, the fridge and the toilet fit in the nozzle.
-When the bag is full, blow everything back out at high speed and start again.
-
-Eight vacuums with real handling differences: a robot disc, a bagless upright on a ball, a smiling red canister,
-a cordless stick, a 1978 upright with a headlight, a French canister that whispers, a wet-and-dry drum that eats
-furniture early, and the cardboard prototype that started it all. Corded models drag a real cord behind them: it
-straightens as you go, pulls tight around corners, and at the end it holds you like a leash. Keep pulling and the
-plug pops out of the wall. Cordless models worry about their battery instead.
-
-The cockpit takes itself very seriously. Every vacuum has its own suction gauge, a real dust bag or bin that fills
-up, motor readouts, warning tiles, a MASTER CAUTION lamp, a dirt radar and a mission log of twenty silly
-achievements. None of it will help you. All of it looks great.
-
-- Family friendly: cartoon chaos, no violence, no language, no ads, no purchases.
-- Full controller support (Xbox layout) and keyboard and mouse.
-- Local achievements, best score and garage choice saved between sessions.
+The words live in `STORE-MATRIX.md`, one source for the three stores (2026-09-22): title, the Microsoft Store
+short description **S1**, the description **D** with the PC paragraph **P-PC** and the credits line, the release
+notes **WN**, the certification notes. Paste from there. Store-specific fields:
 
 **Tags:** Simulation, Physics, Casual, Comedy, Sandbox, Family Friendly, Singleplayer, Controller Support
 
@@ -41,19 +19,22 @@ Expected: ESRB E, PEGI 3.
 
 ## Marketing assets (marketing/)
 
-Generated with kie.ai from `tools/assets/kie_assets.py` and cut to store sizes by `tools/marketing.py`.
+Key art and icon generated with kie.ai (`tools/assets/kie_assets.py`, `tools/assets/marketing_real.py`) and cut to
+store sizes by `tools/marketing.py`; screenshots, gallery, wordmark and trailer rendered by the game itself
+(`tools/store_shots.py`, `tools/wordmark.py`, `tools/record.ps1` + `tools/store_video.py`, all on `tools/brand.py`).
 
 | File | Size | Used for |
 |------|------|----------|
-| `marketing/store/steam_header.png` | 920 x 430 | Steam header capsule |
-| `marketing/store/steam_small.png` | 462 x 174 | Steam small capsule |
-| `marketing/store/steam_main.png` | 1232 x 706 | Steam main capsule |
-| `marketing/store/steam_library.png` | 600 x 900 | Steam library capsule |
-| `marketing/store/steam_hero.png` | 3840 x 1240 | Steam library hero |
+| `marketing/store/screens/NN-slug.png` (10) | 1920 x 1080 | Store screenshots, captioned in the HUD's typography |
+| `marketing/store/gallery_1920x1080.png` | 1920 x 1080 | the nineteen machines side by side (screenshot 02) |
+| `marketing/video/trailer_1920x1080.mp4` | 1920 x 1080, under 60 s | Store trailer (also YouTube for Play) |
+| `marketing/logo/wordmark.png`, `wordmark-line.png` | transparent | the title on gallery, feature graphic, video cards, site |
+| `marketing/icon-candidates/sheet.png` | contact sheet | the icon choice (his), see `STORE-MATRIX.md` |
+| `marketing/store/ms_superhero_1920x1080.png`, `ms_poster_720x1080.png`, `ms_boxart_1080.png` | as named | Store super hero, poster, box art |
 | `marketing/store/ms_icon_300.png` | 300 x 300 | Microsoft Store icon |
 | `marketing/store/key_art.png` | source | press, GitHub, cosnuau.com |
 | `marketing/icon/icon_*.png`, `marketing/icon/icon.ico` | 16 to 1024 | app icon, exe icon, site favicon |
-| `docs/screenshots/*.png` | 1920 x 1080 | store screenshots |
+| `marketing/store/steam_*.png` | Steam sizes | parked with Steam |
 
 ## GitHub release
 

@@ -539,6 +539,13 @@ namespace VCS.UI
             sparkleBurst = 1f;
         }
 
+        /// <summary>Drops the splash at once (the smoke test, before a store picture: an achievement bang over
+        /// the cat shot said nothing about the cat).</summary>
+        public void HideBanner()
+        {
+            bannerDur = 0f; bannerGroup.alpha = 0f; sparkleBurst = 0f;
+        }
+
         /// <summary>Queues one line on the toast strip; shown for a couple of seconds each, in order.</summary>
         public void ShowToast(string text)
         {

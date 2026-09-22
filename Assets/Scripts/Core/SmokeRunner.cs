@@ -14,22 +14,27 @@ namespace VCS.Core
     public class SmokeRunner : MonoBehaviour
     {
         string outDir;
+        bool record;            // "-record <dir>": the trailer capture instead of the smoke run (see RecordRun)
+        int frameNo;
+        readonly System.Text.StringBuilder marks = new System.Text.StringBuilder();
 
         public static void TryStart(GameManager gm)
         {
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
             {
-                if (args[i] != "-smoke") continue;
+                if (args[i] != "-smoke" && args[i] != "-record") continue;
                 GameManager.SmokeMode = true;
                 var r = gm.gameObject.AddComponent<SmokeRunner>();
                 r.outDir = args[i + 1];
+                r.record = args[i] == "-record";
                 return;
             }
         }
 
         IEnumerator Start()
         {
+            if (record) { yield return RecordRun(); yield break; }
             Directory.CreateDirectory(outDir);
             Debug.Log("[VCS] Smoke test started, output " + outDir);
             yield return new WaitForSecondsRealtime(3f);
@@ -61,7 +66,7 @@ namespace VCS.Core
             GameInput.TurboOverride = true;
             yield return new WaitForSecondsRealtime(1.3f);
             Debug.Log("[VCS] Boost: " + gm.Player.BoostDebug() + ", speed " + gm.Player.Speed.ToString("0.0"));
-            yield return Capture("smoke-turbo.png");
+            gm.ClearBanners(); yield return Capture("smoke-turbo.png");   // the trail and the speed lines, not a splash
             GameInput.TurboOverride = false;
             yield return new WaitForSecondsRealtime(0.6f);
             GameInput.MoveOverride = new Vector2(0f, -1f);
@@ -72,7 +77,7 @@ namespace VCS.Core
             Debug.Log("[VCS] Tutorial: step " + gm.Tutorial.Step + " of " + gm.Tutorial.StepCount + " after the drive, active " + gm.Tutorial.Active);
             gm.Tutorial.Skip();
             yield return new WaitForSecondsRealtime(0.3f);
-            yield return Capture("smoke-game.png");
+            gm.ClearBanners(); yield return Capture("smoke-game.png");   // no splash over a store picture
 
             // The cat: drive at it for a few seconds, it should bolt; shoot it while it runs and log its state.
             if (gm.Level != null && gm.Level.Cat != null && gm.Player != null)
@@ -91,7 +96,7 @@ namespace VCS.Core
                     GameInput.MoveOverride = new Vector2(Vector3.Dot(dir, right), Vector3.Dot(dir, fwd));
                     yield return new WaitForSecondsRealtime(0.1f);
                     tc += 0.1f;
-                    if (!shot && to.magnitude < 4.5f) { shot = true; yield return Capture("smoke-cat.png"); }
+                    if (!shot && to.magnitude < 4.5f) { shot = true; gm.ClearBanners(); yield return Capture("smoke-cat.png"); }
                 }
                 GameInput.MoveOverride = Vector2.zero;
                 Debug.Log("[VCS] Cat: distance " + Vector3.Distance(cat.transform.position, gm.Player.transform.position).ToString("0.0")
@@ -101,7 +106,7 @@ namespace VCS.Core
                 // Straight down over the vacuum: the cleared path through the powder should read as a trail.
                 gm.Cam.SetView(80f, 11f);
                 yield return new WaitForSecondsRealtime(0.6f);
-                yield return Capture("smoke-powder.png");
+                gm.ClearBanners(); yield return Capture("smoke-powder.png");   // no splash over a store picture
                 gm.Cam.SetView(42f, 9f);
             }
             if (gm.Player != null && gm.Player.Cord != null && !gm.Player.Cord.Plugged && gm.Level.Sockets.Count > 0)
@@ -134,13 +139,13 @@ namespace VCS.Core
                     GameInput.MoveOverride = new Vector2(Vector3.Dot(away, right), Vector3.Dot(away, fwd));
                     yield return new WaitForSecondsRealtime(0.1f);
                     t += 0.1f;
-                    if (tautAt < 0f && cord.Taut) { tautAt = t; yield return Capture("smoke-taut.png"); }
+                    if (tautAt < 0f && cord.Taut) { tautAt = t; gm.ClearBanners(); yield return Capture("smoke-taut.png"); }
                     if (!cord.Plugged) { yankAt = t; break; }
                 }
                 Debug.Log("[VCS] Cord: taut at " + tautAt.ToString("0.0") + " s, plug yanked at " + yankAt.ToString("0.0")
                           + " s, length " + cord.Length.ToString("0.0") + " m");
                 yield return new WaitForSecondsRealtime(0.4f);
-                yield return Capture("smoke-rewind.png");
+                gm.ClearBanners(); yield return Capture("smoke-rewind.png");   // no splash over a store picture
                 float w = 0f;
                 while (cord.Rewinding && w < 5f) { yield return new WaitForSecondsRealtime(0.1f); w += 0.1f; }
                 GameInput.MoveOverride = Vector2.zero;
@@ -157,7 +162,7 @@ namespace VCS.Core
                 // first from wherever the cord phase ended: the marker must point at the bin through the walls
                 yield return new WaitForSecondsRealtime(0.9f);
                 Debug.Log("[VCS] Bin marker: " + gm.Hud.BinMarkerDebug() + ", vacuum at " + gm.Player.transform.position.ToString("F1"));
-                yield return Capture("smoke-bin-far.png");
+                gm.ClearBanners(); yield return Capture("smoke-bin-far.png");   // no splash over a store picture
                 Vector3 bin = gm.Level.Bin.transform.position;
                 gm.Player.Rb.position = bin + new Vector3(-1.6f, 0.3f, 0.4f);
                 gm.Player.Rb.linearVelocity = Vector3.zero;
@@ -202,6 +207,153 @@ namespace VCS.Core
             for (int i = 0; i < args.Length - 1; i++)
                 if (args[i] == "-super" && int.TryParse(args[i + 1], out int n) && n >= 1 && n <= 4) return n;
             return 1;
+        }
+
+        // ---- the trailer (2026-09-22, "edited video capture"): a screen recorder cannot run in a locked RDP session,
+        // so the game records itself. Time.captureFramerate locks game time to 30 steps per second whatever the
+        // real frame rate, every frame is written as a JPEG (super-sized like the screenshots: a 960 x 540 window
+        // at -super 2 gives 1920 x 1080), and each chapter logs its first frame in marks.txt so tools/store_video.py
+        // can place the captions. Game-time waits only: realtime waits would stretch with the encoding.
+        IEnumerator RecordRun()
+        {
+            Directory.CreateDirectory(outDir);
+            foreach (var f in Directory.GetFiles(outDir, "frame_*.jpg")) File.Delete(f);
+            Debug.Log("[VCS] Record started, output " + outDir + ", super " + SuperSize());
+            Time.captureFramerate = 30;
+            var gm = GameManager.I;
+            yield return new WaitForSeconds(0.5f);
+            StartCoroutine(RecordFrames());
+            Mark("title");
+            yield return new WaitForSeconds(1.2f);
+
+            // the garage: a handful of machines, the imported ones among them
+            Mark("garage");
+            string savedChoice = VacuumCatalog.SelectedId;
+            foreach (var id in new[] { "harold", "rowinta", "m_yellowdrum", "m_redsled", "roomboo", "m_littlered", "shopdrum" })
+            {
+                gm.Menu.SelectVacuumById(id);
+                yield return new WaitForSeconds(0.55f);
+            }
+            gm.Menu.SelectVacuumById("harold");
+            yield return new WaitForSeconds(0.3f);
+            gm.StartGame();
+            yield return new WaitForSeconds(0.2f);
+            gm.Tutorial.Skip();
+            // the chase runs past 22 m of cable, and a plug that pops mid-chase leaves the cockpit reading OFF
+            // for the powder chapter: the cord is long until its own chapter, where it is shortened to 4 m
+            float savedMax = PowerCord.MaxLength;
+            PowerCord.MaxLength = 80f;
+            Mark("drive");
+            GameInput.MoveOverride = new Vector2(0f, 1f);
+            yield return new WaitForSeconds(1.6f);
+            GameInput.MoveOverride = new Vector2(1f, 0.4f);
+            yield return new WaitForSeconds(1.2f);
+            Mark("turbo");
+            GameInput.MoveOverride = new Vector2(0.2f, 1f);
+            GameInput.TurboOverride = true;
+            yield return new WaitForSeconds(2.6f);
+            GameInput.TurboOverride = false;
+            GameInput.MoveOverride = new Vector2(-1f, 0.2f);
+            yield return new WaitForSeconds(1.2f);
+
+            if (gm.Level != null && gm.Level.Cat != null && gm.Player != null)
+            {
+                Mark("cat");
+                var cat = gm.Level.Cat;
+                float tc = 0f;
+                while (tc < 5.5f)
+                {
+                    Vector3 to = cat.transform.position - gm.Player.transform.position;
+                    to.y = 0f;
+                    var camT = Camera.main != null ? Camera.main.transform : null;
+                    Vector3 fwd = camT != null ? Vector3.ProjectOnPlane(camT.forward, Vector3.up).normalized : Vector3.forward;
+                    Vector3 right = Vector3.Cross(Vector3.up, fwd);
+                    Vector3 dir = to.sqrMagnitude > 0.01f ? to.normalized : Vector3.forward;
+                    GameInput.MoveOverride = new Vector2(Vector3.Dot(dir, right), Vector3.Dot(dir, fwd));
+                    GameInput.TurboOverride = to.magnitude > 3f;
+                    yield return new WaitForSeconds(0.1f);
+                    tc += 0.1f;
+                }
+                GameInput.TurboOverride = false;
+                GameInput.MoveOverride = Vector2.zero;
+                Mark("powder");
+                gm.Cam.SetView(80f, 11f);
+                yield return new WaitForSeconds(2.2f);
+                gm.Cam.SetView(42f, 9f);
+            }
+
+            if (gm.Player != null && gm.Player.Cord != null && gm.Level.Sockets.Count > 0)
+            {
+                Mark("cord");
+                if (!gm.Player.Cord.Plugged)
+                {
+                    var sk = gm.Level.Sockets[0];
+                    gm.Player.Rb.position = sk.transform.position + sk.transform.forward * 0.9f + Vector3.up * 0.3f;
+                    gm.Player.Rb.linearVelocity = Vector3.zero;
+                    yield return new WaitForSeconds(0.5f);
+                }
+                var cord = gm.Player.Cord;
+                PowerCord.MaxLength = 4f;
+                float t = 0f;
+                bool yanked = false;
+                while (t < 7f && !yanked)
+                {
+                    Vector3 away = gm.Player.transform.position - cord.LastCorner;
+                    away.y = 0f;
+                    var camT = Camera.main != null ? Camera.main.transform : null;
+                    Vector3 fwd = camT != null ? Vector3.ProjectOnPlane(camT.forward, Vector3.up).normalized : Vector3.forward;
+                    Vector3 right = Vector3.Cross(Vector3.up, fwd);
+                    if (away.sqrMagnitude < 0.01f) away = Vector3.right;
+                    away.Normalize();
+                    GameInput.MoveOverride = new Vector2(Vector3.Dot(away, right), Vector3.Dot(away, fwd));
+                    yield return new WaitForSeconds(0.1f);
+                    t += 0.1f;
+                    yanked = !cord.Plugged;
+                }
+                GameInput.MoveOverride = Vector2.zero;
+                yield return new WaitForSeconds(2.2f);   // the plug pops and the cord whips back in
+            }
+            PowerCord.MaxLength = savedMax;
+
+            if (gm.Level != null && gm.Level.Bin != null && gm.Suction != null)
+            {
+                Mark("bin");
+                gm.Suction.DebugSetBag(0.88f);
+                Vector3 bin = gm.Level.Bin.transform.position;
+                gm.Player.Rb.position = bin + new Vector3(-1.6f, 0.3f, 0.4f);
+                gm.Player.Rb.linearVelocity = Vector3.zero;
+                gm.Player.Rb.angularVelocity = Vector3.zero;
+                gm.Cam.SetYaw(0f);
+                yield return new WaitForSeconds(2.4f);
+            }
+            Mark("end");
+            yield return new WaitForSeconds(0.4f);
+            record = false;
+            yield return null;
+            File.WriteAllText(Path.Combine(outDir, "marks.txt"), marks.ToString());
+            Debug.Log("[VCS] Record finished: " + frameNo + " frames");
+            VacuumCatalog.SelectedId = savedChoice;
+            PlayerPrefs.Save();
+            GameManager.QuitApp();
+        }
+
+        void Mark(string name)
+        {
+            marks.Append(name).Append(' ').Append(frameNo).Append('\n');
+            Debug.Log("[VCS] Record mark " + name + " at frame " + frameNo);
+        }
+
+        IEnumerator RecordFrames()
+        {
+            int super = SuperSize();
+            while (record)
+            {
+                yield return new WaitForEndOfFrame();
+                var tex = super > 1 ? ScreenCapture.CaptureScreenshotAsTexture(super) : ScreenCapture.CaptureScreenshotAsTexture();
+                File.WriteAllBytes(Path.Combine(outDir, "frame_" + frameNo.ToString("D5") + ".jpg"), tex.EncodeToJPG(93));
+                Destroy(tex);
+                frameNo++;
+            }
         }
 
         IEnumerator Capture(string file)

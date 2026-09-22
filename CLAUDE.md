@@ -303,6 +303,37 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   visible tab; its long text fields (beta description, What to Test) are contenteditable divs, filled with
   `document.execCommand('insertText')` after focus, not the value setter.
 
+- Tester report (Testers Community, 2026-09-15, 15 testers, the PDFs are in his Drive "91 Rivers Labs / Active
+  Projects / VacuumCleanerSimulator" and the recommendations in `docs/PLAY.md`) and 0.4.9 (2026-09-22, "take
+  their feedback in consideration and implement the recommendations"): `Tutorial` is a six-step first-run
+  walkthrough, each step a real action in the live level shown one at a time on the hint line above the cockpit
+  (progressive disclosure); it runs once (PlayerPref `tutorial_done`), the pause menu skips or replays it, and it
+  owns the hint line so `TeachTurbo` waits. `StoreLinks` opens the store page (Play package, App Store id
+  6809662067, Microsoft Store id 9P9HVRJ09PK0) and a mailto for feedback: title-screen buttons RATE THIS GAME and
+  SEND FEEDBACK, plus one rating nudge after 4 min of play and 3 achievements (PlayerPref `rate_nudged`). The
+  Play In-App Review API was not used (it needs the Play Core package); the store page is the same door
+  everywhere.
+- Store assets (2026-09-22, his "matrix of the 3 stores ... punchy assets, logo, gallery, frames, video"):
+  `docs/STORE-MATRIX.md` is the single source of the words (S1/S2/S3 taglines, D + P-PC / P-TOUCH description,
+  PROMO, KW, WN, review notes) and of the eight picture subjects; `docs/STORE.md`, `PLAY.md` and `APPSTORE.md`
+  point to it. Everything is rendered by the game itself over the smoke captures: `tools/brand.py` (the HUD's
+  typography and colours in PIL: `arcade_text`, `tab`, `caption`, `wordmark`, `stripes`), `tools/wordmark.py`
+  (the logo, `marketing/logo`, and `--sheet` the icon contact sheet), `tools/store_shots.py` (captions the four
+  sets: `marketing/store/screens` 1920 x 1080 with the cockpit, `marketing/play/phone-NN` touch, `marketing/appstore`
+  iPhone 6.5" 2688 x 1242 and iPad 13" 2752 x 2064, plus the nineteen-machine gallery and the Play feature graphic;
+  the caption wording lives THERE and must match `store_video.py` and the matrix table), `tools/assets/icon_candidates.py`
+  (four kie icon candidates next to the shipped one; nothing replaces `marketing/source/icon.png` until he picks).
+  Captures: the PC is a locked RDP session at 1366 x 768, so store sizes come from a fraction of the size with
+  `-Super` (960 x 540 S2 for PC and phone, 717 x 330 S4 iPhone, 688 x 516 S4 iPad); run outcomes (cat chase, cord
+  yank) vary with the window size, so look at the contact sheet for each set. The trailer: `-record <dir>`
+  (`SmokeRunner.RecordRun`, `Time.captureFramerate = 30`, a JPEG per frame, `marks.txt` chapter marks) through
+  `tools/record.ps1`, then `tools/store_video.py` (PIL title and end cards, faded chapter captions, the game's
+  music over a low motor loop, ffmpeg libx264, 34 s, under the Store's 60 s) into `marketing/video/trailer_1920x1080.mp4`
+  with a poster frame and a sixteen-frame sheet to look at. Lessons: the chase pays out more than 22 m of cord, so
+  the record run raises `PowerCord.MaxLength` to 80 m from the drive mark until the cord chapter (a plug that pops
+  mid-chase left the cockpit reading OFF for the powder chapter), `GameManager.ClearBanners` hides a splash before
+  a capture, and `*.mp4` is on git LFS. Achievements are exactly 22: the copy says so everywhere.
+
 Input: `GameInput` wraps the legacy Input Manager. Axes live in `ProjectSettings/InputManager.asset` (Horizontal,
 Vertical, CamX, CamY, DPadX, DPadY, TriggerL, TriggerR); buttons are read with `KeyCode.JoystickButtonN`
 (Xbox: A=0 B=1 X=2 Y=3 LB=4 RB=5 Back=6 Start=7). Do not add the Input System package: it needs

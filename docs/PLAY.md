@@ -6,6 +6,13 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 ## Status
 
+- 2026-09-22 ("take their feedback in consideration and implement the recommendations"): THE TESTERS COMMUNITY
+  REPORT IS IN (mail of 2026-09-15, two PDFs, copies in Drive under 91 Rivers Labs / Active Projects /
+  VacuumCleanerSimulator: the feedback report and the "Production Access Questionnaire" answers). Verdict: no
+  crash, no bug, stable; four recommendations, all built into 0.4.9 or into the store copy (see "Tester report"
+  below). The paid run ends around 2026-09-25; "Apply for production access" (Play Console dashboard) is then the
+  owner's click, with the questionnaire answers below ready to paste.
+
 - 2026-09-09 21:15 ("Push everywhere"): 407 (0.4.7) live on the internal track and sent for review on the closed
   track "Alpha", where the paid testers are. Same routine as 404. The paid run keeps going: a new build on a closed
   track does not restart Google's 14-day clock, it is the track staying active with opted-in testers that counts.
@@ -66,6 +73,62 @@ Everything below is ready to paste into Play Console (the owner's existing devel
   address) and the publish confirmation; both open dialogs, which need a visible tab (see the lessons below).
   Play App Signing needed no prompt: new apps are enrolled with a Google-generated key by default.
 
+## Tester report (Testers Community, 2026-09-15)
+
+Twelve to fifteen paid testers on the closed track "Alpha" for 14 days (builds 404 then 407). Their report:
+
+- Stability: no crashes, no bugs, no ANR; performance fine on the devices used.
+- Recommendation 1, ASO: a keyword-rich store description with a fuller account of the gameplay. DONE in the copy
+  below (2026-09-22), the same text on the three stores (`STORE.md` for Microsoft, `APPSTORE.md` for Apple).
+- Recommendation 2, screenshots: show objects being vacuumed, several vacuum models, tricks, several rooms, with
+  captions and annotations. DONE with `tools\store_shots.py` (captioned frames over the smoke shots), see the store
+  matrix in `STORE-MATRIX.md`.
+- Recommendation 3, an interactive first-launch tutorial with progressive disclosure and context hints. DONE in
+  0.4.9: `Tutorial` (six steps on the hint line, each one a real action: drive, look, absorb, hop, boost, blow;
+  runs once, PlayerPref `tutorial_done`; SKIP / REPLAY TUTORIAL in the pause menu). The bin prompt, the bag-full
+  toast and the boost reminder were already context hints and stay.
+- Recommendation 4, a "Rate your app" button linking to the store, plus an in-app review prompt after achievements
+  with neutral timing and no sentiment filtering. DONE in 0.4.9: RATE THIS GAME on the title screen and in the
+  pause menu (`StoreLinks`: the Play page on Android, the App Store write-review link on iOS, the Microsoft Store
+  page on Windows), SEND FEEDBACK on the title screen (mailto cosnuau@gmail.com with the version in the subject),
+  and one toast ever ("ENJOYING THE CHAOS?", after four minutes of play and three achievements, for everyone alike,
+  PlayerPref `rate_nudged`). The Play In-App Review API was NOT used: it needs the Play Core package, and the store
+  page is the same door on every platform.
+- Extras they listed, not built: seasonal content, leaderboards and social sharing, accessibility settings,
+  performance monitoring. Seasonal content and new levels are in `IDEAS.md` waiting for the owner's go.
+
+### Production access questionnaire, answers ready to paste
+
+Google asks these on "Apply for production access". The testers' PDF suggested answers; the ones below are
+adapted to what is true of this app.
+
+1. How did you recruit the testers? — "Through a paid closed-testing service (Testers Community, 12 to 15 testers,
+   14 days) recruited to match the target audience: casual players and simulation fans, on a range of Android
+   phones and tablets."
+2. How easy was it to recruit them? — "Easy: the service supplied the testers within hours; the opt-in link and the
+   Google Group were set up in Play Console the same day."
+3. How engaged were they? — "Actively: they played through the closed track for the full 14 days, reported on
+   stability, performance and usability, and sent a written report with recommendations."
+4. What feedback did you get and how? — "Through the service's report and survey. Feedback: optimise the store
+   description (ASO), redesign the screenshots to show the gameplay, add a first-launch walkthrough, add a
+   rate-the-app button. No crashes or bugs were reported."
+5. Who is the app for? — "Casual players of all ages who like physics sandboxes and silly simulations. Family
+   friendly: no violence, no ads, no purchases, no account."
+6. What makes it valuable to them? — "A unique comedy simulation where the player IS the vacuum cleaner: a house
+   full of mess, nineteen machines with real handling differences, a physical power cord, a cat to chase. Offline,
+   free, with nothing collected."
+7. How many installs do you expect in the first year? — pick the honest bracket. "1,000 - 10,000" is the right
+   one for a free game with no marketing budget (the testers' draft said 10k - 100k; do not overclaim).
+8. What did you change after the closed test? — "We rewrote the store description around the gameplay and its
+   keywords, redesigned the screenshots with captions showing the mess, the machines and the tricks, added a
+   six-step interactive walkthrough on first launch (with skip and replay in the pause menu), added Rate This Game
+   and Send Feedback buttons and one neutral rating invitation after a few achievements. Version 0.4.9."
+9. Why is the app ready for production? — "It has been stable on the internal and closed tracks since 0.4.2 with
+   no crash or ANR reported over the 14-day paid test; the testers' recommendations are shipped in 0.4.9; the
+   listing, content rating, data safety and privacy policy are complete."
+10. What did you learn from the test? — "The game itself held up; what testers wanted was onboarding and store
+    presentation: a tutorial, clearer screenshots and a way to rate and send feedback. Those shaped 0.4.9."
+
 ## App
 
 - Name: `Vacuum Cleaner Simulator 2026` (30 characters max: 28)
@@ -79,42 +142,24 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 ## Store listing
 
-Short description (80 max, 79):
+The words live in `STORE-MATRIX.md` (2026-09-22, one source for the three stores): the Play short description
+**S2** (80 max, 76), the description **D** with the touch paragraph **P-TOUCH** and the credits line, the release
+notes **WN**. Play has no keyword field: the words of **D** are the keywords, which is why it names the mess, the
+machines, the cat, the cord and the cockpit in plain words.
 
-    You are the vacuum. The house is filthy. Eat socks, chairs, the cat's dignity.
-
-Full description:
-
-    Vacuum Cleaner Simulator 2026 is a physics sandbox in the spirit of Goat Simulator, except you are a vacuum
-    cleaner. Drive through a messy house, suck up crumbs, socks, toy bricks and coins, grow your power until you
-    can eat chairs, lamps and eventually the toilet, then blow it all back out. Chase the cat. Leave a clean trail
-    through the cocoa powder. Rewind your cord from across the house and watch the plug whip through the furniture.
-
-    Nineteen vacuums in the garage: eight built from scratch and eleven real machines on loan, each with its own
-    handling, bag and personality, from a smiling red canister to a workshop drum and a French sled that glides.
-
-    A cockpit-grade HUD on an arcade cabinet: suction gauges, motor readouts, annunciator lamps, a dirt radar,
-    a mission log with 22 achievements. Boost with sparks and speed lines. Bonus splashes that never cover your
-    vacuum.
-
-    Touch controls: left stick to drive, right pads to hop, boost, blow, empty and rewind, drag the free part of
-    the screen to look around. Family friendly, no ads, no accounts, nothing collected. Saves your best score,
-    achievements and garage choice on the phone.
-
-    All vacuum names are parodies; no real product names or logos are used. The eleven real-machine meshes are
-    Creative Commons models, credited at github.com/vrixel/VacuumCleanerSimulator2026/blob/main/docs/CREDITS.md.
-
-## Assets (from `tools\marketing.py` and the touch smoke run)
+## Assets (from `tools\store_shots.py` over the touch smoke captures)
 
 | Asset | Requirement | File |
 |---|---|---|
-| App icon | 512 x 512 PNG, no alpha needed | `marketing\icon\icon_512.png` |
-| Feature graphic | 1024 x 500 PNG or JPEG | `marketing\play\feature_1024x500.png` |
-| Phone screenshots | 2 to 8, 16:9 to 9:16, 320 to 3840 px | `marketing\play\phone-*.png` (1920 x 1080, touch layer on) |
+| App icon | 512 x 512 PNG, no alpha needed | `marketing\icon\icon_512.png` (his pick pending, `STORE-MATRIX.md`) |
+| Feature graphic | 1024 x 500 PNG or JPEG | `marketing\play\feature_1024x500.png` (wordmark over the game) |
+| Phone screenshots | 2 to 8, 16:9 to 9:16, 320 to 3840 px | `marketing\play\phone-NN-slug.png` (8, 1920 x 1080, touch HUD, captioned) |
 | 7-inch tablet screenshots | optional | same files |
+| Video | YouTube link | `marketing\video\trailer_1920x1080.mp4`, uploaded unlisted |
 
-Phone screenshots come from `powershell -File tools\smoke-test.ps1 -Touch -Width 1920 -Height 1080` (the touch
-layer on the PC build; the picture is the same renderer as the phone, minus the effects the phone drops).
+Phone screenshots: `powershell -File tools\smoke-test.ps1 -Touch -Width 960 -Height 432 -Super 2` (the touch layer
+on the PC build, captured at twice the window because the RDP display is 1366 x 768), then
+`python tools\store_shots.py --only phone,feature` composes the captions and the gallery.
 
 ## Steps
 

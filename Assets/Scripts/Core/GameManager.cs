@@ -430,6 +430,13 @@ namespace VCS.Core
             if (Hud != null) Hud.ShowToast(string.IsNullOrEmpty(detail) ? title : title + "   " + detail);
         }
 
+        /// <summary>Forgets every queued splash and hides the one on screen. Store captures only.</summary>
+        public void ClearBanners()
+        {
+            banners.Clear(); bannerTimer = 0f;
+            if (Hud != null) Hud.HideBanner();
+        }
+
         void UpdateBanners(float dt)
         {
             if (bannerTimer > 0f) bannerTimer -= dt;

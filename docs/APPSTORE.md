@@ -5,11 +5,12 @@ The iOS record exists in App Store Connect (app 6809662067, `com.cosnuau.vacuumc
 below has to wait for a tester: Apple has no tester requirement, unlike Google. What gates the public release is
 the listing, the privacy answers and App Review.
 
-Screenshots are rendered from the game itself by `tools\smoke-test.ps1 -Touch -Width 1434 -Height 660 -Super 2`
-(iPhone) and `-Width 1376 -Height 1032 -Super 2` (iPad); the player cannot open a window bigger than the monitor,
-so the shots are captured at double the window size. They live in `marketing\appstore`:
-iPhone 6.5" 2688 x 1242 and iPad 13" 2752 x 2064, six each (title, game, turbo, bin, cat, powder).
-Apple wants at least one iPhone 6.9" set, and an iPad 13" set because the build ships as iPhone + iPad.
+Screenshots are rendered from the game itself: `tools\smoke-test.ps1 -Touch -Width 717 -Height 330 -Super 4`
+(iPhone) and `-Width 688 -Height 516 -Super 4` (iPad); the player cannot open a window bigger than the monitor
+(1366 x 768 over RDP), so the shots are captured at four times the window size. `python tools\store_shots.py
+--only iphone,ipad` then composes the captions and the gallery into `marketing\appstore`: iPhone 6.5" 2688 x 1242
+(`iphone65-NN-slug.png`, the version page refuses the 6.9" 2868 x 1320, which is kept as `iphone69-*`) and
+iPad 13" 2752 x 2064 (`ipad13-NN-slug.png`), eight each, the same eight subjects as the other stores.
 
 ## App information
 
@@ -30,61 +31,13 @@ Apple wants at least one iPhone 6.9" set, and an iPad 13" set because the build 
   `ITSAppUsesNonExemptEncryption = false` in the Info.plist).
 - Sign-in: none. No demo account needed for review.
 
-## Promotional text (170 max, editable without a new version)
+## Promotional text, description, keywords, What's New, review notes
 
-Nineteen vacuums, one filthy house, and a bag that fills up. Drive, suck, blow it all back out. New in 0.4.7: the
-whole garage is finally the same scale.
-
-## Description
-
-You are the vacuum cleaner. The house is filthy. Eat crumbs, socks, chairs and eventually the toilet, then blow it
-all back out.
-
-Vacuum Cleaner Simulator 2026 is a comedy physics sandbox where you are the machine and the mess is not going to
-clean itself. (Do not name another game here: App Review treats a competitor's trademark in the metadata as a
-rejection, which is why "in the spirit of Goat Simulator" and the mention of the Microsoft Store were dropped.) Drive through a six-room house, suck up crumbs, dust bunnies, socks, toy
-bricks and coins, then level up until chairs, the couch, the fridge and the toilet fit in the nozzle. When the bag
-is full, empty it into the bin, or blow everything back out at high speed and start again.
-
-NINETEEN MACHINES, ALL DIFFERENT
-A robot disc, a bagless upright on a ball, a smiling red canister, a cordless stick, a 1978 upright with a
-headlight, a French canister that whispers, a wet-and-dry drum that eats furniture early, a workshop trolley that
-eats screws for breakfast, and the cardboard prototype that started it all. Each one drives, sucks and hops
-differently.
-
-A CORD THAT FIGHTS BACK
-Corded models drag a real simulated cable. It straightens as you go, pulls tight around corners, and at the end it
-holds you like a leash. Keep pulling and the plug pops out of the wall. Cordless models worry about their battery
-instead.
-
-A COCKPIT THAT TAKES ITSELF VERY SERIOUSLY
-Every vacuum has its own suction gauge, a real dust bag or bin that fills up, motor readouts, warning lamps and a
-mission log of twenty silly achievements. None of it will help you. All of it looks great.
-
-BUILT FOR TOUCH
-Big domed buttons like the ones on a real vacuum, a thumb stick that drives, drag anywhere to look around. Walls
-turn to frosted glass when they stand between the camera and your machine, and a marker points at the bin when the
-bag needs emptying.
-
-- Family friendly: cartoon chaos, no violence, no language, no ads, no purchases.
-- No account, no sign-in, nothing collected. Your score stays on your device.
-
-## Keywords (100 characters max, comma separated, no spaces after commas)
-
-`vacuum,cleaner,simulator,physics,sandbox,funny,silly,cleaning,house,chaos,family,offline,no ads` (95 of 100)
-
-## What's New in this version
-
-The whole garage is one size family: the realistic machines used to be measured on whatever stuck out of them, a
-trailing hose or a push handle, so their bodies came out small. The boost now teaches itself until you have held it
-once, and the garage no longer starts the run with the wrong vacuum.
-
-## Review notes
-
-No account and no sign-in. The game opens on the title screen: tap START, pick a vacuum with the arrows, then
-drive with the left stick and use the round buttons on the right (turbo, hop, blow, empty the bag at the bin,
-rewind the cord). Landscape only, iPhone and iPad. All vacuum names are parodies; no real product name, logo or
-trademark appears in the game.
+All in `STORE-MATRIX.md` (2026-09-22, one source for the three stores): **S3** the subtitle (30 max, 22),
+**PROMO** (170 max, 162), **D** with the touch paragraph **P-TOUCH** and no URL, **KW** (100 max, 97, no word of
+the title), **WN** for 0.4.9, and the review notes. What the version 1.0 page holds today is the 0.4.7 text ("New
+in 0.4.7", "twenty silly achievements"): replace it from the matrix before "Add for Review". Never name another
+game or another store in the metadata: App Review treats a competitor's trademark as a rejection.
 
 ## The steps left, in order
 

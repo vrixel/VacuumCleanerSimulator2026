@@ -52,3 +52,6 @@ Thumbs.db
 
 # Unity Android build temp (CMake, gradle)
 .utmp/
+
+# Python bytecode
+__pycache__/
