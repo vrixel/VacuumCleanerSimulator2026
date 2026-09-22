@@ -62,8 +62,8 @@ metadata: App Review treats a competitor's trademark as a rejection.
    appStoreVersion) = "Add for Review" (done 2026-09-22, submission d0bffbf7-6a99-42d9-8155-519529054c1b,
    version READY_FOR_REVIEW); `PATCH /iris/v1/reviewSubmissions/{id}` with `attributes.submitted=true` = "Submit
    to App Review", which is exactly what the button sends (read in the bundle's `PatchReviewSubmissionAPI`) and
-   which returned HTTP 504 from Apple's edge four times on 2026-09-22 (about 21 s each, state unchanged). LEFT TO
-   HIM: "Submit to App Review" on App Store Connect > App Review. Review then takes a day or two. Screenshot
+   which returned HTTP 504 from Apple's edge four times on 2026-09-22 (about 21 s each, state unchanged). SUBMITTED by him on
+   2026-09-22 at 14:03 (App Review page, the draft row, "Submit to App Review"): status "Waiting for Review". Review takes a day or two, release is automatic after approval. The button lives on the App Review page (General, left column) inside the draft submission row, not on the version page, which only says "This app version has been added for review". Screenshot
    order (2026-09-22 afternoon, his "the graphic assets of marketplace are not the ones we worked on"): a
    multi-file drop uploads in arbitrary order, so both slots came out scrambled. Reorder = `PATCH
    /iris/v1/appScreenshotSets/{setId}/relationships/appScreenshots` with the ids sorted by
