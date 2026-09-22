@@ -71,7 +71,7 @@ def card(kind):
     rule = brand.stripes(SIZE[0], 12)
     im.alpha_composite(rule, (0, SIZE[1] - 120))
     if kind == "title":
-        sub = brand.plain_text("A physics sandbox. You are the vacuum cleaner.", 46, brand.STEEL, "Exo2")
+        sub = brand.plain_text("Suck it up. All of it.", 46, brand.STEEL, "Exo2")   # S3 of docs/STORE-MATRIX.md, the one tagline
         im.alpha_composite(sub, ((SIZE[0] - sub.size[0]) // 2, SIZE[1] - 210))
     else:
         t = brand.tab("OUT NOW", 74, brand.YELLOW, skew=True)

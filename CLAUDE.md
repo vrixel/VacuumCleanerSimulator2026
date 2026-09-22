@@ -346,6 +346,19 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   `wordmark.edge_to_edge`. `brand.NAVY` / `brand.studio` (navy under a blue radial glow) is the backdrop of the
   trailer cards; the Play feature graphic is the wide hero with the wordmark on its empty left; og_image and the
   site banner are cut from the wide hero (a real 16:9 now). Look at the recut sheet before a submission.
+  Action pictures (2026-09-22 night, his "what the f is 'a physics sandbox you are the vacuum cleaner?' ... you need
+  AI gen images to show better images of the actions no? like a hoover swallowing a toilet"): the captures show the
+  HUD, not the gags, so `marketing_real.py --style action` edits eight scenes from the icon (`ACTION_ITEMS`: toilet,
+  couch, cat, turbo, cord, blowout, powder, garage; the same red canister in a bright animated-film house, 16:9)
+  into `marketing/source/action`, and `store_shots.py --only action` captions them (`ACTION_SHOTS`) into
+  `marketing/store/action`. Lessons: seedream-v4-edit honoured the machine 8/8 and the scene, but declined the
+  absurd deformations (the toilet and the sofa just sat next to the hose, kie trap 12), and
+  `gpt-image-2-image-to-image` (6 credits, same `image_urls` field) drew the hose strangling the toilet and the sofa
+  stretching into the nozzle; it also invented a wordmark on the shell, painted out with a median patch (look at
+  every body at full size, the models letter the shell). The seedream takes are kept as `action_<name>_seedream.png`
+  in the raws. Apple only accepts pictures of the app in use, so the action set goes to the Microsoft and Play
+  galleries and the site, never the App Store slots. The trailer's title-card subline is S3 of the matrix ("Suck it
+  up. All of it."): no wording of my own on a store asset, the matrix is the single source.
   Captures: the PC is a locked RDP session at 1366 x 768, so store sizes come from a fraction of the size with
   `-Super` (960 x 540 S2 for PC and phone, 717 x 330 S4 iPhone, 688 x 516 S4 iPad); run outcomes (cat chase, cord
   yank) vary with the window size, so look at the contact sheet for each set. The trailer: `-record <dir>`

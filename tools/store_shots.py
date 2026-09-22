@@ -7,7 +7,7 @@ Builds/store-raw/<set>/smoke-*.png) and the studio renders of tools/gallery.ps1 
 import-*.png). Every caption is drawn with tools/brand.py, so the pictures speak like the HUD.
 
     python tools/store_shots.py              # everything that has inputs
-    python tools/store_shots.py --only gallery,pc,phone,iphone,ipad,feature
+    python tools/store_shots.py --only gallery,pc,phone,iphone,ipad,feature,action
 
 Sets and sizes (a player window cannot exceed the display, so the sets are captured at a fraction with -Super):
     pc      960x540  -Super 2 -> 1920x1080   Microsoft Store screenshots      -> marketing/store/screens/NN-name.png
@@ -16,6 +16,8 @@ Sets and sizes (a player window cannot exceed the display, so the sets are captu
     ipad    688x516  -Super 4 -> 2752x2064   App Store iPad 13"                -> marketing/appstore
 The gallery (1920x1080, all nineteen machines with their name tabs) goes to marketing/store/gallery_1920x1080.png
 plus one copy per store folder at that store's size. The feature graphic (1024x500) is the wide hero with the wordmark on its empty left.
+The action set (marketing/store/action/NN-name.png, 1920x1080) captions the eight generated action pictures of
+marketing_real.py --style action for the Microsoft and Play galleries; never for the App Store (pictures of the app in use only).
 
 Look at every output: the tool proves the files exist, not that a caption sits clear of the HUD.
 """
@@ -236,6 +238,44 @@ def run_set(setname, gal, out_dir, prefix, size, style, expected, keep=None, ext
 CAPTION_ZONE = {"pc": (0.7, 0.5), "phone": (0.5, 0.40), "iphone": (0.44, 0.37), "ipad": (0.42, 0.36)}
 
 
+# The generated action pictures (2026-09-22 night, his "AI gen images to show better images of the actions ... like a
+# hoover swallowing a toilet"): marketing/source/action/<name>.png from marketing_real.py --style action, captioned
+# here like the captures. For the Microsoft Store gallery, the Play listing and the site; Apple wants pictures of
+# the app in use (guideline 2.3.3), so they never go in the App Store slots.
+ACTION_SHOTS = [
+    ("toilet", "EATS EVERYTHING. YES, THE TOILET.", "Level up until the whole house fits in the nozzle"),
+    ("couch", "THEN THE COUCH", "Chairs, sofas, the fridge: nothing is too big"),
+    ("cat", "CHASE THE CAT", "It is faster than you. Mostly."),
+    ("turbo", "HOLD THE BOOST", "Sparks, speed lines and a trail of dust"),
+    ("cord", "A CORD THAT FIGHTS BACK", "Pull too far and the plug pops out of the wall"),
+    ("blowout", "BAG FULL? BLOW IT ALL OUT", "Empty it into the bin, or fire it back across the room"),
+    ("powder", "LEAVE YOUR MARK", "Cocoa powder shows every path you clean"),
+    ("garage", "PICK YOUR MACHINE", "Nineteen vacuums, each one drives differently"),
+]
+
+
+def cover(im, width, height, anchor=0.5):
+    """Scale to cover width x height and crop, anchor = where the vertical crop keeps its centre (0 top, 1 bottom)."""
+    sw, sh = im.size
+    scale = max(width / sw, height / sh)
+    im = im.resize((int(round(sw * scale)), int(round(sh * scale))), Image.LANCZOS)
+    x = (im.size[0] - width) // 2
+    y = int((im.size[1] - height) * anchor)
+    return im.crop((x, y, x + width, y + height))
+
+
+def run_action(out_dir, size=(1920, 1080)):
+    src_dir = os.path.join(ROOT, "marketing", "source", "action")
+    for i, (name, head, sub) in enumerate(ACTION_SHOTS, 1):
+        src = os.path.join(src_dir, name + ".png")
+        if not os.path.exists(src):
+            print("  missing", os.path.relpath(src, ROOT))
+            continue
+        im = cover(Image.open(src).convert("RGB"), *size)
+        im = overlay_caption(im, head, sub, 60, 0.94, max_w_frac=0.8)
+        save(im, out_dir, f"{i:02d}-{name}.png")
+
+
 def style_bottom(setname):
     # PC: above the 250 px cockpit (830 of 1080). Touch layers: between the stick and the button cluster.
     return 0.75 if setname == "pc" else 0.965
@@ -281,6 +321,8 @@ def main():
     if want("ipad"):
         run_set("ipad", gal, APPSTORE, "ipad13-", (2752, 2064), "overlay", (2752, 2064),
                 keep={"game", "gallery", "cat", "turbo", "cord", "bin", "powder", "tutorial"})
+    if want("action"):
+        run_action(os.path.join(STORE, "action"))
     if want("feature"):
         fg = feature_graphic()
         if fg is not None:

@@ -105,6 +105,44 @@ NAVY_ITEMS = {
 }
 NAVY_SIZE = {"key_art": "square_hd", "hero_wide": "landscape_16_9", "library_portrait": "portrait_3_2"}
 
+# 2026-09-22 night, his "you need AI gen images to show better images of the actions no? like a hoover swallowing a
+# toilet": one generated action picture per store subject, the icon's machine dropped into the house, edited from
+# the icon (seedream-v4-edit, 5 credits each, 16:9). They land in marketing/source/action/<name>.png; store_shots.py
+# captions them like the captures. Apple only accepts pictures of the app in use (guideline 2.3.3), so these are for
+# the Microsoft Store gallery, the Play listing and the site, never the App Store slots.
+ACTION_SCENE = ("The scene is the inside of a bright, colourful family house rendered like a 3D animated film: clean "
+                "geometry, warm daylight, saturated pastel walls and floors, simple cartoon furniture, family friendly, "
+                "no people. Dynamic action, motion blur on the flying things, a punchy cinematic camera. The machine "
+                "stays exactly as in the image, photoreal and glossy, with NO eyes, NO face, NO mouth. ABSOLUTELY NO "
+                "TEXT of any kind: no title, no letters, no logos, no watermark, no signs.")
+ACTION_ITEMS = {
+    "toilet": (f"Wide 16:9 game key art: {NAVY}, in a bathroom, its ribbed black hose stretched impossibly wide around a "
+               f"white ceramic toilet that is halfway swallowed into the hose, the toilet bent and squeezed like rubber, "
+               f"water and a toilet roll flying, the machine braced on its wheels. Absurd and funny. {ACTION_SCENE}"),
+    "couch": (f"Wide 16:9 game key art: {NAVY}, in a living room, its floor head lifted, a whole sofa with its cushions "
+              f"being sucked into the hose end, the sofa stretching and folding into the nozzle, cushions and a lamp "
+              f"flying towards it, a bookshelf leaning. Absurd and funny. {ACTION_SCENE}"),
+    "cat": (f"Wide 16:9 game key art: {NAVY}, charging across a living-room floor at full speed after a fluffy ginger "
+            f"cat that leaps away in panic with its fur puffed up, a rug lifting, crumbs and toy bricks scattering. "
+            f"Funny, nobody gets hurt. {ACTION_SCENE}"),
+    "turbo": (f"Wide 16:9 game key art: {NAVY}, seen from a low rear three-quarter camera, racing down a long hallway "
+              f"with orange sparks flying from its wheels, a thick plume of grey dust behind it and radial speed lines, "
+              f"socks and cereal sucked into its floor head. {ACTION_SCENE}"),
+    "cord": (f"Wide 16:9 game key art: {NAVY}, straining at the end of a black power cord stretched taut across a "
+             f"kitchen, the plug tearing out of a wall socket with a little puff of smoke and a spark, the cord whipping. "
+             f"Funny. {ACTION_SCENE}"),
+    "blowout": (f"Wide 16:9 game key art: {NAVY}, its bag bulging to bursting, blowing a huge fountain of socks, toy "
+                f"bricks, cereal, coins, dust bunnies and a rubber duck out of its front intake across a bedroom, the "
+                f"machine rearing up on its rear wheels. Absurd and funny. {ACTION_SCENE}"),
+    "powder": (f"Wide 16:9 game key art from a high three-quarter camera: {NAVY}, in a dining room whose floor is "
+               f"covered with brown cocoa powder, leaving a clean winding trail of shiny floor behind its floor head, "
+               f"powder swirling into the nozzle. {ACTION_SCENE}"),
+    "garage": (f"Wide 16:9 game key art: {NAVY}, in the spotlight in the middle of a big garage showroom, surrounded by "
+               f"a dozen other household vacuum cleaners of every kind parked in a semicircle behind it (a robot disc, "
+               f"uprights, canisters, a yellow workshop drum, a cordless stick), all plain appliances with no faces, "
+               f"a concrete floor, tool walls, neon tubes. {ACTION_SCENE}"),
+}
+
 
 def log(*a):
     print(*a, flush=True)
@@ -117,19 +155,21 @@ def main():
     ap.add_argument("--only", default="")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--model", default="bytedance/seedream-v4-edit")
-    ap.add_argument("--style", default="swap", choices=["swap", "race", "navy"], help="swap: keep the cartoon composition; race: racing-game key art from the reference alone; navy: the icon's studio (2026-09-22) edited from the icon")
+    ap.add_argument("--style", default="swap", choices=["swap", "race", "navy", "action"], help="swap: keep the cartoon composition; race: racing-game key art from the reference alone; navy: the icon's studio (2026-09-22) edited from the icon; action: one action picture per store subject, edited from the icon (2026-09-22 night)")
     a = ap.parse_args()
     only = {s.strip() for s in a.only.split(",") if s.strip()}
-    items = {"race": RACE_ITEMS, "navy": NAVY_ITEMS}.get(a.style, ITEMS)
-    reference = NAVY_REFERENCE if a.style == "navy" else REFERENCE
+    items = {"race": RACE_ITEMS, "navy": NAVY_ITEMS, "action": ACTION_ITEMS}.get(a.style, ITEMS)
+    reference = NAVY_REFERENCE if a.style in ("navy", "action") else REFERENCE
     names = [n for n in items if not only or n in only]
-    tag = {"race": "race_", "navy": "navy_"}.get(a.style, "real_")
+    tag = {"race": "race_", "navy": "navy_", "action": "action_"}.get(a.style, "real_")
+    out_dir = os.path.join(SRC, "action") if a.style == "action" else SRC
+    os.makedirs(out_dir, exist_ok=True)
 
     os.makedirs(CARTOON, exist_ok=True)
     if a.list:
         for n in names:
             raw = os.path.join(RAW, f"{tag}{n}.png")
-            log(f"{'done' if os.path.exists(raw) else 'todo':5} {n:18} <- {os.path.relpath(os.path.join(CARTOON, n + '.png'), ROOT)}")
+            log(f"{'done' if os.path.exists(raw) else 'todo':5} {n:18} -> {os.path.relpath(os.path.join(out_dir, n + '.png'), ROOT)}")
         return 0
     if not os.path.exists(reference):
         log("reference render missing: " + reference)
@@ -143,7 +183,7 @@ def main():
     for n in names:
         # the cartoon original is the base: moved aside once, edited from there every time
         base = os.path.join(CARTOON, n + ".png")
-        if not os.path.exists(base):
+        if a.style == "swap" and not os.path.exists(base):
             shutil.copy2(os.path.join(SRC, n + ".png"), base)
         if a.style == "navy":   # the racing pictures step aside the same way the cartoons did
             keep = os.path.join(SRC, "race", n + ".png")
@@ -161,10 +201,12 @@ def main():
                 if ref_url is None:
                     ref_url = k.upload(reference, "images/vcs")
                     log("   reference uploaded")
-                urls = [ref_url] if a.style in ("race", "navy") else [k.upload(base, "images/vcs"), ref_url]
+                urls = [ref_url] if a.style in ("race", "navy", "action") else [k.upload(base, "images/vcs"), ref_url]
                 inp = {"prompt": items[n], "image_urls": urls, "output_format": "png"}
                 if a.style == "navy" and n in NAVY_SIZE:
                     inp["image_size"] = NAVY_SIZE[n]   # measured afterwards: the models do not always honour it
+                elif a.style == "action":
+                    inp["image_size"] = "landscape_16_9"
                 r = k._request(k.base + "/api/v1/jobs/createTask", {"model": a.model, "input": inp})
                 tid = (r.get("data") or {}).get("taskId")
                 if not tid:
@@ -184,8 +226,8 @@ def main():
             from PIL import Image  # noqa: E402
             wordmark.edge_to_edge(Image.open(raw)).convert("RGB").save(os.path.join(SRC, n + ".png"))
         else:
-            shutil.copy2(raw, os.path.join(SRC, n + ".png"))
-        log(f"   -> {os.path.relpath(os.path.join(SRC, n + '.png'), ROOT)}")
+            shutil.copy2(raw, os.path.join(out_dir, n + ".png"))
+        log(f"   -> {os.path.relpath(os.path.join(out_dir, n + '.png'), ROOT)}")
     after = None if a.dry_run else k.credits()
     log(f"balance after: {after}  spent: {None if before is None or after is None else round(before - after, 2)}")
     if failures:

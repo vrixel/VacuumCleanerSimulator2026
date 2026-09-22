@@ -140,6 +140,15 @@ site banner from them, `store_shots.py --only feature` puts the wordmark on the 
 and the trailer cards sit on the same navy studio (`brand.studio`). The racing-style pictures are kept in
 `marketing/source/race`.
 
+The action pictures (2026-09-22 night, his "you need AI gen images to show better images of the actions no?
+like a hoover swallowing a toilet"): the captures show the HUD, not the joke, so `marketing_real.py --style action`
+edits eight action scenes from the icon (the same red canister dropped into a bright animated-film house: the
+toilet, the couch, the cat, the boost, the cord, the blow-out, the cocoa trail, the garage), and
+`store_shots.py --only action` captions them into `marketing/store/action/NN-name.png` (1920 x 1080, sheet in
+`marketing/store/action_sheet.png`). They lead the Microsoft Store gallery and the Play listing, ahead of the
+captures; the App Store slots keep the captures only (guideline 2.3.3: screenshots show the app in use). The
+trailer's title card carries S3 ("Suck it up. All of it."), the one tagline, and nothing else.
+
 The trailer: `tools\record.ps1` makes the game record itself (30 steps per second, every frame a JPEG, chapter
 marks), `python tools\store_video.py` assembles it (title card, chapter captions, end card, the game's music over
 a low motor hum) into `marketing/video/trailer_1920x1080.mp4` with a poster frame and a contact sheet to check.
