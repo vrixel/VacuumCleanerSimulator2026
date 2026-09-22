@@ -307,7 +307,7 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   render with empty labels; the way through is the console's own JSON API from the page (`/iris/v1/...`,
   same-origin fetch with credentials, no CSRF header): `POST reviewSubmissions` + `POST reviewSubmissionItems` =
   Add for Review (done), `PATCH reviewSubmissions/{id}` `submitted=true` = Submit to App Review, the exact call the
-  button makes, which Apple's edge answered 504 four times that day; the click was left to him (`docs/APPSTORE.md`). Screenshot order is
+  button makes, which Apple's edge answered 504 four times that day; he clicked it himself on 2026-09-22 at 14:03 (App Review page, draft row): 1.0 Waiting for Review (`docs/APPSTORE.md`). Screenshot order is
   locked while the version is in a review submission (409 "Can't Reorder Assets while Ready For Review"): delete
   the reviewSubmissionItem, PATCH the set's appScreenshots relationship sorted by fileName, re-add the item.
 

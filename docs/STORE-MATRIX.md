@@ -183,7 +183,8 @@ a low motor hum) into `marketing/video/trailer_1920x1080.mp4` with a poster fram
   `/iris/v1/reviewSubmissions` + `reviewSubmissionItems`, see `APPSTORE.md`): the version is READY_FOR_REVIEW inside
   review submission d0bffbf7-6a99-42d9-8155-519529054c1b. "Submit to App Review" (the PATCH `submitted=true` the
   button itself sends) came back HTTP 504 from Apple's edge four times in forty minutes with the state unchanged,
-  so that last click is HIS: App Store Connect > App Review, the submission is prepared with version 1.0 in it.
+  so that last click was left to him: he clicked "Submit to App Review" on the App Review page (the draft row) on
+  2026-09-22 at 14:03, and 1.0 is "Waiting for Review". Release is automatic after approval.
 - The icon: chosen and cut (2026-09-22); the Win64 build, the MSIX, the AAB and TestFlight 409 carry it.
 - App Preview video for the App Store: needs device-size footage (the record mode can run the touch layer at the
   iPhone window size); not started.
