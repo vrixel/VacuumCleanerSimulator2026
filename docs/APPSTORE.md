@@ -63,4 +63,13 @@ metadata: App Review treats a competitor's trademark as a rejection.
    version READY_FOR_REVIEW); `PATCH /iris/v1/reviewSubmissions/{id}` with `attributes.submitted=true` = "Submit
    to App Review", which is exactly what the button sends (read in the bundle's `PatchReviewSubmissionAPI`) and
    which returned HTTP 504 from Apple's edge four times on 2026-09-22 (about 21 s each, state unchanged). LEFT TO
-   HIM: "Submit to App Review" on App Store Connect > App Review. Review then takes a day or two.
+   HIM: "Submit to App Review" on App Store Connect > App Review. Review then takes a day or two. Screenshot
+   order (2026-09-22 afternoon, his "the graphic assets of marketplace are not the ones we worked on"): a
+   multi-file drop uploads in arbitrary order, so both slots came out scrambled. Reorder = `PATCH
+   /iris/v1/appScreenshotSets/{setId}/relationships/appScreenshots` with the ids sorted by
+   `included[].attributes.fileName` (from `GET /iris/v1/appStoreVersionLocalizations/{loc}/appScreenshotSets?include=appScreenshots`),
+   but it answers 409 STATE_ERROR "Can't Reorder Assets while Ready For Review" as long as the version sits in a
+   review submission: `DELETE /iris/v1/reviewSubmissionItems/{itemId}` first, reorder, then `POST
+   /iris/v1/reviewSubmissionItems` again (same item id comes back, submission still READY_FOR_REVIEW). Both slots
+   now read 01-game ... 08-tutorial. The fused and action pictures are NOT in the App Store on purpose: guideline
+   2.3.3 wants screenshots of the app in use, so only the captioned captures go there.
