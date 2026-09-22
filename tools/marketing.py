@@ -56,10 +56,10 @@ def main():
         save(cover(key, 920, 430, (0.5, 0.55)), STORE, "steam_header.png")
         save(cover(key, 462, 174, (0.5, 0.55)), STORE, "steam_small.png")
         save(cover(key, 1232, 706, (0.5, 0.5)), STORE, "steam_main.png")
-        save(cover(key, 1200, 630, (0.5, 0.5)), STORE, "og_image.png")
     if hero is not None:
+        save(cover(hero, 1200, 630, (0.5, 0.5)), STORE, "og_image.png")   # from the wide hero since 2026-09-22 (a 16:9 source)
         save(cover(hero, 3840, 1240, (0.5, 0.5)), STORE, "steam_hero.png")
-        save(cover(hero, 1920, 620, (0.5, 0.5)), STORE, "site_banner.png")
+        save(cover(hero, 1920, 620, (0.5, 0.42)), STORE, "site_banner.png")
     if portrait is not None:
         save(cover(portrait, 600, 900, (0.5, 0.4)), STORE, "steam_library.png")
     # Microsoft Store listing art (2026-09-06): poster from the portrait, box art from the key art, heroes from the wide one

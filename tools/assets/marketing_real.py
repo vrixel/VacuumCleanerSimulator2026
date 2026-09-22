@@ -79,6 +79,33 @@ RACE_ITEMS = {
 }
 
 
+# 2026-09-22, his icon pick ("go pour sled navy clean, ensure other marketplace graphic assets follow this"): every
+# marketing picture is now the same machine in the same studio as the icon, edited from the icon itself (the committed
+# copy in marketing/icon-candidates) so the body, the navy and the blue glow match. No debris, no sparks, no room.
+NAVY_REFERENCE = os.path.join(ROOT, "marketing", "icon-candidates", "sled_navy_clean.png")
+NAVY = ("this exact vacuum cleaner from the image: a glossy candy-red canister vacuum with a dark-grey lower shell, "
+        "two silver caps on top, a round blue-lit intake ring on its front, a ribbed black hose, a chrome telescopic "
+        "wand and a flat black floor head, photoreal, NO eyes, NO face, NO mouth")
+NAVY_STYLE = ("Exactly the same look as the image: a deep navy blue studio background with an electric-blue radial light "
+              "burst behind the machine, a glossy wet dark-blue floor with a mirror reflection of the machine, one soft "
+              "thin wisp of grey dust drifting into the floor head and a light dusting of grey dust on the floor. "
+              "Nothing else: no debris, no socks, no toys, no sparks, no tornado, no furniture, no room, no people. "
+              "Punchy, cinematic, family friendly. ABSOLUTELY NO TEXT of any kind: no title, no letters, no logos, "
+              "no watermark.")
+NAVY_ITEMS = {
+    "key_art": (f"Square key art: {NAVY}, large, three-quarter front view from a low camera, the body in the lower right "
+                f"and the wand and floor head reaching to the lower left, leaving the upper third of the frame as empty "
+                f"navy background for a title. {NAVY_STYLE}"),
+    "hero_wide": (f"Very wide landscape banner (16:9): {NAVY}, centred, seen from a low front three-quarter camera as if "
+                  f"charging towards the viewer, the wand and floor head sweeping to the left, a long wisp of dust "
+                  f"trailing behind it to the right, wide empty navy background on both sides. {NAVY_STYLE}"),
+    "library_portrait": (f"Tall portrait poster (2:3): {NAVY}, in the lower half of the frame, seen from a low camera, the "
+                         f"chrome wand rising diagonally through the middle of the picture, the upper third empty navy "
+                         f"background with the blue light burst, for a title. {NAVY_STYLE}"),
+}
+NAVY_SIZE = {"key_art": "square_hd", "hero_wide": "landscape_16_9", "library_portrait": "portrait_3_2"}
+
+
 def log(*a):
     print(*a, flush=True)
 
@@ -90,12 +117,13 @@ def main():
     ap.add_argument("--only", default="")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--model", default="bytedance/seedream-v4-edit")
-    ap.add_argument("--style", default="swap", choices=["swap", "race"], help="swap: keep the cartoon composition; race: racing-game key art from the reference alone")
+    ap.add_argument("--style", default="swap", choices=["swap", "race", "navy"], help="swap: keep the cartoon composition; race: racing-game key art from the reference alone; navy: the icon's studio (2026-09-22) edited from the icon")
     a = ap.parse_args()
     only = {s.strip() for s in a.only.split(",") if s.strip()}
-    items = RACE_ITEMS if a.style == "race" else ITEMS
+    items = {"race": RACE_ITEMS, "navy": NAVY_ITEMS}.get(a.style, ITEMS)
+    reference = NAVY_REFERENCE if a.style == "navy" else REFERENCE
     names = [n for n in items if not only or n in only]
-    tag = "race_" if a.style == "race" else "real_"
+    tag = {"race": "race_", "navy": "navy_"}.get(a.style, "real_")
 
     os.makedirs(CARTOON, exist_ok=True)
     if a.list:
@@ -103,8 +131,8 @@ def main():
             raw = os.path.join(RAW, f"{tag}{n}.png")
             log(f"{'done' if os.path.exists(raw) else 'todo':5} {n:18} <- {os.path.relpath(os.path.join(CARTOON, n + '.png'), ROOT)}")
         return 0
-    if not os.path.exists(REFERENCE):
-        log("reference render missing: " + REFERENCE)
+    if not os.path.exists(reference):
+        log("reference render missing: " + reference)
         return 1
 
     k = kiemod.Kie()
@@ -117,6 +145,11 @@ def main():
         base = os.path.join(CARTOON, n + ".png")
         if not os.path.exists(base):
             shutil.copy2(os.path.join(SRC, n + ".png"), base)
+        if a.style == "navy":   # the racing pictures step aside the same way the cartoons did
+            keep = os.path.join(SRC, "race", n + ".png")
+            if not os.path.exists(keep) and os.path.exists(os.path.join(RAW, f"race_{n}.png")):
+                os.makedirs(os.path.dirname(keep), exist_ok=True)
+                shutil.copy2(os.path.join(RAW, f"race_{n}.png"), keep)
         raw = os.path.join(RAW, f"{tag}{n}.png")
         if os.path.exists(raw) and os.path.getsize(raw) > 10000 and not a.force:
             log(f"[{n}] already there, skipped")
@@ -126,10 +159,12 @@ def main():
         else:
             try:
                 if ref_url is None:
-                    ref_url = k.upload(REFERENCE, "images/vcs")
+                    ref_url = k.upload(reference, "images/vcs")
                     log("   reference uploaded")
-                urls = [ref_url] if a.style == "race" else [k.upload(base, "images/vcs"), ref_url]
+                urls = [ref_url] if a.style in ("race", "navy") else [k.upload(base, "images/vcs"), ref_url]
                 inp = {"prompt": items[n], "image_urls": urls, "output_format": "png"}
+                if a.style == "navy" and n in NAVY_SIZE:
+                    inp["image_size"] = NAVY_SIZE[n]   # measured afterwards: the models do not always honour it
                 r = k._request(k.base + "/api/v1/jobs/createTask", {"model": a.model, "input": inp})
                 tid = (r.get("data") or {}).get("taskId")
                 if not tid:
@@ -142,7 +177,14 @@ def main():
                 failures.append((n, str(e)))
                 log(f"[{n}] FAILED: {e}")
                 continue
-        shutil.copy2(raw, os.path.join(SRC, n + ".png"))
+        if a.style == "navy" and n == "key_art":
+            # a square asked of seedream comes back as an icon: rounded corners on a white margin (2026-09-22)
+            sys.path.insert(0, os.path.join(ROOT, "tools"))
+            import wordmark  # noqa: E402
+            from PIL import Image  # noqa: E402
+            wordmark.edge_to_edge(Image.open(raw)).convert("RGB").save(os.path.join(SRC, n + ".png"))
+        else:
+            shutil.copy2(raw, os.path.join(SRC, n + ".png"))
         log(f"   -> {os.path.relpath(os.path.join(SRC, n + '.png'), ROOT)}")
     after = None if a.dry_run else k.credits()
     log(f"balance after: {after}  spent: {None if before is None or after is None else round(before - after, 2)}")

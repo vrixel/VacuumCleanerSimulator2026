@@ -63,12 +63,8 @@ def read_marks():
 
 
 def card(kind):
-    """The title and end cards: wordmark on the HUD's dark panel, the yellow / blue rule, no glow."""
-    im = Image.new("RGBA", SIZE, brand.PANEL + (255,))
-    d = ImageDraw.Draw(im)
-    # a faint diagonal hatch, so the card is not a flat rectangle (his 2026-09-06 rule)
-    for x in range(-SIZE[1], SIZE[0], 26):
-        d.line([(x, SIZE[1]), (x + SIZE[1], 0)], fill=(26, 30, 40, 255), width=6)
+    """The title and end cards: wordmark on the navy studio of the store art, the yellow / blue rule."""
+    im = brand.studio(SIZE, (0.5, 0.45), 0.34)   # the navy studio of the store art (2026-09-22), no flat rectangle
     wm = brand.wordmark(1240)
     wm = brand.drop_shadow(wm, 26, (0, 18), 170)
     im.alpha_composite(wm, ((SIZE[0] - wm.size[0]) // 2, (SIZE[1] - wm.size[1]) // 2 - (60 if kind == "end" else 30)))

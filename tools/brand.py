@@ -19,6 +19,8 @@ WHITE = (255, 255, 255)
 INK = (10, 10, 15)
 PANEL = (20, 23, 31)
 STEEL = (199, 212, 230)
+NAVY = (4, 14, 63)        # the store art backdrop (2026-09-22, his icon pick): deep navy under an electric-blue burst
+GLOW = (0, 90, 230)
 
 
 def font(name, size):
@@ -132,6 +134,22 @@ def vignette(size, strength=0.55, inner=0.55):
     layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     layer.putalpha(a)
     return layer
+
+
+def studio(size, centre=(0.5, 0.5), radius=0.38):
+    """The navy studio of the store art: NAVY with an electric-blue radial glow, so cards match the key art."""
+    w, h = size
+    small = Image.new("L", (64, 64), 0)
+    d = ImageDraw.Draw(small)
+    cx, cy = int(64 * centre[0]), int(64 * centre[1])
+    r = int(64 * radius)
+    d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=255)
+    small = small.filter(ImageFilter.GaussianBlur(14)).resize((w, h), Image.BICUBIC)
+    glow = Image.new("RGBA", (w, h), GLOW + (255,))
+    glow.putalpha(small.point(lambda v: int(v * 0.6)))
+    im = Image.new("RGBA", (w, h), NAVY + (255,))
+    im.alpha_composite(glow)
+    return im
 
 
 def wordmark_line(height=120):

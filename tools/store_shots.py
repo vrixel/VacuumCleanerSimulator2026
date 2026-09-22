@@ -15,7 +15,7 @@ Sets and sizes (a player window cannot exceed the display, so the sets are captu
     iphone  717x330  -Super 4 -> 2868x1320   App Store iPhone 6.9" and, resized, the 6.5" slot 2688x1242 -> marketing/appstore
     ipad    688x516  -Super 4 -> 2752x2064   App Store iPad 13"                -> marketing/appstore
 The gallery (1920x1080, all nineteen machines with their name tabs) goes to marketing/store/gallery_1920x1080.png
-plus one copy per store folder at that store's size. The feature graphic (1024x500) is the key art under the wordmark.
+plus one copy per store folder at that store's size. The feature graphic (1024x500) is the wide hero with the wordmark on its empty left.
 
 Look at every output: the tool proves the files exist, not that a caption sits clear of the HUD.
 """
@@ -242,20 +242,21 @@ def style_bottom(setname):
 
 
 def feature_graphic():
-    """Play's 1024x500: the key art under the one-line wordmark, no text in the picture itself."""
-    src = os.path.join(STORE, "key_art.png")
+    """Play's 1024x500: the wide navy hero (2026-09-22, the icon's studio) with the wordmark in the empty left third."""
+    src = os.path.join(ROOT, "marketing", "source", "hero_wide.png")
     if not os.path.exists(src):
         print("  missing", os.path.relpath(src, ROOT))
         return None
     im = Image.open(src).convert("RGB")
     sw, sh = im.size
     scale = max(1024 / sw, 500 / sh)
-    im = im.resize((int(sw * scale), int(sh * scale)), Image.LANCZOS)
-    x = int((im.size[0] - 1024) * 0.22)   # the machine sits left, the wordmark takes the dark room on the right
-    im = im.crop((x, int((im.size[1] - 500) * 0.35), x + 1024, int((im.size[1] - 500) * 0.35) + 500)).convert("RGBA")  # noqa: E501
-    im.alpha_composite(brand.vignette((1024, 500), 0.45, 0.6))
-    wm = brand.wordmark(540)
-    im.alpha_composite(brand.drop_shadow(wm, 16, (0, 10), 170), (1024 - wm.size[0] - 40 - 48, 500 - wm.size[1] - 30 - 48))
+    im = im.resize((int(round(sw * scale)), int(round(sh * scale))), Image.LANCZOS)
+    x = (im.size[0] - 1024) // 2
+    y = int((im.size[1] - 500) * 0.55)   # keep the floor head and the reflection, lose a little sky
+    im = im.crop((x, y, x + 1024, y + 500)).convert("RGBA")
+    wm = brand.wordmark(350)   # 430 touched the wand
+    wm = brand.drop_shadow(wm, 16, (0, 10), 190)
+    im.alpha_composite(wm, (48 - 48, (500 - wm.size[1]) // 2 - 10))
     return im.convert("RGB")
 
 

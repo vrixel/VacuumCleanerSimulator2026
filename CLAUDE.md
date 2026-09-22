@@ -336,6 +336,16 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   `sled_navy_clean_nb` nano-banana-edit both honoured the removal, a dust wisp only) plus a fresh `sled_navy_plain`
   from the photo as a fallback (it kept two sparks and invented a lightning glyph). A removal delta is the one
   delta nano-banana-edit does apply.
+  His pick (2026-09-22, "go pour sled navy clean ensure other marketplace graphic assets follow this"): `sled_navy_clean`
+  bare is `marketing/source/icon.png` (the badge is unreadable at 64 px; the racing icon and pictures moved to
+  `marketing/source/race`), and every store picture now comes from the icon: `marketing_real.py --style navy`
+  edits key art, wide hero and portrait FROM THE ICON (`marketing/icon-candidates/sled_navy_clean.png` as the
+  single `image_urls` entry, 5 credits each) so the machine and the studio match; with `image_size`
+  (`landscape_16_9`, `portrait_3_2`) seedream-v4-edit returned 1920 x 1080 and 1184 x 1776 as asked, but the
+  `square_hd` one came back as an icon with rounded corners on white, so the key art goes through
+  `wordmark.edge_to_edge`. `brand.NAVY` / `brand.studio` (navy under a blue radial glow) is the backdrop of the
+  trailer cards; the Play feature graphic is the wide hero with the wordmark on its empty left; og_image and the
+  site banner are cut from the wide hero (a real 16:9 now). Look at the recut sheet before a submission.
   Captures: the PC is a locked RDP session at 1366 x 768, so store sizes come from a fraction of the size with
   `-Super` (960 x 540 S2 for PC and phone, 717 x 330 S4 iPhone, 688 x 516 S4 iPad); run outcomes (cat chase, cord
   yank) vary with the window size, so look at the contact sheet for each set. The trailer: `-record <dir>`

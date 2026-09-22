@@ -15,7 +15,8 @@ Writes:
                                               bare and badged: the picture to choose from
 
 Nothing here replaces the shipped icon (marketing/icon, Assets/Icon/icon.png): that is his pick, then
-`python tools/marketing.py` cuts the sizes from marketing/source/icon.png.
+`python tools/marketing.py` cuts the sizes from marketing/source/icon.png. Since 2026-09-22 the shipped icon is
+sled_navy_clean bare (copied there by hand), so the sheet's first row and that candidate are the same picture.
 """
 import argparse
 import os

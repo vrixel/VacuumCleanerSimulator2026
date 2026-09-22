@@ -129,12 +129,16 @@ PC adds 09 the plug yanked and 10 the rewind. The captions sit above the cockpit
 in a zone that never covers the REWIND button (`CAPTION_ZONE` in `store_shots.py`).
 
 The wordmark (`marketing/logo/wordmark.png`, transparent, and `wordmark-line.png`) is the same on the gallery,
-the feature graphic, the trailer cards and the site. The icon is his open pick: four kie candidates next to the
-shipped icon at 512 / 128 / 64 with the store corner mask in `marketing/icon-candidates/sheet.png` (second round after his first look: three red-sled
-vortex candidates on blue, cyan and navy backgrounds; third round: the navy one with the tornado, debris and
-sparks removed, only the machine and a wisp of dust, his "love sled navy but remove tornado, debris and sparks")
-(`tools/assets/icon_candidates.py` generates, `tools/wordmark.py --sheet` composes); nothing replaces
-`marketing/source/icon.png` until he chooses, then `python tools\marketing.py` cuts every size.
+the feature graphic, the trailer cards and the site. The icon is `sled_navy_clean` (his pick of 2026-09-22 after
+three kie rounds, `marketing/icon-candidates/sheet.png`: the red canister of his own photo, edited once more to
+keep only the machine and a wisp of dust on a deep navy studio with an electric-blue burst; no text, since a
+badge is unreadable at 64 px). Every other picture follows it ("ensure other marketplace graphic assets follow
+this"): `tools/assets/marketing_real.py --style navy` edits the key art, the wide hero and the portrait from the
+icon itself (same machine, same studio, no debris, no sparks, no text; seedream honoured the 16:9 and 2:3 sizes
+this time), `tools/marketing.py` cuts the Microsoft poster, box art, super hero, `ms_icon_300`, og_image and the
+site banner from them, `store_shots.py --only feature` puts the wordmark on the empty left of the hero for Play,
+and the trailer cards sit on the same navy studio (`brand.studio`). The racing-style pictures are kept in
+`marketing/source/race`.
 
 The trailer: `tools\record.ps1` makes the game record itself (30 steps per second, every frame a JPEG, chapter
 marks), `python tools\store_video.py` assembles it (title card, chapter captions, end card, the game's music over
@@ -150,7 +154,7 @@ a low motor hum) into `marketing/video/trailer_1920x1080.mp4` with a poster fram
 - App Store: the version 1.0 page carries the 0.4.7 shots, the 0.4.7 promo text and "twenty achievements". Before
   "Add for Review": the eight iPhone 6.5" and eight iPad 13" captioned shots, **PROMO**, **D** + **P-TOUCH**, **KW**,
   **WN**, and build 409 once it is on TestFlight.
-- The icon: his pick from the sheet, then `tools\marketing.py`, a rebuild (exe icon), a new MSIX and AAB and an
-  iOS export (the icon travels inside the builds).
+- The icon: chosen and cut (2026-09-22); the Win64 build, the MSIX and the AAB carry it. The iOS export
+  (`tools\build-ios.ps1 -Upload`) still has to run for TestFlight build 409 to carry it.
 - App Preview video for the App Store: needs device-size footage (the record mode can run the touch layer at the
   iPhone window size); not started.
