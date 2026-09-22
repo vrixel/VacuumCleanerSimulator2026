@@ -87,6 +87,28 @@ for _bg, _desc in SLED_BG.items():
     ITEMS[f"sled_{_bg}"] = SLED_SCENE + _desc + NO_TEXT
 SLED_ITEMS = {n for n in ITEMS if n.startswith("sled_")}
 
+# third round (his "love sled navy but remove tornado, debris and sparks just keep the hoover and some dust"):
+# edits of the navy candidate itself, so the composition he liked survives, plus one fresh take as a fallback.
+# name -> (prompt, reference image, model)
+CLEAN = ("Remove the tornado, all the flying debris, the sock, the toy bricks, the coin, the crumbs and every spark. "
+         "Keep the vacuum cleaner exactly as it is (same red body, hose, chrome wand, floor head, same position, "
+         "same blue glow in the intake and the same navy background with its blue radial glow and the wet-floor "
+         "reflection). Leave only a soft thin wisp of grey dust drifting into the floor head and a light dusting on "
+         "the floor around it. Nothing else on the floor." + NO_TEXT)
+EDITS = {
+    "sled_navy_clean": (CLEAN, os.path.join(RAW, "icon_sled_navy.png"), "bytedance/seedream-v4-edit"),
+    "sled_navy_clean_nb": (CLEAN, os.path.join(RAW, "icon_sled_navy.png"), "google/nano-banana-edit"),
+    "sled_navy_plain": (f"{ICON} {SLED}, the whole machine visible and big, centred, tilted as if lunging forward, the "
+                        f"flat black floor head in the foreground bottom-left with a soft thin wisp of grey dust "
+                        f"drifting into it and a light dusting on the floor, the chrome wand and the black hose curving "
+                        f"up and back to the big glossy red body on the right, an electric-blue glow inside the intake, "
+                        f"a wet-floor reflection under the machine. No debris, no objects, no sparks, no tornado. "
+                        f"Punchy, cinematic. Background: " + SLED_BG["navy"] + NO_TEXT,
+                        SLED_REFERENCE, "bytedance/seedream-v4-edit"),
+}
+for _n, (_p, _r, _m) in EDITS.items():
+    ITEMS[_n] = _p
+
 
 def log(*a):
     print(*a, flush=True)
@@ -107,8 +129,13 @@ def main():
         for n in names:
             log(f"{'done' if os.path.exists(os.path.join(RAW, 'icon_' + n + '.png')) else 'todo':5} {n}")
         return 0
+    def ref_of(n):
+        if n in EDITS:
+            return EDITS[n][1]
+        return SLED_REFERENCE if n in SLED_ITEMS else REFERENCE
+
     for n in names:
-        need = SLED_REFERENCE if n in SLED_ITEMS else REFERENCE
+        need = ref_of(n)
         if not os.path.exists(need):
             log(f"reference missing for {n}: {need}")
             return 1
@@ -122,20 +149,21 @@ def main():
         if os.path.exists(raw) and os.path.getsize(raw) > 10000 and not a.force:
             log(f"[{n}] already there, skipped")
         elif a.dry_run:
-            log(f"[{n}] would generate with {a.model}")
+            log(f"[{n}] would generate with {EDITS[n][2] if n in EDITS else a.model} from {os.path.basename(ref_of(n))}")
             continue
         else:
             try:
-                ref = SLED_REFERENCE if n in SLED_ITEMS else REFERENCE
+                ref = ref_of(n)
+                model = EDITS[n][2] if n in EDITS else a.model
                 if ref not in ref_urls:
                     ref_urls[ref] = k.upload(ref, "images/vcs")
                     log(f"   reference uploaded: {os.path.basename(ref)}")
                 inp = {"prompt": ITEMS[n], "image_urls": [ref_urls[ref]], "output_format": "png"}
-                r = k._request(k.base + "/api/v1/jobs/createTask", {"model": a.model, "input": inp})
+                r = k._request(k.base + "/api/v1/jobs/createTask", {"model": model, "input": inp})
                 tid = (r.get("data") or {}).get("taskId")
                 if not tid:
                     raise kiemod.KieError("no taskId: " + json.dumps(r)[:200])
-                log(f"[{n}] task {tid} ({a.model})")
+                log(f"[{n}] task {tid} ({model})")
                 url = k.poll(tid)
                 size = k.download(url, raw)
                 log(f"   OK -> {os.path.relpath(raw, ROOT)} ({size // 1024} KB)")

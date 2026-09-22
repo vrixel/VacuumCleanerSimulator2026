@@ -329,7 +329,13 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   `tools/assets/raw/icon_sled_reference.png`, a product photo, never shipped) and ask for one flat saturated
   background that fights the red body; the model honoured the machine 3/3. The models draw their own rounded icon
   on white with a radius the 4.5 % crop does not reach, so `wordmark.edge_to_edge` floods the leftover white corners
-  with the colour of the nearest edge (the Microsoft Store applies no mask).
+  with the colour of the nearest edge (the Microsoft Store applies no mask; the flood now also takes a
+  black margin, which the third-round take drew, with a per-name `INSET`). Third round, his "love sled navy but
+  remove tornado, debris and sparks just keep the hoover and some dust": the `EDITS` table in `icon_candidates.py`
+  edits the navy raw itself so the composition he liked survives (`sled_navy_clean` seedream-v4-edit and
+  `sled_navy_clean_nb` nano-banana-edit both honoured the removal, a dust wisp only) plus a fresh `sled_navy_plain`
+  from the photo as a fallback (it kept two sparks and invented a lightning glyph). A removal delta is the one
+  delta nano-banana-edit does apply.
   Captures: the PC is a locked RDP session at 1366 x 768, so store sizes come from a fraction of the size with
   `-Super` (960 x 540 S2 for PC and phone, 717 x 330 S4 iPhone, 688 x 516 S4 iPad); run outcomes (cat chase, cord
   yank) vary with the window size, so look at the contact sheet for each set. The trailer: `-record <dir>`

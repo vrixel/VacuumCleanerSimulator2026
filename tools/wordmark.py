@@ -30,7 +30,9 @@ ROOT = brand.ROOT
 LOGO = os.path.join(ROOT, "marketing", "logo")
 CAND = os.path.join(ROOT, "marketing", "icon-candidates")
 SHIPPED = os.path.join(ROOT, "marketing", "source", "icon.png")
-NAMES = ["chaos", "vortex", "cat", "sticker", "sled_blue", "sled_cyan", "sled_navy"]
+NAMES = ["chaos", "vortex", "cat", "sticker", "sled_blue", "sled_cyan", "sled_navy",
+         "sled_navy_clean", "sled_navy_clean_nb", "sled_navy_plain"]
+INSET = {"sled_navy_plain": 0.075}   # that take drew a thicker black margin
 
 
 def edge_to_edge(im, inset=0.045):
@@ -45,8 +47,9 @@ def edge_to_edge(im, inset=0.045):
     out = im.crop(box).resize((1024, 1024), Image.LANCZOS).convert("RGB")
     W, H = out.size
     for cx, cy, ex, ey in ((0, 0, W // 2, 2), (W - 1, 0, W // 2, 2), (0, H - 1, W // 2, H - 3), (W - 1, H - 1, W // 2, H - 3)):
-        if min(out.getpixel((cx, cy))) > 225:
-            ImageDraw.floodfill(out, (cx, cy), out.getpixel((ex, ey)), thresh=60)
+        c, e = out.getpixel((cx, cy)), out.getpixel((ex, ey))
+        if sum(abs(a - b) for a, b in zip(c, e)) > 90:   # a leftover margin (white, or black on the navy takes)
+            ImageDraw.floodfill(out, (cx, cy), e, thresh=60)
     return out.convert("RGBA")
 
 
@@ -105,7 +108,12 @@ def sheet(candidates):
         if badged is None:
             badged = bare
         x = pad
-        lab = brand.plain_text(name.upper(), 34, brand.YELLOW, "RussoOne")
+        size = 34
+        while True:   # long names shrink to fit the label column
+            lab = brand.plain_text(name.upper(), size, brand.YELLOW, "RussoOne")
+            if lab.size[0] <= 210 or size <= 16:
+                break
+            size -= 2
         im.alpha_composite(lab, (x, y + 200))
         x += 220
         for i, (src, size) in enumerate([(bare, 512), (badged, 512), (bare, 128), (badged, 128), (bare, 64), (badged, 64)]):
@@ -141,7 +149,7 @@ def main():
         if not os.path.exists(src):
             print("missing candidate", src)
             continue
-        bare = edge_to_edge(Image.open(src))
+        bare = edge_to_edge(Image.open(src), INSET.get(n, 0.045))
         badged = badge(bare)
         if not a.sheet:
             bare.save(os.path.join(CAND, f"{n}-bare.png"))
