@@ -11,6 +11,13 @@ seedream-v4-edit from the reference render of Monsieur Traineau, so the machine 
 Raws land in tools/assets/raw/icon_<name>.png (kept, never overwritten without --force), copies in
 marketing/icon-candidates/<name>.png. Look at every one on the contact sheet (tools/wordmark.py --sheet) before
 choosing; a `success` proves an image came back, not that the prompt was honoured.
+
+Second round (his 2026-09-22 verdict on the first sheet: "I like the vortex style but I want a traineaux vacuum not
+the dyson type ... make sure the background color and vacuum color are contrasting and use same as top selling
+games"): the sled_* items keep the vortex composition but the machine is a glossy red canister on a black base, from
+his own reference photo (tools/assets/raw/icon_sled_reference.png, local only: it is a product photo, shape and
+colour inspiration, never shipped), and the background is one flat saturated colour that fights the red machine,
+the way the top-grossing game icons do (one big centred subject, an edge-to-edge burst, nothing small).
 """
 import argparse
 import json
@@ -26,6 +33,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 RAW = os.path.join(ROOT, "tools", "assets", "raw")
 OUT = os.path.join(ROOT, "marketing", "icon-candidates")
 REFERENCE = os.path.join(ROOT, "docs", "research", "traineau-reference.png")
+SLED_REFERENCE = os.path.join(RAW, "icon_sled_reference.png")   # his photo, gitignored with the raws
 MODEL = "bytedance/seedream-v4-edit"
 
 MACHINE = ("this exact vacuum cleaner from the image, a red and dark-grey canister vacuum on two large spoked rear wheels "
@@ -33,6 +41,23 @@ MACHINE = ("this exact vacuum cleaner from the image, a red and dark-grey canist
 NO_TEXT = " ABSOLUTELY NO TEXT of any kind: no title, no letters, no numbers, no logos, no watermark."
 ICON = ("App icon, square, edge to edge, bold and readable when tiny (60 pixels), one strong silhouette, high contrast, "
         "clean 3D render, family friendly.")
+SLED = ("this exact vacuum cleaner from the image: a glossy candy-red canister vacuum with a domed body on a black base "
+        "and black bumper, small chrome buttons on top, a black corrugated hose arching up out of the front of the body, "
+        "a chrome telescopic wand and a flat black floor head, NO eyes, NO face, NO mouth")
+SLED_SCENE = (f"{ICON} {SLED}, the whole machine visible and big, centred: the flat black floor head in the foreground "
+              f"at floor level bottom-left with a dramatic spiralling tornado of dust, crumbs, a striped sock, toy bricks "
+              f"and a coin twisting down into its intake, the chrome wand and the black hose curving up and back to the "
+              f"big glossy red body on the right, tilted as if lunging forward, an electric-blue glow inside the intake, "
+              f"a few orange sparks, a wet-floor reflection under the machine. Punchy, cinematic, the red body must pop "
+              f"against the background. Background: ")
+SLED_BG = {
+    "blue": "a flat vivid electric-blue (royal blue) filling the whole frame with a subtle lighter-blue radial "
+            "sunburst of straight rays from behind the machine, no room, no horizon.",
+    "cyan": "a flat bright cyan-turquoise filling the whole frame, a little lighter at the top, with a subtle "
+            "radial sunburst of straight paler rays from behind the machine, no room, no horizon.",
+    "navy": "a deep navy-blue filling the whole frame with a strong electric-blue radial glow right behind the "
+            "machine so its red body is rimmed with light, no room, no horizon.",
+}
 
 ITEMS = {
     # the machine eating the mess: the game in one picture
@@ -57,6 +82,10 @@ ITEMS = {
                 f"background with a subtle radial burst of lighter-blue rays. Clean, graphic, readable when tiny, family "
                 f"friendly, NO eyes, NO face.{NO_TEXT}"),
 }
+# second round: the vortex idea on the red sled, three backgrounds that contrast with the machine
+for _bg, _desc in SLED_BG.items():
+    ITEMS[f"sled_{_bg}"] = SLED_SCENE + _desc + NO_TEXT
+SLED_ITEMS = {n for n in ITEMS if n.startswith("sled_")}
 
 
 def log(*a):
@@ -78,13 +107,15 @@ def main():
         for n in names:
             log(f"{'done' if os.path.exists(os.path.join(RAW, 'icon_' + n + '.png')) else 'todo':5} {n}")
         return 0
-    if not os.path.exists(REFERENCE):
-        log("reference render missing: " + REFERENCE)
-        return 1
+    for n in names:
+        need = SLED_REFERENCE if n in SLED_ITEMS else REFERENCE
+        if not os.path.exists(need):
+            log(f"reference missing for {n}: {need}")
+            return 1
     k = kiemod.Kie()
     before = None if a.dry_run else k.credits()
     log(f"balance before: {before}")
-    ref_url = None
+    ref_urls = {}
     failures = []
     for n in names:
         raw = os.path.join(RAW, f"icon_{n}.png")
@@ -95,10 +126,11 @@ def main():
             continue
         else:
             try:
-                if ref_url is None:
-                    ref_url = k.upload(REFERENCE, "images/vcs")
-                    log("   reference uploaded")
-                inp = {"prompt": ITEMS[n], "image_urls": [ref_url], "output_format": "png"}
+                ref = SLED_REFERENCE if n in SLED_ITEMS else REFERENCE
+                if ref not in ref_urls:
+                    ref_urls[ref] = k.upload(ref, "images/vcs")
+                    log(f"   reference uploaded: {os.path.basename(ref)}")
+                inp = {"prompt": ITEMS[n], "image_urls": [ref_urls[ref]], "output_format": "png"}
                 r = k._request(k.base + "/api/v1/jobs/createTask", {"model": a.model, "input": inp})
                 tid = (r.get("data") or {}).get("taskId")
                 if not tid:

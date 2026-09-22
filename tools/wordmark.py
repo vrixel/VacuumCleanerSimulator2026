@@ -30,15 +30,24 @@ ROOT = brand.ROOT
 LOGO = os.path.join(ROOT, "marketing", "logo")
 CAND = os.path.join(ROOT, "marketing", "icon-candidates")
 SHIPPED = os.path.join(ROOT, "marketing", "source", "icon.png")
-NAMES = ["chaos", "vortex", "cat", "sticker"]
+NAMES = ["chaos", "vortex", "cat", "sticker", "sled_blue", "sled_cyan", "sled_navy"]
 
 
 def edge_to_edge(im, inset=0.045):
-    """Crop the rounded-corner margin the models leave and fill the frame again."""
+    """Crop the rounded-corner margin the models leave and fill the frame again.
+
+    The models draw their own rounded icon on white, with a radius the inset does not reach, so what is left of
+    each white corner is flooded with the background colour sampled at the middle of the nearest edge (the
+    Microsoft Store applies no mask: a bare icon must be square to the last pixel)."""
     im = im.convert("RGBA")
     w, h = im.size
     box = (int(w * inset), int(h * inset), int(w * (1 - inset)), int(h * (1 - inset)))
-    return im.crop(box).resize((1024, 1024), Image.LANCZOS)
+    out = im.crop(box).resize((1024, 1024), Image.LANCZOS).convert("RGB")
+    W, H = out.size
+    for cx, cy, ex, ey in ((0, 0, W // 2, 2), (W - 1, 0, W // 2, 2), (0, H - 1, W // 2, H - 3), (W - 1, H - 1, W // 2, H - 3)):
+        if min(out.getpixel((cx, cy))) > 225:
+            ImageDraw.floodfill(out, (cx, cy), out.getpixel((ex, ey)), thresh=60)
+    return out.convert("RGBA")
 
 
 def badge(im):

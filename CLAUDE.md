@@ -322,7 +322,14 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   sets: `marketing/store/screens` 1920 x 1080 with the cockpit, `marketing/play/phone-NN` touch, `marketing/appstore`
   iPhone 6.5" 2688 x 1242 and iPad 13" 2752 x 2064, plus the nineteen-machine gallery and the Play feature graphic;
   the caption wording lives THERE and must match `store_video.py` and the matrix table), `tools/assets/icon_candidates.py`
-  (four kie icon candidates next to the shipped one; nothing replaces `marketing/source/icon.png` until he picks).
+  (kie icon candidates next to the shipped one; nothing replaces `marketing/source/icon.png` until he picks). His
+  verdict on the first four (2026-09-22 evening, "I like the vortex style but I want a traineaux vacuum not the
+  dyson type ... background color and vacuum color contrasting ... same as top selling games"): the `sled_blue` /
+  `sled_cyan` / `sled_navy` items feed seedream-v4-edit HIS photo of a red canister (kept local in
+  `tools/assets/raw/icon_sled_reference.png`, a product photo, never shipped) and ask for one flat saturated
+  background that fights the red body; the model honoured the machine 3/3. The models draw their own rounded icon
+  on white with a radius the 4.5 % crop does not reach, so `wordmark.edge_to_edge` floods the leftover white corners
+  with the colour of the nearest edge (the Microsoft Store applies no mask).
   Captures: the PC is a locked RDP session at 1366 x 768, so store sizes come from a fraction of the size with
   `-Super` (960 x 540 S2 for PC and phone, 717 x 330 S4 iPhone, 688 x 516 S4 iPad); run outcomes (cat chase, cord
   yank) vary with the window size, so look at the contact sheet for each set. The trailer: `-record <dir>`

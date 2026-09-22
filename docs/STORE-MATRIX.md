@@ -130,7 +130,8 @@ in a zone that never covers the REWIND button (`CAPTION_ZONE` in `store_shots.py
 
 The wordmark (`marketing/logo/wordmark.png`, transparent, and `wordmark-line.png`) is the same on the gallery,
 the feature graphic, the trailer cards and the site. The icon is his open pick: four kie candidates next to the
-shipped icon at 512 / 128 / 64 with the store corner mask in `marketing/icon-candidates/sheet.png`
+shipped icon at 512 / 128 / 64 with the store corner mask in `marketing/icon-candidates/sheet.png` (second round after his first look: three red-sled
+vortex candidates on blue, cyan and navy backgrounds)
 (`tools/assets/icon_candidates.py` generates, `tools/wordmark.py --sheet` composes); nothing replaces
 `marketing/source/icon.png` until he chooses, then `python tools\marketing.py` cuts every size.
 
