@@ -149,6 +149,16 @@ toilet, the couch, the cat, the boost, the cord, the blow-out, the cocoa trail, 
 captures; the App Store slots keep the captures only (guideline 2.3.3: screenshots show the app in use). The
 trailer's title card carries S3 ("Suck it up. All of it."), the one tagline, and nothing else.
 
+The fused set (2026-09-22, his "hope you will mix and match action images with actual screenshots + i miss the
+garage view, seeing all differents hoovers is a selling point", then "pas un ordre mix une sorte de fusion entre
+generated art and screenshots"): each picture of `marketing/store/fusion/NN-name.png` is the action art filling the
+frame, a real capture standing on it as a tilted photo plate on the side the machine leaves free, and the machine cut
+out of the art (`marketing_real.py --cutouts`, recraft remove-background, 1 credit each) back on top so the gag bursts
+over the gameplay. The garage one carries the nineteen-machine gallery as its plate: that is the garage view. Same
+captions as the action set (`ACTION_SHOTS`), rendered by `store_shots.py --only fusion`, sheet in
+`marketing/store/fusion_sheet.png`. This set replaces the plain action set at the head of the Microsoft Store and Play
+galleries and on the site; the App Store slots still keep the captures only.
+
 The trailer: `tools\record.ps1` makes the game record itself (30 steps per second, every frame a JPEG, chapter
 marks), `python tools\store_video.py` assembles it (title card, chapter captions, end card, the game's music over
 a low motor hum) into `marketing/video/trailer_1920x1080.mp4` with a poster frame and a contact sheet to check.

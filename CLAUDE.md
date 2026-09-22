@@ -359,6 +359,21 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   in the raws. Apple only accepts pictures of the app in use, so the action set goes to the Microsoft and Play
   galleries and the site, never the App Store slots. The trailer's title-card subline is S3 of the matrix ("Suck it
   up. All of it."): no wording of my own on a store asset, the matrix is the single source.
+  Fused pictures (2026-09-22, his "hope you will mix and match action images with actual screenshots + i miss the
+  garage view" and "pas un ordre mix une sorte de fusion entre generated art and screenshots"): `store_shots.py
+  --only fusion` renders `marketing/store/fusion` from `FUSION_PAIRS`: the action art covers the frame, the paired
+  capture from `Builds/store-raw/pc` (the nineteen-machine gallery for the garage) stands on it as a tilted photo
+  plate (`photo_plate`, white edge, ink outline, drop shadow) on the side the red body leaves free (`body_centre`
+  reads the red pixels of the cutout: the alpha bbox is useless because the hose, the cord or the gag span the whole
+  frame), and the machine cut out of the art comes back on top. Cutouts: `marketing_real.py --cutouts`
+  (`recraft/remove-background`, input field `image`, 1 credit, 5 s, clean 8/8 including the toilet in the hose and
+  the debris fountain) into the gitignored raws and `marketing/source/action/cut/`. The blowout plate sits lower and
+  smaller because the fountain fills the top right. Blueprint backdrop (his "subtle stylised outline of technical
+  drawing ... instead of uniform bland blue background"): a seedream edit of the icon into an engineering sheet
+  (`tools/assets/raw/bp_sheet.png`) came back with gibberish dimension figures despite the NO TEXT clause (painted
+  out with flat navy boxes), and a direct edit of the icon recomposed the machine, so the drawing was composed
+  locally behind the recraft cutout of the icon; the comparison sheet went to him, nothing shipped until he picks a
+  level.
   Captures: the PC is a locked RDP session at 1366 x 768, so store sizes come from a fraction of the size with
   `-Super` (960 x 540 S2 for PC and phone, 717 x 330 S4 iPhone, 688 x 516 S4 iPad); run outcomes (cat chase, cord
   yank) vary with the window size, so look at the contact sheet for each set. The trailer: `-record <dir>`

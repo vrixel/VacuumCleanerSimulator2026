@@ -148,9 +148,52 @@ def log(*a):
     print(*a, flush=True)
 
 
+def cutouts(names, force):
+    """The machine (and whatever it is doing) cut out of each action picture with recraft/remove-background, 1 credit
+    each (2026-09-22): raw in tools/assets/raw/action_<name>_cut.png, shipped copy in marketing/source/action/cut/
+    (the raws are gitignored). store_shots.py fuses each cutout over a real capture (--only fusion)."""
+    out_dir = os.path.join(SRC, "action", "cut")
+    os.makedirs(out_dir, exist_ok=True)
+    k = kiemod.Kie()
+    before = k.credits()
+    log(f"balance before: {before}")
+    failures = []
+    for n in names:
+        src = os.path.join(SRC, "action", n + ".png")
+        raw = os.path.join(RAW, f"action_{n}_cut.png")
+        if not os.path.exists(src):
+            log(f"[{n}] no action picture, skipped")
+            continue
+        if os.path.exists(raw) and os.path.getsize(raw) > 10000 and not force:
+            log(f"[{n}] cutout already there, skipped")
+        else:
+            try:
+                url = k.upload(src, "images/vcs")
+                inp = {"image": url, "output_format": "png"}   # the field is "image", not "image_urls" (2026-09-22)
+                r = k._request(k.base + "/api/v1/jobs/createTask", {"model": "recraft/remove-background", "input": inp})
+                tid = (r.get("data") or {}).get("taskId")
+                if not tid:
+                    raise kiemod.KieError("no taskId: " + json.dumps(r)[:200])
+                log(f"[{n}] task {tid} (recraft/remove-background)")
+                size = k.download(k.poll(tid), raw)
+                log(f"   OK -> {os.path.relpath(raw, ROOT)} ({size // 1024} KB)")
+            except Exception as e:  # noqa: BLE001
+                failures.append((n, str(e)))
+                log(f"[{n}] FAILED: {e}")
+                continue
+        shutil.copy2(raw, os.path.join(out_dir, n + ".png"))
+    after = k.credits()
+    log(f"balance after: {after}  spent: {None if before is None or after is None else round(before - after, 2)}")
+    if failures:
+        log("FAILURES: " + ", ".join(f"{n}: {e}" for n, e in failures))
+        return 1
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--list", action="store_true")
+    ap.add_argument("--cutouts", action="store_true", help="cut the machine out of the action pictures (recraft, 1 credit each) for the fused store set")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--only", default="")
     ap.add_argument("--force", action="store_true")
@@ -166,6 +209,8 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
 
     os.makedirs(CARTOON, exist_ok=True)
+    if a.cutouts:
+        return cutouts([n for n in ACTION_ITEMS if not only or n in only], a.force)
     if a.list:
         for n in names:
             raw = os.path.join(RAW, f"{tag}{n}.png")

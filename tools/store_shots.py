@@ -276,6 +276,87 @@ def run_action(out_dir, size=(1920, 1080)):
         save(im, out_dir, f"{i:02d}-{name}.png")
 
 
+# The fused pictures (2026-09-22, his "hope you will mix and match action images with actual screenshots ... i miss
+# the garage view" and "pas un ordre mix une sorte de fusion entre generated art and screenshots"): the action art
+# fills the frame, the real capture stands on it as a tilted photo plate on the side the machine's body leaves free,
+# and the machine (cut out by marketing_real.py --cutouts) comes back on top so the gag bursts over the gameplay.
+# (action, capture in Builds/store-raw/pc, or None for the nineteen-machine gallery, plate width, plate top)
+FUSION_PAIRS = [
+    ("toilet", "smoke-bin.png", 0.50, 0.06),
+    ("garage", None, 0.50, 0.06),
+    ("cat", "smoke-cat.png", 0.50, 0.06),
+    ("turbo", "smoke-turbo.png", 0.50, 0.06),
+    ("cord", "smoke-rewind.png", 0.50, 0.06),
+    ("blowout", "smoke-bin.png", 0.42, 0.30),   # the debris fountain fills the top right
+    ("powder", "smoke-powder.png", 0.50, 0.06),
+    ("couch", "smoke-game.png", 0.50, 0.06),
+]
+
+
+def photo_plate(shot, width, angle, edge=14):
+    """The capture as a tilted photo plate: white edge, ink outline, soft shadow."""
+    pic = shot.convert("RGB").resize((width, int(shot.size[1] * width / shot.size[0])), Image.LANCZOS)
+    pw, ph = pic.size[0] + 2 * edge, pic.size[1] + 2 * edge
+    card = Image.new("RGBA", (pw, ph), (255, 255, 255, 255))
+    ImageDraw.Draw(card).rectangle((0, 0, pw - 1, ph - 1), outline=brand.INK + (255,), width=4)
+    card.paste(pic, (edge, edge))
+    card = card.rotate(angle, Image.BICUBIC, expand=True)
+    return brand.drop_shadow(card, 22, (0, 18), 190)
+
+
+def body_centre(cut):
+    """Horizontal centre of the red shell in a cutout (the body, not the hose, the cord or the gag object)."""
+    small = cut.resize((max(1, cut.size[0] // 8), max(1, cut.size[1] // 8)))
+    px = small.load()
+    xs = []
+    for y in range(small.size[1]):
+        for x in range(small.size[0]):
+            r, g, b, a = px[x, y]
+            if a > 200 and r > 140 and r > 2 * g and r > 2 * b:
+                xs.append(x)
+    return (sum(xs) / len(xs)) * 8 if xs else cut.size[0] / 2
+
+
+def fuse(art, cut, shot, headline, subline, width, top, tilt=3.5, size=(1920, 1080)):
+    W, H = size
+    base = cover(art.convert("RGBA"), W, H)
+    cut = cover(cut.convert("RGBA"), W, H)
+    mx = body_centre(cut)
+    right = mx < W / 2                       # the plate goes to the side the body leaves free
+    pl = photo_plate(shot, int(W * width), -tilt if right else tilt)
+    if right:
+        x = min(int(mx + W * 0.10), W + int(pl.size[0] * 0.04) - pl.size[0])
+    else:
+        x = max(int(mx - W * 0.10 - pl.size[0]), -int(pl.size[0] * 0.04))
+    out = base.copy()
+    out.alpha_composite(pl, (x, int(H * top)))
+    out.alpha_composite(cut)
+    return overlay_caption(out, headline, subline, 60, 0.955, max_w_frac=0.82).convert("RGB")
+
+
+def run_fusion(gal, out_dir, size=(1920, 1080)):
+    src_dir = os.path.join(ROOT, "marketing", "source", "action")
+    captions = {n: (h, s) for n, h, s in ACTION_SHOTS}
+    done = []
+    for i, (name, shotfile, width, top) in enumerate(FUSION_PAIRS, 1):
+        art, cut = os.path.join(src_dir, name + ".png"), os.path.join(src_dir, "cut", name + ".png")
+        if not (os.path.exists(art) and os.path.exists(cut)):
+            print("  missing", os.path.relpath(cut if os.path.exists(art) else art, ROOT))
+            continue
+        shot = gal if shotfile is None else raw("pc", shotfile)
+        if shot is None:
+            continue
+        im = fuse(Image.open(art), Image.open(cut), shot, *captions[name], width, top, size=size)
+        save(im, out_dir, f"{i:02d}-{name}.png")
+        done.append(im)
+    if done:
+        cols, tw, th, pad = 2, 960, 540, 16
+        sheet = Image.new("RGB", (cols * (tw + pad) + pad, ((len(done) + cols - 1) // cols) * (th + pad) + pad), (36, 40, 48))
+        for i, im in enumerate(done):
+            sheet.paste(im.resize((tw, th), Image.LANCZOS), (pad + (i % cols) * (tw + pad), pad + (i // cols) * (th + pad)))
+        save(sheet, STORE, "fusion_sheet.png")
+
+
 def style_bottom(setname):
     # PC: above the 250 px cockpit (830 of 1080). Touch layers: between the stick and the button cluster.
     return 0.75 if setname == "pc" else 0.965
@@ -323,6 +404,8 @@ def main():
                 keep={"game", "gallery", "cat", "turbo", "cord", "bin", "powder", "tutorial"})
     if want("action"):
         run_action(os.path.join(STORE, "action"))
+    if want("fusion"):
+        run_fusion(gal, os.path.join(STORE, "fusion"))
     if want("feature"):
         fg = feature_graphic()
         if fg is not None:
