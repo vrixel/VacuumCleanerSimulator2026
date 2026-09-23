@@ -380,8 +380,10 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   drawing ... instead of uniform bland blue background"): a seedream edit of the icon into an engineering sheet
   (`tools/assets/raw/bp_sheet.png`) came back with gibberish dimension figures despite the NO TEXT clause (painted
   out with flat navy boxes), and a direct edit of the icon recomposed the machine, so the drawing was composed
-  locally behind the recraft cutout of the icon; the comparison sheet went to him, nothing shipped until he picks a
-  level.
+  locally behind the recraft cutout of the icon. His pick (2026-09-23): the icon stays plain navy, the trailer's
+  title and end cards take the drawing at 45 % (`brand.studio(..., blueprint=0.45)`, layer in
+  `marketing/source/blueprint_layer.png`, figures already painted out: a new figure found on a card is erased in
+  that layer's alpha).
   Captures: the PC is a locked RDP session at 1366 x 768, so store sizes come from a fraction of the size with
   `-Super` (960 x 540 S2 for PC and phone, 717 x 330 S4 iPhone, 688 x 516 S4 iPad); run outcomes (cat chase, cord
   yank) vary with the window size, so look at the contact sheet for each set. The trailer: `-record <dir>`
@@ -480,6 +482,8 @@ refresh this block. Everything below is a copy, not a second opinion.
 > Vacuum Cleaner Simulator 2026 (Unity, Goat-Simulator-like) — état au 22/09/2026 midi : 0.4.9 sur GitHub ET Microsoft Store (0.4.9.0 en ligne), App Store : version 1.0 prête, « Submit to App Review » = SON clic (Apple 504), Play 409 et bande-annonce Store attendent le PC déverrouillé, blueprint et sons : ses verdicts, Play prod ~26/09
 
 Jeu Unity 6.3 « Vacuum Cleaner Simulator 2026 », dossier D:\Cloclo\Projects\VacuumCleanerSimulator, repo PUBLIC vrixel/VacuumCleanerSimulator2026.
+
+23/09/2026 (fin d'après-midi) : BLUEPRINT tranché par lui : icône inchangée (navy nu), cartes titre/fin de la bande-annonce avec le dessin technique à 45 % (brand.studio blueprint=0.45, calque marketing/source/blueprint_layer.png). Bande-annonce ré-encodée et poussée ; la version EN LIGNE sur le Microsoft Store est l'ancienne (fond navy uni) : la remplacer = une soumission 8, sur son go seulement.
 
 23/09/2026 (après-midi, « finish the job ») : bande-annonce Microsoft Store EN LIGNE (catalogue public, Trailers/HeroTrailer, modifié 22/09 21h12 UTC). App Store : pas encore dans le catalogue public (lookup vide), session App Store Connect expirée (401) → sa reconnexion pour voir l'état. Play : onglet caché, console muette ; « Apply for production » demain 24/09. Rien d'autre à faire de mon côté.
 

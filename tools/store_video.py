@@ -64,7 +64,7 @@ def read_marks():
 
 def card(kind):
     """The title and end cards: wordmark on the navy studio of the store art, the yellow / blue rule."""
-    im = brand.studio(SIZE, (0.5, 0.45), 0.34)   # the navy studio of the store art (2026-09-22), no flat rectangle
+    im = brand.studio(SIZE, (0.5, 0.45), 0.34, blueprint=0.45)   # navy studio + blueprint at 45 % (his pick, 2026-09-23)
     wm = brand.wordmark(1240)
     wm = brand.drop_shadow(wm, 26, (0, 18), 170)
     im.alpha_composite(wm, ((SIZE[0] - wm.size[0]) // 2, (SIZE[1] - wm.size[1]) // 2 - (60 if kind == "end" else 30)))

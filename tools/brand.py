@@ -136,8 +136,13 @@ def vignette(size, strength=0.55, inner=0.55):
     return layer
 
 
-def studio(size, centre=(0.5, 0.5), radius=0.38):
-    """The navy studio of the store art: NAVY with an electric-blue radial glow, so cards match the key art."""
+BLUEPRINT = os.path.join(ROOT, "marketing", "source", "blueprint_layer.png")
+
+
+def studio(size, centre=(0.5, 0.5), radius=0.38, blueprint=0.0):
+    """The navy studio of the store art: NAVY with an electric-blue radial glow, so cards match the key art.
+    `blueprint` lays the technical drawing over it at that opacity (his pick of 2026-09-23: 0.45 on the cards, the
+    icon stays plain). The layer is light-blue lines on transparency, cleaned of the figures the model wrote."""
     w, h = size
     small = Image.new("L", (64, 64), 0)
     d = ImageDraw.Draw(small)
@@ -149,6 +154,10 @@ def studio(size, centre=(0.5, 0.5), radius=0.38):
     glow.putalpha(small.point(lambda v: int(v * 0.6)))
     im = Image.new("RGBA", (w, h), NAVY + (255,))
     im.alpha_composite(glow)
+    if blueprint > 0 and os.path.exists(BLUEPRINT):
+        bp = Image.open(BLUEPRINT).convert("RGBA").resize((w, h), Image.LANCZOS)
+        r, g, b, a = bp.split()
+        im.alpha_composite(Image.merge("RGBA", (r, g, b, a.point(lambda v: int(v * blueprint)))))
     return im
 
 
