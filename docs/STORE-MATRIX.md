@@ -167,8 +167,7 @@ a low motor hum) into `marketing/video/trailer_1920x1080.mp4` with a poster fram
 
 - Microsoft Store (2026-09-22): submission 6 LIVE (0.4.9.0 in the public catalogue at 10:27 UTC) with **S1**, **D** + **P-PC**, **WN**, the
   ten screens (fused 01-08 + 01-game + 08-tutorial: the desktop slot caps at ten, so the two cockpit-only screens
-  stay out) and the navy images. The trailer is NOT in it: the upload pane needs a visible tab (see `STORE.md`),
-  submission 7 after his unlock.
+  stay out) and the navy images. The trailer followed in submission 7, LIVE since 2026-09-22 21:12 UTC.
 - Google Play: the live listing has the eight 0.4.2 phone shots and the old feature graphic. The 409 AAB is on the
   temporary branch `aab-upload`; the internal release, the promotion to the closed test and the listing (the eight
   captioned phone shots, the new feature graphic, the YouTube link to the trailer, **S2** and **D** + **P-TOUCH**,

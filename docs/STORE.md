@@ -42,7 +42,8 @@ store sizes by `tools/marketing.py`; screenshots, gallery, wordmark and trailer 
 
 ## Microsoft Store (PC first, Xbox later)
 
-**Status 2026-09-22 evening: submission 7 (id 1152921505701954365) adds THE TRAILER to the live 0.4.9 listing,
+**LIVE 2026-09-23: the trailer is in the public catalogue (storeedgefd `Trailers`, HeroTrailer, catalogue modified
+2026-09-22 21:12 UTC).** Status 2026-09-22 evening: submission 7 (id 1152921505701954365) adds THE TRAILER to the live 0.4.9 listing,
 everything else unchanged (package v0.4.9.0 validated). SUBMITTED for certification about 16:40 UTC on his
 "finalise", status "In certification" (pre-processing). How the trailer pane took the files, in a VISIBLE tab:
 the mp4 (fetched in page from the temporary branch, wrapped in a `File`) goes on the hidden
