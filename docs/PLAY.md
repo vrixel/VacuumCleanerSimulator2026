@@ -111,6 +111,12 @@ Twelve to fifteen paid testers on the closed track "Alpha" for 14 days (builds 4
 
 ### Production access questionnaire, answers ready to paste
 
+APPLIED 2026-09-26 19:50 (his "go finish the playstore"): the form has three pages (closed test: recruitment, ease
+radio, engagement, feedback; game: audience, stand-out, installs radio 0 - 10K; readiness: changes, why ready), every
+field capped at 300 characters, so the answers below went in shortened. It opened only once the tab was the
+window's active tab (a screenshot of the tab activated it); textareas take the native setter + input event, radios a
+DOM click, Next and Apply plain clicks. Google: "usually seven days or less", email to the account owner.
+
 Google asks these on "Apply for production access". The testers' PDF suggested answers; the ones below are
 adapted to what is true of this app.
 
