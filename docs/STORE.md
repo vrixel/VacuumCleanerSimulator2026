@@ -42,6 +42,18 @@ store sizes by `tools/marketing.py`; screenshots, gallery, wordmark and trailer 
 
 ## Microsoft Store (PC first, Xbox later)
 
+**Status 2026-09-26 evening: submission 8 (id 1152921505701982685) swaps the trailer for the blueprint one**
+(`trailer_blueprint_1920x1080.mp4`, cards on the 45 % technical drawing, his pick), everything else unchanged; the
+text was checked field by field against `STORE-MATRIX.md` (S1 188, D + P-PC + credits 2362, WN, eight features).
+Submitted for certification on his "ms store validates almost immediately so im ok with resubmitting". A simpler
+recipe than submission 7's, in a VISIBLE tab: fetch the LFS files from inside the page at
+`https://media.githubusercontent.com/media/vrixel/VacuumCleanerSimulator2026/main/<path>` (CORS works, no temporary
+branch), delete the old trailer row, set `files` on `#video-upload-input` and dispatch `change` only (one row, no
+duplicate); the thumbnail goes to the file input INSIDE that row's `trailer-image-display` shadow root (`change`,
+then a `drop` with the same DataTransfer on that display's own `.asset-card`: a document-level `.asset-card` is a
+listing image slot); caption through "Add image caption" and OK in the `webcore-modal`; pick the file in "Choose a
+trailer to play at the top"; Save and "Submit for certification" as real screen clicks.
+
 **LIVE 2026-09-23: the trailer is in the public catalogue (storeedgefd `Trailers`, HeroTrailer, catalogue modified
 2026-09-22 21:12 UTC).** Status 2026-09-22 evening: submission 7 (id 1152921505701954365) adds THE TRAILER to the live 0.4.9 listing,
 everything else unchanged (package v0.4.9.0 validated). SUBMITTED for certification about 16:40 UTC on his

@@ -29,8 +29,8 @@ a competitor's trademark, and the other two consoles gain nothing from it).
 | Big picture | super hero 1920 x 1080 `ms_superhero_1920x1080.png`, poster 720 x 1080, box art 1080 | feature graphic 1024 x 500 `marketing/play/feature_1024x500.png` | none (the first screenshots are the big picture) |
 | Video | trailer MP4 1920 x 1080, under 60 s: `marketing/video/trailer_1920x1080.mp4`, poster `trailer_poster.png` | the same trailer on YouTube (unlisted is enough), link in the listing | App Preview: device-size footage only, no other platform named; NOT this trailer, a later job |
 | Privacy | policy URL, mandatory for a runFullTrust package | policy URL, data safety "nothing collected" | policy URL, App Privacy "Data Not Collected" |
-| Live version | 0.4.7.0 (submission 5) | 407 internal + closed "Alpha" | TestFlight 407 internal; version 1.0 waits for "Add for Review" |
-| Next click (his) | new submission with 0.4.9 (`tools\msix.py`) | "Apply for production access" after 2026-09-25, then a 0.4.9 release | "Add for Review" |
+| Live version (2026-09-26) | 0.4.9.0; submission 8 (blueprint trailer) in certification | 409 on internal + closed "Alpha", listing live; production access applied 2026-09-26 | 1.0 (409) Waiting for Review since 2026-09-22 |
+| Next click (his) | none | the YouTube trailer (his channel, unlisted) for the empty video field; the production release once Google grants access | none until Apple answers |
 
 Where a store has no field (Play has no keywords, the Microsoft Store has no promo text), nothing is lost: the
 facts of that field are already inside **D**.
@@ -168,7 +168,10 @@ a low motor hum) into `marketing/video/trailer_1920x1080.mp4` with a poster fram
 - Microsoft Store (2026-09-22): submission 6 LIVE (0.4.9.0 in the public catalogue at 10:27 UTC) with **S1**, **D** + **P-PC**, **WN**, the
   ten screens (fused 01-08 + 01-game + 08-tutorial: the desktop slot caps at ten, so the two cockpit-only screens
   stay out) and the navy images. The trailer followed in submission 7, LIVE since 2026-09-22 21:12 UTC.
-- Google Play: the live listing has the eight 0.4.2 phone shots and the old feature graphic. The 409 AAB is on the
+- Consistency check 2026-09-26: Microsoft (S1, D + P-PC + credits, WN) and Play (S2, D + P-TOUCH + credits, navy icon,
+  feature graphic, 8 phone shots) read field for field against this page, no drift; the one gap is Play's empty
+  YouTube video field. The App Store is under review and was not touched.
+- Google Play (superseded 2026-09-22 evening, see PLAY.md): the live listing had the eight 0.4.2 phone shots and the old feature graphic. The 409 AAB is on the
   temporary branch `aab-upload`; the internal release, the promotion to the closed test and the listing (the eight
   captioned phone shots, the new feature graphic, the YouTube link to the trailer, **S2** and **D** + **P-TOUCH**,
   **WN**) wait for an UNLOCKED session with a visible tab. The Play name and the App Store name are the same 29
