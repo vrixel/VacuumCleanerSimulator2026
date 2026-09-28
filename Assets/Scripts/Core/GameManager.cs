@@ -113,6 +113,7 @@ namespace VCS.Core
                       + Objectives.All.Count + " achievements, best score " + BestScore);
             SmokeRunner.TryStart(this);
             GalleryRunner.TryStart(this);
+            HotChromeRunner.TryStart(this);
         }
 
         void EnterTitle()
