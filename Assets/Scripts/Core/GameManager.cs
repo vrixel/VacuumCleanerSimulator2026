@@ -114,6 +114,7 @@ namespace VCS.Core
             SmokeRunner.TryStart(this);
             GalleryRunner.TryStart(this);
             HotChromeRunner.TryStart(this);
+            HotChromeLook.TryStart(this);
         }
 
         void EnterTitle()
