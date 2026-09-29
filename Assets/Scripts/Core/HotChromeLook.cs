@@ -56,6 +56,9 @@ namespace VCS.Core
         {
             if (on == On) return;
             On = on;
+            // a faded wall would hand its fade material to the look, or keep a chrome one the look then destroys
+            var fc = Object.FindFirstObjectByType<VCS.CameraRig.FollowCamera>();
+            if (fc != null) fc.ClearFades();
             var gm = GameManager.I;
             if (on)
             {
