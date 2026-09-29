@@ -6,6 +6,9 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 ## Status
 
+- 2026-09-29: production access applied for on 2026-09-26, no decision mail yet; the public page still answers
+  404 (closed test only). The trailer link change sent for review on 2026-09-28 has no mail either. When access is
+  granted: promote 409 from the closed track to production and send for review.
 - 2026-09-22 evening ("finalise", session unlocked): 409 (0.4.9) DONE ON PLAY. The AAB went up on the internal
   track, the release was promoted to the closed test Alpha ("start full rollout"), and the listing was refreshed
   from the matrix: **S2** as the short description (76 characters), **D** + **P-TOUCH** + the credits line as the

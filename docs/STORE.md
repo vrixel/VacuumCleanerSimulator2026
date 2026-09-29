@@ -42,6 +42,8 @@ store sizes by `tools/marketing.py`; screenshots, gallery, wordmark and trailer 
 
 ## Microsoft Store (PC first, Xbox later)
 
+**Status 2026-09-26 night: submission 8 processed and live (Partner Center mail "successfully processed", 18:24 UTC).**
+
 **Status 2026-09-26 evening: submission 8 (id 1152921505701982685) swaps the trailer for the blueprint one**
 (`trailer_blueprint_1920x1080.mp4`, cards on the 45 % technical drawing, his pick), everything else unchanged; the
 text was checked field by field against `STORE-MATRIX.md` (S1 188, D + P-PC + credits 2362, WN, eight features).

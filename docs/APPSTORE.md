@@ -1,5 +1,9 @@
 # App Store listing, ready to paste
 
+**LIVE 2026-09-28: approved at 22:31 CEST ("Welcome to the App Store", review of the 2026-09-22 submission
+complete), version 1.0 on the public catalogue (iTunes lookup id 6809662067 answers in CH and FR),
+https://apps.apple.com/app/id6809662067. The cosnuau.com page links it.**
+
 The iOS record exists in App Store Connect (app 6809662067, `com.cosnuau.vacuumcleanersimulator2026`, iOS 1.0
 "Prepare for Submission"). TestFlight is already running builds 402 / 404 / 407 on the internal group. Nothing
 below has to wait for a tester: Apple has no tester requirement, unlike Google. What gates the public release is
