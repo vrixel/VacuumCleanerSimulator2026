@@ -108,7 +108,7 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   intake) replaces the airflow, still audible once the bag is full and `SetSuction` has gone quiet. `motor_start`
   and `motor_stop` play on the run start, plug yank, replug and return to title. The cat has its own AudioSource:
   `PlayOneShot` clips follow their source's pitch, so on the shared `sfx` source the cat's pitch jitter bent every
-  hose hit still ringing (and vice versa). While fleeing with the vacuum within 1.6 scare radii it cries every
+  hose hit still ringing (and vice versa). The hose hits have three voices of their own (`GameAudio.PlayHose`, 2026-09-29, his "the suction sounds feel like a broken speaker"): on the shared source a pile of crumbs stacked a dozen 1-2 s hits to 1.7x full scale; now one hit per 0.09 s at most, the oldest voice is stolen and the ringing ones step back to 60 %. While fleeing with the vacuum within 1.6 scare radii it cries every
   0.9-1.7 s (`Cat.meowTimer`). Loops are made seamless in `process_audio` by crossfading the clip's tail into its
   own head (an `acrossfade` of the first 0.55 s over the end, so the output ends on the sample it started with):
   the earlier fade-to-silence dipped audibly every turn on the motor. One-shots are silence-trimmed and
