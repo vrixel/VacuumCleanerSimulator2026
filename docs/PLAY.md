@@ -6,6 +6,9 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 ## Status
 
+- 2026-09-29: production access applied for on 2026-09-26, no decision mail yet; the public page still answers
+  404 (closed test only). The trailer link change sent for review on 2026-09-28 has no mail either. When access is
+  granted: promote 409 from the closed track to production and send for review.
 - 2026-09-22 evening ("finalise", session unlocked): 409 (0.4.9) DONE ON PLAY. The AAB went up on the internal
   track, the release was promoted to the closed test Alpha ("start full rollout"), and the listing was refreshed
   from the matrix: **S2** as the short description (76 characters), **D** + **P-TOUCH** + the credits line as the
@@ -173,7 +176,7 @@ machines, the cat, the cord and the cockpit in plain words.
 | Feature graphic | 1024 x 500 PNG or JPEG | `marketing\play\feature_1024x500.png` (wordmark over the game) |
 | Phone screenshots | 2 to 8, 16:9 to 9:16, 320 to 3840 px | `marketing\play\phone-NN-slug.png` (8, 1920 x 1080, touch HUD, captioned) |
 | 7-inch tablet screenshots | optional | same files |
-| Video | YouTube link | `marketing\video\trailer_1920x1080.mp4`, public on the Nanos1R channel since 2026-09-28: https://www.youtube.com/watch?v=Tzc7NoOOgIY |
+| Video | YouTube link | `marketing\video\trailer_1920x1080.mp4`, public on the Nanos1R channel since 2026-09-28: https://www.youtube.com/watch?v=Tzc7NoOOgIY (in the listing, sent for review 2026-09-28) |
 
 Phone screenshots: `powershell -File tools\smoke-test.ps1 -Touch -Width 960 -Height 432 -Super 2` (the touch layer
 on the PC build, captured at twice the window because the RDP display is 1366 x 768), then

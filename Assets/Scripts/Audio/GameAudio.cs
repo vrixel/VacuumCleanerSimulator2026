@@ -122,6 +122,17 @@ namespace VCS.Audio
             cat.playOnAwake = false;
             cat.spatialBlend = 0f;
 
+            // hose hits get three voices of their own (2026-09-29, his "the suction sounds feel like a broken
+            // speaker"): on the shared sfx source a pile of crumbs stacked a dozen 1-2 s hits past full scale and
+            // every new pitch jitter bent the ones still ringing
+            hose = new AudioSource[HoseVoices];
+            for (int i = 0; i < HoseVoices; i++)
+            {
+                hose[i] = gameObject.AddComponent<AudioSource>();
+                hose[i].playOnAwake = false;
+                hose[i].spatialBlend = 0f;
+            }
+
             // the airflow at the nozzle, louder when things are being pulled; the cord reel while rewinding
             suction = LoopSource(suctionLoop);
             reel = LoopSource(rewindLoop);
@@ -410,13 +421,43 @@ namespace VCS.Audio
             AudioClip real = Pick(sizeClass <= 1 ? absorbSmall : (sizeClass == 2 ? absorbMedium : absorbBig));
             if (real != null)
             {
-                sfx.pitch = Random.Range(0.94f, 1.08f) - (big ? 0.04f : 0f);
-                sfx.PlayOneShot(real, big ? 1.0f : 0.8f);
+                PlayHose(real, Random.Range(0.94f, 1.08f) - (big ? 0.04f : 0f), big ? 0.85f : 0.6f, big);
                 return;
             }
             sfx.pitch = Random.Range(0.92f, 1.18f) - sizeClass * 0.06f;
             if (!big && popReal != null && Random.value < 0.5f) { sfx.PlayOneShot(popReal, 0.6f); return; }
             sfx.PlayOneShot(big ? gulp : pop, big ? 0.9f : 0.55f);
+        }
+
+        const int HoseVoices = 3;
+        const float HoseMinGap = 0.09f;
+        AudioSource[] hose;
+        readonly float[] hoseStarted = new float[HoseVoices];
+        float lastHose = -1f;
+
+        // At most one hit every HoseMinGap (a big one always gets through), three ringing at once: a free voice or
+        // the oldest one is taken, and the hits still ringing step back so the newest reads and the sum stays
+        // under full scale over the motor and airflow loops (measured offline: peak 1.68 before, 0.87 after).
+        void PlayHose(AudioClip clip, float pitch, float volume, bool big)
+        {
+            float now = Time.unscaledTime;
+            if (!big && now - lastHose < HoseMinGap) return;
+            lastHose = now;
+            int pick = 0;
+            for (int i = 0; i < HoseVoices; i++)
+            {
+                if (!hose[i].isPlaying) { pick = i; break; }
+                if (hoseStarted[i] < hoseStarted[pick]) pick = i;
+            }
+            for (int i = 0; i < HoseVoices; i++)
+                if (i != pick && hose[i].isPlaying) hose[i].volume *= 0.6f;
+            var v = hose[pick];
+            v.Stop();
+            v.clip = clip;
+            v.pitch = pitch;
+            v.volume = volume;
+            v.Play();
+            hoseStarted[pick] = now;
         }
 
         public void PlayBoing() { sfx.pitch = Random.Range(0.95f, 1.1f); sfx.PlayOneShot(boing, 0.5f); }
