@@ -175,6 +175,26 @@ namespace VCS.Core
                 yield return Capture("smoke-bin.png");
             }
 
+            // the plutonium battery (explore/chrome-battery): dropped in front of the nozzle, it should be swallowed
+            // and flip the game to Hot Chrome; photographed on, then switched back and photographed off
+            if (gm.Player != null && gm.Chrome != null)
+            {
+                Vector3 at = gm.Player.transform.position + gm.Player.transform.forward * 0.9f;
+                at.y = 0.1f;
+                var bat = gm.Chrome.DebugSpawn(at);
+                float wt = 0f;
+                while (!gm.Chrome.Active && wt < 3f) { yield return new WaitForSecondsRealtime(0.1f); wt += 0.1f; }
+                Debug.Log("[VCS] Chrome: swallowed by suction " + gm.Chrome.Active + " after " + wt.ToString("0.0") + " s");
+                if (!gm.Chrome.Active) { if (bat != null) Destroy(bat.gameObject); gm.Chrome.OnBatteryEaten(at); }
+                yield return new WaitForSecondsRealtime(0.8f);
+                yield return Capture("smoke-chrome-splash.png");
+                yield return new WaitForSecondsRealtime(2.5f);
+                gm.ClearBanners(); yield return Capture("smoke-chrome.png");
+                gm.Chrome.DebugEnd();
+                yield return new WaitForSecondsRealtime(1.2f);
+                gm.ClearBanners(); yield return Capture("smoke-chrome-off.png");
+            }
+
             // the pause menu with its six entries (tutorial, rate the game)
             gm.Pause();
             yield return new WaitForSecondsRealtime(0.5f);

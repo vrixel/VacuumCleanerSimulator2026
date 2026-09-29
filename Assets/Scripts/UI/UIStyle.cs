@@ -37,20 +37,21 @@ namespace VCS.UI
         public static Font Fourteen => Load("Fonts/DSEG14");
         public static Font Body => Load("Fonts/Exo2");
 
-        // Exploration (explore/hot-chrome): "-pink" swaps the palette and reads UI/HudPink before UI/Hud.
-        public static readonly bool PinkLook = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-pink") >= 0;
+        // Exploration (explore/hot-chrome): "-pink" swaps the palette and reads UI/HudPink before UI/Hud. Settable
+        // (explore/chrome-battery): the plutonium battery flips it live, then the HUD is rebuilt (HudController.Rebuild).
+        public static bool PinkLook { get; set; } = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-pink") >= 0;
 
-        public static readonly Color Yellow = PinkLook ? new Color(1f, 0.18f, 0.54f) : new Color(1f, 0.84f, 0f);
-        public static readonly Color Blue = PinkLook ? new Color(1f, 0.74f, 0.88f) : new Color(0f, 0.66f, 1f);
-        public static readonly Color Red = PinkLook ? new Color(1f, 0.08f, 0.28f) : new Color(1f, 0.22f, 0.16f);
-        public static readonly Color Green = PinkLook ? new Color(0.55f, 1f, 0.82f) : new Color(0.3f, 1f, 0.35f);
-        public static readonly Color Amber = PinkLook ? new Color(1f, 0.46f, 0.72f) : new Color(1f, 0.62f, 0f);
+        public static Color Yellow => PinkLook ? new Color(1f, 0.18f, 0.54f) : new Color(1f, 0.84f, 0f);
+        public static Color Blue => PinkLook ? new Color(1f, 0.74f, 0.88f) : new Color(0f, 0.66f, 1f);
+        public static Color Red => PinkLook ? new Color(1f, 0.08f, 0.28f) : new Color(1f, 0.22f, 0.16f);
+        public static Color Green => PinkLook ? new Color(0.55f, 1f, 0.82f) : new Color(0.3f, 1f, 0.35f);
+        public static Color Amber => PinkLook ? new Color(1f, 0.46f, 0.72f) : new Color(1f, 0.62f, 0f);
         public static readonly Color White = Color.white;
-        public static readonly Color Ink = PinkLook ? new Color(0.07f, 0f, 0.03f) : new Color(0.04f, 0.04f, 0.06f);
-        public static readonly Color Panel = PinkLook ? new Color(0.12f, 0.02f, 0.06f, 0.97f) : new Color(0.08f, 0.09f, 0.12f, 0.97f);
-        public static readonly Color Screen = PinkLook ? new Color(0.04f, 0f, 0.02f, 0.98f) : new Color(0.02f, 0.03f, 0.04f, 0.98f);
-        public static readonly Color Steel = PinkLook ? new Color(0.96f, 0.84f, 0.91f) : new Color(0.78f, 0.83f, 0.9f);
-        public static readonly Color Dim = PinkLook ? new Color(0.58f, 0.36f, 0.47f) : new Color(0.42f, 0.45f, 0.52f);
+        public static Color Ink => PinkLook ? new Color(0.07f, 0f, 0.03f) : new Color(0.04f, 0.04f, 0.06f);
+        public static Color Panel => PinkLook ? new Color(0.12f, 0.02f, 0.06f, 0.97f) : new Color(0.08f, 0.09f, 0.12f, 0.97f);
+        public static Color Screen => PinkLook ? new Color(0.04f, 0f, 0.02f, 0.98f) : new Color(0.02f, 0.03f, 0.04f, 0.98f);
+        public static Color Steel => PinkLook ? new Color(0.96f, 0.84f, 0.91f) : new Color(0.78f, 0.83f, 0.9f);
+        public static Color Dim => PinkLook ? new Color(0.58f, 0.36f, 0.47f) : new Color(0.42f, 0.45f, 0.52f);
 
         /// <summary>A generated HUD sprite: UI/HudPink first under -pink, then UI/Hud.</summary>
         public static Sprite HudSprite(string name)
@@ -206,7 +207,7 @@ namespace VCS.UI
         /// <summary>A generated frame plate from Resources/UI/Hud, nine-sliced with a border of the given fraction. Null if missing.</summary>
         public static Sprite PlateSprite(string name, float borderFrac = 0.24f)
         {
-            string key = name + "|" + borderFrac.ToString("F2");
+            string key = name + "|" + borderFrac.ToString("F2") + (PinkLook ? "|pink" : "");
             if (plates.TryGetValue(key, out var s) && s != null) return s;
             var src = HudSprite(name);
             if (src == null) return null;

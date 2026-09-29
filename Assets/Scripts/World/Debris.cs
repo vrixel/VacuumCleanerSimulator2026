@@ -9,7 +9,8 @@ namespace VCS.World
         Sock, Brick, Ball, PaperRoll, Book,
         Plant, Lamp, Stool, Chair,
         Table, Couch, Tv,
-        Fridge, Bed, Toilet, Bathtub
+        Fridge, Bed, Toilet, Bathtub,
+        PlutoniumBattery   // explore/chrome-battery: the bonus that switches the game to Hot Chrome (ChromeMode)
     }
 
     /// <summary>Anything the vacuum can pull on. SizeClass 1..5 must be at or below the power level to be eaten.</summary>

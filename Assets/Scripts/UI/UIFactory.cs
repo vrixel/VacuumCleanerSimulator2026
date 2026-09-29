@@ -8,16 +8,20 @@ namespace VCS.UI
     public static class UIFactory
     {
         public static readonly Color Ink = new Color(0.12f, 0.10f, 0.16f);
-        public static readonly Color Accent = UIStyle.PinkLook ? new Color(1f, 0.30f, 0.62f) : new Color(1f, 0.85f, 0.30f);
+        public static Color Accent => UIStyle.PinkLook ? new Color(1f, 0.30f, 0.62f) : new Color(1f, 0.85f, 0.30f);
 
-        static Font font;
+        static Font font, pinkFont;
 
         public static Font Font
         {
             get
             {
                 // Exploration (explore/hot-chrome): -pink sets every default text in Russo One too.
-                if (font == null && UIStyle.PinkLook) font = Resources.Load<Font>("Fonts/RussoOne");
+                if (UIStyle.PinkLook)
+                {
+                    if (pinkFont == null) pinkFont = Resources.Load<Font>("Fonts/RussoOne");
+                    if (pinkFont != null) return pinkFont;
+                }
                 if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
                 return font;
             }

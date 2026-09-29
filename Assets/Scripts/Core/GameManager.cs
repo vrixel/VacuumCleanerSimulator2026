@@ -53,6 +53,9 @@ namespace VCS.Core
         public EffectsFactory Fx { get; private set; }
         public Telemetry Telemetry { get; } = new Telemetry();
         public Tutorial Tutorial { get; private set; }
+        public ChromeMode Chrome { get; private set; }
+        /// <summary>Score multiplier on top of the combo: 2 while the plutonium battery's Hot Chrome runs.</summary>
+        public float ScoreBoost = 1f;
 
         struct Banner { public string Big; public string Small; public float Duration; public bool Must; }
         // His feedback (2026-09-06): a splash every few seconds in the middle of the screen hid the vacuum. Splashes
@@ -115,6 +118,37 @@ namespace VCS.Core
             GalleryRunner.TryStart(this);
             HotChromeRunner.TryStart(this);
             HotChromeLook.TryStart(this);
+            Chrome = ChromeMode.Create(this);
+        }
+
+        /// <summary>
+        /// Throws the HUD away and builds it again in the current UIStyle theme (the plutonium battery flips
+        /// UIStyle.PinkLook live). The run state is put back: score, vacuum, power, tutorial step.
+        /// </summary>
+        public void RebuildHud()
+        {
+            if (Hud != null) Destroy(Hud.gameObject);
+            Hud = HudController.Create();
+            Hud.ResetRun();
+            bool playing = State == GameState.Playing || State == GameState.Paused;
+            Hud.SetVisible(playing);
+            if (Player != null)
+            {
+                Hud.BindVacuum(Player.Spec, seed, Player.transform);
+                Hud.SetPower(Player.Spec.Name, PowerLevel, PropFactory.EatLabel(PowerLevel + Player.Spec.SizeBonus));
+                Hud.SnapScore(Score);
+            }
+            Tutorial.Rebind(Hud);
+            banners.Clear(); bannerTimer = 0f;
+        }
+
+        /// <summary>A splash right now, skipping the queue and the splash interval.</summary>
+        public void SplashNow(string big, string small, float duration)
+        {
+            banners.Clear();
+            Hud.ShowBanner(big, small, duration);
+            lastSplashAt = Time.unscaledTime;
+            bannerTimer = duration + 0.3f;
         }
 
         void EnterTitle()
@@ -124,6 +158,7 @@ namespace VCS.Core
             State = GameState.Title;
             Time.timeScale = 1f;
             if (Player != null) { Destroy(Player.gameObject); Player = null; }
+            if (Chrome != null) Chrome.EndRun();
             Cam.SetOrbit(Level.HouseCenter, 26f, 14f);
             Hud.SetVisible(false);
             Menu.ShowTitle(BestScore, Objectives.DoneCount, Objectives.All.Count);
@@ -144,6 +179,7 @@ namespace VCS.Core
             banners.Clear(); bannerTimer = 0f;
             Objectives.ResetProgress();
             seed++;
+            if (Chrome != null) Chrome.EndRun();
             Level.Build(seed);
             if (Player != null) Destroy(Player.gameObject);
             Player = VacuumController.Create(Level.PlayerSpawn, VacuumCatalog.Selected, Level.Sockets.Count > 0 ? Level.Sockets[0] : null);
@@ -305,7 +341,7 @@ namespace VCS.Core
         public void AddScore(int basePoints, bool countsCombo = true)
         {
             if (countsCombo) { ComboCount++; ComboTimeLeft = Player != null ? Player.Spec.ComboTime : 1.6f; }
-            int pts = Mathf.RoundToInt(basePoints * (countsCombo ? ComboMultiplier : 1f));
+            int pts = Mathf.RoundToInt(basePoints * (countsCombo ? ComboMultiplier : 1f) * ScoreBoost);
             Score += pts;
             CheckPowerUp();
         }
@@ -333,6 +369,7 @@ namespace VCS.Core
             Objectives.Report("absorb:any");
             Tutorial.Report("absorb");
             Audio.PlayPop(d.SizeClass);
+            if (d.Kind == DebrisKind.PlutoniumBattery) Chrome.OnBatteryEaten(d.transform.position);
             Fx.Puff(d.transform.position, d.PuffColor, 6 + d.SizeClass * 4);
             if (d.SizeClass >= 3)
             {
