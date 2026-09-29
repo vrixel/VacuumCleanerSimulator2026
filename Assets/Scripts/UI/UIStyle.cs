@@ -61,6 +61,8 @@ namespace VCS.UI
 
         static Font Load(string path)
         {
+            // Hot Chrome: one face everywhere, the chunky italic of the first boards (Russo One).
+            if (PinkLook) path = "Fonts/RussoOne";
             if (fonts.TryGetValue(path, out var f) && f != null) return f;
             f = Resources.Load<Font>(path);
             if (f == null) f = UIFactory.Font;
@@ -86,6 +88,7 @@ namespace VCS.UI
         public static Text Edge(Text t, float shadow = 2f)
         {
             ClearEffects(t);
+            if (PinkLook) { t.fontStyle = FontStyle.Italic; return PinkEdge(t, shadow); }
             var o = t.gameObject.AddComponent<Outline>();
             o.effectColor = new Color(0f, 0f, 0f, 1f);
             o.effectDistance = new Vector2(1.2f, -1.2f);
@@ -106,6 +109,7 @@ namespace VCS.UI
             t.font = Arcade;
             t.fontStyle = italic ? FontStyle.Italic : FontStyle.Normal;
             t.color = fill;
+            if (PinkLook) return PinkChrome(t, shadow);
             var o = t.gameObject.AddComponent<Outline>();
             o.effectColor = new Color(0f, 0f, 0f, 1f);
             o.effectDistance = new Vector2(2f, -2f);
@@ -121,6 +125,40 @@ namespace VCS.UI
             return t;
         }
 
+        static readonly Color Cherry = new Color(0.30f, 0f, 0.11f, 1f);
+        static readonly Color CherryDeep = new Color(0.12f, 0f, 0.04f, 1f);
+
+        static Shadow AddShadow(Text t, Color c, float x, float y, bool outline = false)
+        {
+            Shadow s = outline ? t.gameObject.AddComponent<Outline>() : t.gameObject.AddComponent<Shadow>();
+            s.effectColor = c;
+            s.effectDistance = new Vector2(x, y);
+            s.useGraphicAlpha = true;
+            return s;
+        }
+
+        /// <summary>Hot Chrome headline, as on the first boards: chrome face cut by a horizon (ChromeText), a cherry
+        /// outline, a solid cherry extrusion stepped down-right, a near-black base and a soft pink halo, all in one effect.</summary>
+        static Text PinkChrome(Text t, float depth)
+        {
+            var c = t.GetComponent<ChromeText>();
+            if (c == null) c = t.gameObject.AddComponent<ChromeText>();
+            c.depth = Mathf.Max(3f, depth);
+            t.fontStyle = FontStyle.Italic;
+            t.color = Color.white;
+            // Below ChromeText.MinSize the chrome is skipped, so small headlines get the plain pink edge.
+            if (t.fontSize < ChromeText.MinSize) PinkEdge(t, 2f);
+            return t;
+        }
+
+        /// <summary>Hot Chrome small text: flat colour, cherry edge and a short cherry drop.</summary>
+        static Text PinkEdge(Text t, float shadow)
+        {
+            AddShadow(t, Cherry, 1.2f, -1.2f, true);
+            AddShadow(t, CherryDeep, shadow, -shadow);
+            return t;
+        }
+
         /// <summary>Kept for old callers.</summary>
         public static Text Jackpot(Text t, Color fill, Color shadowColor, float shadow = 5f) => ArcadeText(t, fill, shadowColor, shadow);
         public static Text Neon(Text t, Color c) => ArcadeText(t, Color.Lerp(c, Color.white, 0.6f), c, 3f, false);
@@ -133,6 +171,7 @@ namespace VCS.UI
             var font = fourteen ? Fourteen : Seven;
             var ghost = UIFactory.Text(parent, name + "Ghost", ghostPattern, size, new Color(color.r, color.g, color.b, 0.14f), anchor, aMin, aMax, oMin, oMax, false, FontStyle.Normal);
             ghost.font = font;
+            if (PinkLook) ghost.enabled = false; // no segment ghost behind a proportional face
             var live = UIFactory.Text(parent, name, "", size, color, anchor, aMin, aMax, oMin, oMax, false, FontStyle.Normal);
             live.font = font;
             var s = live.gameObject.AddComponent<Shadow>();

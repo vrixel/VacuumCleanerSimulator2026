@@ -234,7 +234,7 @@ namespace VCS.UI
         public void Bind(VacuumSpec s, int serial)
         {
             spec = s;
-            accent = s.Accent;
+            accent = UIStyle.PinkLook ? UIStyle.Blue : s.Accent;
             suctionValue.color = accent;
             for (int i = 0; i < motorValues.Length; i++) motorValues[i].color = accent;
             containerValue.color = accent;
