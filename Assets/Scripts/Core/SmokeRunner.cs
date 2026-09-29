@@ -182,6 +182,11 @@ namespace VCS.Core
                 Vector3 at = gm.Player.transform.position + gm.Player.transform.forward * 0.9f;
                 at.y = 0.1f;
                 var bat = gm.Chrome.DebugSpawn(at);
+                // a close look at the battery before it goes down the hose
+                gm.Cam.SetView(24f, 3.2f);
+                yield return new WaitForSecondsRealtime(0.5f);
+                gm.ClearBanners(); yield return Capture("smoke-battery.png");
+                gm.Cam.SetView(42f, 9f);
                 float wt = 0f;
                 while (!gm.Chrome.Active && wt < 3f) { yield return new WaitForSecondsRealtime(0.1f); wt += 0.1f; }
                 Debug.Log("[VCS] Chrome: swallowed by suction " + gm.Chrome.Active + " after " + wt.ToString("0.0") + " s");
