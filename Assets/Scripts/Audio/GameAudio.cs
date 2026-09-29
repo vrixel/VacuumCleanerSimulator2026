@@ -25,7 +25,8 @@ namespace VCS.Audio
         // labouring motor and the choked intake of a full bag, the switch on and off
         AudioClip[] meows, absorbSmall, absorbMedium, absorbBig;
         AudioClip yowlReal, motorFull, suctionChoke, motorStart, motorStop;
-        float suctionVolTarget, suctionPitchTarget = 1f;
+        float suctionVolTarget, suctionPitchTarget = 1f, suctionCutTarget = 1100f;
+        AudioLowPassFilter suctionLow;
         float reelVolTarget;
         float humVolTarget;
         float humPitchTarget = 0.85f;
@@ -56,6 +57,14 @@ namespace VCS.Audio
         }
 
         /// <summary>name_1, name_2... until one is missing.</summary>
+        AudioClip[] LoadSetPrefer(string name, string fallback)
+        {
+            var set = LoadSet(name);
+            if (set.Length > 0) return set;
+            wanted--;
+            return LoadSet(fallback);
+        }
+
         AudioClip[] LoadSet(string name)
         {
             var list = new List<AudioClip>();
@@ -85,9 +94,10 @@ namespace VCS.Audio
             suctionChoke = Load("suction_choke");
             rewindLoop = Load("rewind_loop");
             rewindEnd = Load("rewind_end");
-            absorbSmall = LoadSet("absorb_small");
-            absorbMedium = LoadSet("absorb_medium");
-            absorbBig = LoadSet("absorb_big");
+            // designed slurps (tools/assets/slurps.py) first: the kie hits read as radio static
+            absorbSmall = LoadSetPrefer("slurp_small", "absorb_small");
+            absorbMedium = LoadSetPrefer("slurp_medium", "absorb_medium");
+            absorbBig = LoadSetPrefer("slurp_big", "absorb_big");
             meows = LoadSet("meow");
             yowlReal = Load("yowl");
             turboUp = Load("turbo_up");
@@ -134,7 +144,15 @@ namespace VCS.Audio
             }
 
             // the airflow at the nozzle, louder when things are being pulled; the cord reel while rewinding
-            suction = LoopSource(suctionLoop);
+            suction = LoopSource(suctionLoop, "Airflow");
+            // the raw airflow loop is broadband hiss ("radio noise"): a low-pass that opens a little as things
+            // are pulled turns it into a deep rush instead
+            if (suction != null)
+            {
+                suctionLow = suction.gameObject.AddComponent<AudioLowPassFilter>();
+                suctionLow.cutoffFrequency = 1100f;
+                suctionLow.lowpassResonanceQ = 1.3f;
+            }
             reel = LoopSource(rewindLoop);
             turbo = LoopSource(turboLoop);
             strain = LoopSource(motorFull);
@@ -161,10 +179,17 @@ namespace VCS.Audio
             meow = Meow("meow", 0.5f, 520f, 880f, 440f, 0.5f);
         }
 
-        AudioSource LoopSource(AudioClip clip)
+        // a filter acts on every source of its GameObject, so a filtered loop gets a child of its own
+        AudioSource LoopSource(AudioClip clip, string own = null)
         {
             if (clip == null) return null;
-            var src = gameObject.AddComponent<AudioSource>();
+            var host = gameObject;
+            if (own != null)
+            {
+                host = new GameObject(own);
+                host.transform.SetParent(transform, false);
+            }
+            var src = host.AddComponent<AudioSource>();
             src.clip = clip;
             src.loop = true;
             src.playOnAwake = false;
@@ -320,6 +345,7 @@ namespace VCS.Audio
             activity = Mathf.Clamp01(activity);
             suctionVolTarget = on ? 0.16f + 0.45f * activity : 0f;
             suctionPitchTarget = on ? 0.92f + 0.25f * activity : 0.92f;
+            suctionCutTarget = 1100f + 1500f * activity;
         }
 
         /// <summary>
@@ -372,6 +398,8 @@ namespace VCS.Audio
                 float sv = suctionVolTarget * (choke != null ? 1f - 0.7f * bagK : 1f);
                 suction.volume = Mathf.Lerp(suction.volume, sv, 1f - Mathf.Exp(-dt * 5f));
                 suction.pitch = Mathf.Lerp(suction.pitch, suctionPitchTarget, 1f - Mathf.Exp(-dt * 4f));
+                if (suctionLow != null)
+                    suctionLow.cutoffFrequency = Mathf.Lerp(suctionLow.cutoffFrequency, suctionCutTarget, 1f - Mathf.Exp(-dt * 4f));
             }
             if (choke != null)
             {
