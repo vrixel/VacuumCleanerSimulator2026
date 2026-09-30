@@ -6,6 +6,15 @@ Everything below is ready to paste into Play Console (the owner's existing devel
 
 ## Status
 
+- 2026-09-30: PRODUCTION ACCESS GRANTED (Google's mail of 2026-09-29 22:33 UTC). Production release 409 (0.4.9)
+  created from the app bundle library ("Add from library"; the production track does not offer "Promote" until it
+  has a release), release name suggested, notes = **WN**, full rollout; the track had no countries, so the
+  Countries/regions tab: header checkbox = all 177 + "rest of world", Save. Publishing overview: 3 changes (release,
+  177 countries, rest of world), "Send changes for review" confirmed: "Changes in review". Managed publishing is
+  off, so it goes live on approval. Console tricks that worked: the page renders at devicePixelRatio 0.67, so
+  clicks at screenshot coordinates miss; the library dialog's `mat-checkbox` has no input and only answers a
+  synthetic pointerdown/mousedown/pointerup/mouseup/click sequence on its first child; the notes textarea takes the
+  native value setter plus `input`.
 - 2026-09-29: production access applied for on 2026-09-26, no decision mail yet; the public page still answers
   404 (closed test only). The trailer link change sent for review on 2026-09-28 has no mail either. When access is
   granted: promote 409 from the closed track to production and send for review.

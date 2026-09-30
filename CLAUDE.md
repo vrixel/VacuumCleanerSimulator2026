@@ -274,8 +274,8 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   Play Console: the app exists since 2026-09-07 (account 91Rivers, app id 4972315579361767663); listing,
   declarations and the closed test "Alpha" were completed the same evening, approved the same night (402 live on
   the closed track); 404 (0.4.4) is live on the internal track and in review on the closed track since 2026-09-08
-  evening. PRODUCTION IS GATED by Google's 14-day closed test with 12 opted-in testers for this account (the
-  tester links are in `docs/PLAY.md`). Release routine: `toolsuild-android.ps1 -Aab`, push the AAB alone to a
+  evening. Production was gated by Google's 14-day closed test with 12 opted-in testers; access was granted on
+  2026-09-29 and 409 (0.4.9) was sent to production review on 2026-09-30, 177 countries (`docs/PLAY.md`). Release routine: `toolsuild-android.ps1 -Aab`, push the AAB alone to a
   temporary branch, fetch it in-page on "Create new release" of the internal track, then "Promote release" to the
   closed track and "Submit for review" on the Publishing overview. Status, the in-page upload tricks and the
   hidden-tab lessons are in `docs/PLAY.md`. iOS: `tools/build-ios.ps1` exports the Xcode project here (IL2CPP on
