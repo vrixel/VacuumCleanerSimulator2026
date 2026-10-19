@@ -99,7 +99,11 @@ facts of that field are already inside **D**.
 
     physics,sandbox,funny,silly,cleaning,house,chaos,family,offline,cat,hoover,robot,arcade,kids,mess
 
-### WN, What's new (0.4.9, the same three stores; the stores are on 0.4.7, so it covers 0.4.8 too)
+### WN, What's new (0.4.10, the same three stores, 2026-10-19)
+
+    0.4.10: a glowing green plutonium battery now hides somewhere in the house. Swallow it and the whole game turns Hot Chrome for 20 seconds: pink chrome, neon outlines, double points. Then it hides again. The hose sounds were redone too: real slurps when things go up the pipe, and a softer airflow.
+
+### WN 0.4.9 (previous release, kept for reference)
 
     0.4.9: a one-minute tutorial on the first run (driving, boost, the bag, the bin; skip any time, replay from the pause menu), Rate This Game and Send Feedback on the title screen, and a second generation of sound: the cat cries when you chase it, things clatter into the hose, the motor labours and the intake wheezes as the bag fills, the boost has its own whine. The garage is one size family at last.
 

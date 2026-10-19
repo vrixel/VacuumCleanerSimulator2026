@@ -106,6 +106,33 @@ EDITS = {
                         f"Punchy, cinematic. Background: " + SLED_BG["navy"] + NO_TEXT,
                         SLED_REFERENCE, "bytedance/seedream-v4-edit"),
 }
+# fourth round (2026-10-19, his "do not forget the weak marketplace copy and icons ... that give weak conversion"):
+# the navy product shot reads as an appliance advert, not a game (App Store page conversion 1-2 %). Each candidate
+# below shows the joke in one glance, built from the action art he liked (the canister swallowing a toilet, a sofa,
+# chasing the cat) or from the new Hot Chrome mode, cropped square for the icon.
+ACTION = os.path.join(ROOT, "marketing", "source", "action")
+GAG = (" Recompose as a square mobile game app icon: one big centred subject filling the frame edge to edge, readable "
+       "at 60 pixels, bold shapes, saturated colours, strong rim light, the vacuum cleaner exactly as in the image "
+       "(glossy red canister body, electric-blue glowing intake ring, ribbed black hose, chrome wand), no eyes, no "
+       "face, no brand name on the body." + NO_TEXT)
+EDITS.update({
+    "gag_toilet": ("The red canister vacuum cleaner's hose is swallowing a white toilet bowl that stretches and "
+                   "squashes into the hose, water splashing, toilet paper flying, against a flat bright sky-blue "
+                   "background with a white radial burst." + GAG,
+                   os.path.join(ACTION, "toilet.png"), "gpt-image-2-image-to-image"),
+    "gag_couch": ("The red canister vacuum cleaner's nozzle is sucking in a whole sofa that stretches like rubber into "
+                  "the nozzle, cushions flying, against a flat bright yellow background with a white radial burst." + GAG,
+                  os.path.join(ACTION, "couch.png"), "gpt-image-2-image-to-image"),
+    "gag_cat": ("The red canister vacuum cleaner charging forward, a startled fluffy orange cat leaping away in front "
+                "of it with its fur blown back by the suction, against a flat bright turquoise background with a white "
+                "radial burst." + GAG,
+                os.path.join(ACTION, "cat.png"), "gpt-image-2-image-to-image"),
+    "hot_chrome": ("Turn this into a Hot Chrome version: the same vacuum cleaner, same pose, its body now polished "
+                   "mirror chrome tinted hot pink, a glowing neon-pink outline around the machine, a glowing green "
+                   "battery being sucked into the floor head, background a flat deep magenta with a hot-pink radial "
+                   "burst and a glossy reflective floor." + NO_TEXT,
+                   os.path.join(RAW, "icon_sled_navy_clean.png"), "bytedance/seedream-v4-edit"),
+})
 for _n, (_p, _r, _m) in EDITS.items():
     ITEMS[_n] = _p
 
