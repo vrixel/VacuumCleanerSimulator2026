@@ -157,3 +157,9 @@ python tools\msix.py --identity-name Cosnuau.VacuumCleanerSimulator2026 --publis
 3. Integrate Steamworks.NET (achievements map one to one on `ObjectiveSystem` ids), rebuild.
 4. Upload with SteamPipe from this machine (`steamcmd` + `app_build` script, kept in `tools/steam/`).
 5. Store page: copy above, capsules from `marketing/store/`, screenshots from `docs/screenshots/`.
+
+## Submission 9 (0.4.10.0, 2026-10-19)
+
+Id 1152921505702169212: package 0.4.10.0, texts from `docs/STORE-MATRIX.md` (What's New = Hot Chrome + slurps),
+gag-first screenshots, the Cat icon and the art cut from it. Submitted with the PC locked (DOM clicks), in
+certification the same morning.

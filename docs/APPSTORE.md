@@ -77,3 +77,16 @@ metadata: App Review treats a competitor's trademark as a rejection.
    /iris/v1/reviewSubmissionItems` again (same item id comes back, submission still READY_FOR_REVIEW). Both slots
    now read 01-game ... 08-tutorial. The fused and action pictures are NOT in the App Store on purpose: guideline
    2.3.3 wants screenshots of the app in use, so only the captioned captures go there.
+
+## 1.1 (0.4.10, build 410, 2026-10-19)
+
+1.0 is READY_FOR_SALE, so 0.4.10 ships as marketing version 1.1 (`build-ios.ps1` stamps 0.4.10; the workflow takes
+`version=1.1`). Version, en-GB localization (description, keywords, promo, What's New from `docs/STORE-MATRIX.md`),
+subtitle on the editable appInfo ("Funny cleaning physics game") and both screenshot sets (`iphone65-01-chrome ... 09-powder`,
+`ipad13-01 ... 09`) were all set through iris from the page. Screenshot upload by API: `POST appScreenshots`
+{fileName, fileSize, set}, PUT each `uploadOperations` slice, `PATCH uploaded=true` with the MD5 as
+`sourceFileChecksum`; the bytes came from `media.githubusercontent.com` (LFS) inside the page.
+Signing: runs on 2026-10-19 died with "maximum number of certificates": automatic signing minted an Apple
+Development certificate on every fresh runner. Forcing `CODE_SIGN_IDENTITY="Apple Distribution"` is refused under
+automatic signing ("conflicting provisioning settings"), so the archive now runs with `CODE_SIGNING_ALLOWED=NO`
+and the export signs with the imported distribution certificate.

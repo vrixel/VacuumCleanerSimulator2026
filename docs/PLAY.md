@@ -233,3 +233,13 @@ on the PC build, captured at twice the window because the RDP display is 1366 x 
 
 `ProjectSetup` derives the Android version code from `bundleVersion` (0.4.0 -> 400); Play refuses a code that does
 not grow, so every upload needs a higher `bundleVersion`.
+
+## 0.4.10 (2026-10-19)
+
+AAB 410 created on the internal track, promoted to production, listing redone with the Cat icon, the new feature
+graphic and `marketing/play/phone-01-chrome ... phone-08-powder` (tablet slots kept). Done with the PC locked, all
+by DOM: the listing is `/store-listings/default/edit` (not `main-store-listing`, which bounces to the app list).
+Graphics go through the asset library: the "Add assets" buttons sit in DOM order icon, feature, phone; one opens a
+panel with an `input[type=file]` (set it with a DataTransfer and fire `change`), wait for "Selected asset <name>",
+then click "Add"; the slot order is the order of the Add clicks. "Submit 6 changes for review" on the Publishing
+overview opens a confirmation dialog, which a hidden tab never renders: that click is the owner's.
