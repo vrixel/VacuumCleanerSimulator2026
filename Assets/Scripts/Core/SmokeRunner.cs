@@ -51,6 +51,7 @@ namespace VCS.Core
             }
             gm.Menu.SelectVacuumById("harold");
             yield return new WaitForSecondsRealtime(0.3f);
+            ChromeMode.NoNaturalBattery = true;
             gm.StartGame();
             yield return new WaitForSecondsRealtime(1f);
             // the first-run walkthrough, forced so the shot does not depend on this PC's PlayerPrefs: step 1 on
@@ -63,6 +64,12 @@ namespace VCS.Core
             GameInput.MoveOverride = new Vector2(1f, 0f);
             yield return new WaitForSecondsRealtime(0.6f);
             // the boost: trail, camera kick, speed lines and the turbo tile, photographed mid-run
+            // store pictures are shot from a closer, lower camera than play: the machine and the gag must read at
+            // thumbnail size (the default 42 / 9 m view made the first screenshots look like a floor plan)
+            gm.Cam.SetView(32f, 6.5f);
+            // the chase pays out more than 22 m: a plug that pops there leaves every later shot reading OFF / UNPLUGGED
+            // (the trailer run learned it first); the cord phase below still shortens it to 4 m on purpose
+            PowerCord.MaxLength = 80f;
             GameInput.TurboOverride = true;
             yield return new WaitForSecondsRealtime(1.3f);
             Debug.Log("[VCS] Boost: " + gm.Player.BoostDebug() + ", speed " + gm.Player.Speed.ToString("0.0"));
@@ -96,9 +103,15 @@ namespace VCS.Core
                     GameInput.MoveOverride = new Vector2(Vector3.Dot(dir, right), Vector3.Dot(dir, fwd));
                     yield return new WaitForSecondsRealtime(0.1f);
                     tc += 0.1f;
-                    if (!shot && to.magnitude < 4.5f) { shot = true; gm.ClearBanners(); yield return Capture("smoke-cat.png"); }
+                    // the store caption covers the lower third, so the cat must stand in the clear upper part of the
+                    // frame (shot at a plain 4.5 m it was often behind the caption or off screen: no cat in CHASE THE CAT)
+                    if (!shot && to.magnitude < 6f && CatInFrame(cat.transform.position))
+                    { shot = true; gm.ClearBanners(); yield return Capture("smoke-cat.png"); }
                 }
+                if (!shot) { gm.ClearBanners(); yield return Capture("smoke-cat.png"); }
+                Debug.Log("[VCS] Cat shot: in frame " + shot);
                 GameInput.MoveOverride = Vector2.zero;
+                gm.Cam.SetView(42f, 9f);
                 Debug.Log("[VCS] Cat: distance " + Vector3.Distance(cat.transform.position, gm.Player.transform.position).ToString("0.0")
                           + " m, state " + cat.State + ", speed " + cat.Speed.ToString("0.0") + " m/s, at " + cat.transform.position
                           + ", powder cleaned " + (gm.Level.Powder != null ? gm.Level.Powder.CleanedSqm.ToString("0.00") : "-") + " m2 of "
@@ -151,6 +164,9 @@ namespace VCS.Core
                 GameInput.MoveOverride = Vector2.zero;
                 PowerCord.MaxLength = saved;
                 Debug.Log("[VCS] Cord: rewound " + cord.TotalRewound.ToString("0.0") + " m, plugged=" + cord.Plugged);
+                // plugged back in, so the bin, battery and Hot Chrome pictures show a running motor, not OFF
+                var sock = gm.Level != null ? gm.Level.NearestSocket(gm.Player.transform.position, 999f) : null;
+                if (sock != null && !cord.Plugged) cord.PlugInto(sock);
             }
 
             // The bin behind a wall: park next to the bin with the camera south of the z = 12 wall and the bag nearly
@@ -181,12 +197,19 @@ namespace VCS.Core
             {
                 Vector3 at = gm.Player.transform.position + gm.Player.transform.forward * 0.9f;
                 at.y = 0.1f;
-                var bat = gm.Chrome.DebugSpawn(at);
-                // a close look at the battery before it goes down the hose
+                // a close look at the battery before it goes down the hose: the camera settles first, then time
+                // stops while the battery is photographed (even 0.1 s by the nozzle was enough to swallow it, so
+                // the shot was the pink flash)
                 gm.Cam.SetView(24f, 3.2f);
-                yield return new WaitForSecondsRealtime(0.5f);
-                gm.ClearBanners(); yield return Capture("smoke-battery.png");
-                gm.Cam.SetView(42f, 9f);
+                yield return new WaitForSecondsRealtime(0.6f);
+                var bat = gm.Chrome.DebugSpawn(at);
+                float scale = Time.timeScale;
+                Time.timeScale = 0f;
+                gm.ClearBanners();
+                yield return null; yield return null;
+                yield return Capture("smoke-battery.png");
+                Time.timeScale = scale;
+                gm.Cam.SetView(32f, 6.5f);
                 float wt = 0f;
                 while (!gm.Chrome.Active && wt < 3f) { yield return new WaitForSecondsRealtime(0.1f); wt += 0.1f; }
                 Debug.Log("[VCS] Chrome: swallowed by suction " + gm.Chrome.Active + " after " + wt.ToString("0.0") + " s");
@@ -195,6 +218,7 @@ namespace VCS.Core
                 yield return Capture("smoke-chrome-splash.png");
                 yield return new WaitForSecondsRealtime(2.5f);
                 gm.ClearBanners(); yield return Capture("smoke-chrome.png");
+                gm.Cam.SetView(42f, 9f);
                 gm.Chrome.DebugEnd();
                 yield return new WaitForSecondsRealtime(1.2f);
                 gm.ClearBanners(); yield return Capture("smoke-chrome-off.png");
@@ -379,6 +403,14 @@ namespace VCS.Core
                 Destroy(tex);
                 frameNo++;
             }
+        }
+
+        static bool CatInFrame(Vector3 pos)
+        {
+            var cam = Camera.main;
+            if (cam == null) return false;
+            Vector3 v = cam.WorldToViewportPoint(pos + Vector3.up * 0.2f);
+            return v.z > 0f && v.x > 0.22f && v.x < 0.72f && v.y > 0.38f && v.y < 0.8f;
         }
 
         IEnumerator Capture(string file)

@@ -60,18 +60,22 @@ MACHINES = [
     ("m_littlered", "import-henry_lowpoly.png", "Hubert Junior"),
 ]
 
-# Store order: (slug, raw file, headline, subline). "gallery" is composed, not captured.
+# Store order: (slug, raw file, headline, subline). "gallery" is composed, not captured. Reordered 2026-10-19 for
+# conversion (his "weak marketplace copy and icons and materials"): the first three slots are the strongest hooks,
+# the colour and the gags (Hot Chrome, the cat, the house going down the hose), the gallery comes fifth.
 SHOTS = [
-    ("game", "smoke-game.png", "YOU ARE THE VACUUM", "A filthy house. Eat the crumbs, then the chairs."),
-    ("gallery", None, None, None),
+    ("chrome", "smoke-chrome.png", "HOT CHROME MODE", "Swallow the glowing battery: pink chrome, double points"),
     ("cat", "smoke-cat.png", "CHASE THE CAT", "It is faster than you. Mostly."),
+    ("game", "smoke-game.png", "EAT THE WHOLE HOUSE", "Crumbs first, then the chairs, then the toilet"),
     ("turbo", "smoke-turbo.png", "HOLD THE BOOST", "Sparks, speed lines and a trail of dust"),
+    ("gallery", None, None, None),
+    ("battery", "smoke-battery.png", "FIND THE BATTERY", "It hides somewhere new every time"),
     ("cord", "smoke-taut.png", "A CORD THAT FIGHTS BACK", "Pull too far and the plug pops out of the wall"),
     ("bin", "smoke-bin-far.png", "BAG FULL? FIND THE BIN", "Walls turn to glass, a marker shows the way"),
     ("powder", "smoke-powder.png", "LEAVE YOUR MARK", "Cocoa powder shows every path you clean"),
-    ("tutorial", "smoke-tutorial.png", "LEARN IT IN SIX STEPS", "An interactive walkthrough on your first run"),
     ("garage", "smoke-model-m_redsled.png", "PICK YOUR MACHINE", "Nineteen vacuums, each one drives differently"),
     ("rewind", "smoke-rewind.png", "REWIND THE CORD", "The plug whips across the floor and takes the mess with it"),
+    ("tutorial", "smoke-tutorial.png", "LEARN IT IN SIX STEPS", "An interactive walkthrough on your first run"),
 ]
 
 
@@ -209,6 +213,14 @@ def raw(setname, fname):
 
 def run_set(setname, gal, out_dir, prefix, size, style, expected, keep=None, extra_sizes=()):
     """One store set. style: 'overlay' (plate over the picture) or 'letterbox' (caption band below)."""
+    # the numbered pictures of this set are rewritten from scratch: after a reorder (0.4.10) the old "01-game"
+    # sat next to the new "01-chrome" and an upload would have taken both
+    import re
+    for tag in [prefix] + [t for t, _ in extra_sizes]:
+        pat = re.compile(re.escape(tag) + r"\d\d-[a-z]+\.png$")
+        for f in (os.listdir(out_dir) if os.path.isdir(out_dir) else []):
+            if pat.match(f):
+                os.remove(os.path.join(out_dir, f))
     n = 0
     for slug, fname, head, sub in SHOTS:
         if keep is not None and slug not in keep:
@@ -226,8 +238,14 @@ def run_set(setname, gal, out_dir, prefix, size, style, expected, keep=None, ext
                 im = letterbox(src, size[0], size[1], head, sub)
             else:
                 pic = src.resize(size, Image.LANCZOS) if src.size != size else src
-                im = overlay_caption(pic, head, sub, int(size[1] * 0.06), style_bottom(setname),
-                                     max_w_frac=CAPTION_ZONE[setname][0], centre_frac=CAPTION_ZONE[setname][1])
+                zone = CAPTION_ZONE[setname]
+                if slug == "garage" and setname == "pc":
+                    zone = (0.55, 0.36)   # the garage panel and the machine's name plate fill the right half
+                bottom = style_bottom(setname)
+                if slug == "battery":
+                    bottom = 0.40   # the battery lies just ahead of the nozzle, low in the frame: caption above it
+                im = overlay_caption(pic, head, sub, int(size[1] * 0.075), bottom,
+                                     max_w_frac=zone[0], centre_frac=zone[1])
         save(im, out_dir, f"{prefix}{n:02d}-{slug}.png")
         for tag, sz in extra_sizes:
             save(im.resize(sz, Image.LANCZOS), out_dir, f"{tag}{n:02d}-{slug}.png")
@@ -363,8 +381,10 @@ def style_bottom(setname):
 
 
 def feature_graphic():
-    """Play's 1024x500: the wide navy hero (2026-09-22, the icon's studio) with the wordmark in the empty left third."""
-    src = os.path.join(ROOT, "marketing", "source", "hero_wide.png")
+    """Play's 1024x500. Since 0.4.10 (2026-10-19, the cat icon) it is the cat chase of the action set, the gag the
+    icon promises, with the wordmark over the empty wall between the hose and the cat. Until then: the wide navy
+    hero with the wordmark in its empty left third."""
+    src = os.path.join(ROOT, "marketing", "source", "action", "cat.png")
     if not os.path.exists(src):
         print("  missing", os.path.relpath(src, ROOT))
         return None
@@ -373,12 +393,16 @@ def feature_graphic():
     scale = max(1024 / sw, 500 / sh)
     im = im.resize((int(round(sw * scale)), int(round(sh * scale))), Image.LANCZOS)
     x = (im.size[0] - 1024) // 2
-    y = int((im.size[1] - 500) * 0.55)   # keep the floor head and the reflection, lose a little sky
+    y = int((im.size[1] - 500) * 0.45)
     im = im.crop((x, y, x + 1024, y + 500)).convert("RGBA")
-    wm = brand.wordmark(350)   # 430 touched the wand
-    wm = brand.drop_shadow(wm, 16, (0, 10), 190)
-    im.alpha_composite(wm, (48 - 48, (500 - wm.size[1]) // 2 - 10))
+    wm = brand.wordmark(300)
+    wm = brand.drop_shadow(wm, 14, (0, 8), 200)
+    im.alpha_composite(wm, (1024 - wm.size[0] - 12, 4))
     return im.convert("RGB")
+
+
+PHONE_KEEP = {"chrome", "cat", "game", "turbo", "gallery", "cord", "bin", "powder"}
+APPLE_KEEP = PHONE_KEEP | {"battery"}
 
 
 def main():
@@ -391,17 +415,18 @@ def main():
     if want("gallery"):
         save(gal, STORE, "gallery_1920x1080.png")
     if want("pc"):
-        run_set("pc", gal, os.path.join(STORE, "screens"), "", (1920, 1080), "overlay", (1920, 1080))
+        run_set("pc", gal, os.path.join(STORE, "screens"), "", (1920, 1080), "overlay", (1920, 1080),
+                keep={"chrome", "cat", "game", "turbo", "gallery", "battery", "cord", "bin", "powder", "garage"})
     if want("phone"):
         run_set("phone", gal, PLAY, "phone-", (1920, 1080), "letterbox", (1920, 864),
-                keep={"game", "gallery", "cat", "turbo", "cord", "bin", "powder", "tutorial"})
+                keep=PHONE_KEEP)
     if want("iphone"):
         run_set("iphone", gal, APPSTORE, "iphone69-", (2868, 1320), "overlay", (2868, 1320),
-                keep={"game", "gallery", "cat", "turbo", "cord", "bin", "powder", "tutorial"},
+                keep=APPLE_KEEP,
                 extra_sizes=[("iphone65-", (2688, 1242))])
     if want("ipad"):
         run_set("ipad", gal, APPSTORE, "ipad13-", (2752, 2064), "overlay", (2752, 2064),
-                keep={"game", "gallery", "cat", "turbo", "cord", "bin", "powder", "tutorial"})
+                keep=APPLE_KEEP)
     if want("action"):
         run_action(os.path.join(STORE, "action"))
     if want("fusion"):

@@ -31,6 +31,9 @@ namespace VCS.Core
         public bool Active => endsAt > 0f;
         public float Remaining => Active ? Mathf.Max(0f, endsAt - Time.time) : 0f;
         public Debris Battery => battery;
+        /// <summary>Smoke test: no battery of the level's own, so only the battery phase turns the house chrome (a
+        /// phone run once ate the natural one during the cat chase and every later store picture came out pink).</summary>
+        public static bool NoNaturalBattery;
 
         public static ChromeMode Create(GameManager gm)
         {
@@ -80,7 +83,7 @@ namespace VCS.Core
                 if (!warned && Remaining < 4f) { warned = true; gm.ShowToast("PLUTONIUM LOW", "Hot Chrome ends in 4 s"); }
                 if (Remaining <= 0f) Revert(true);
             }
-            else if (battery == null && spawnAt > 0f && Time.time >= spawnAt)
+            else if (battery == null && spawnAt > 0f && Time.time >= spawnAt && !NoNaturalBattery)
             {
                 spawnAt = -1f;
                 SpawnBattery();

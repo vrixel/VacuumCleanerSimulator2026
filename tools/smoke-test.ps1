@@ -4,7 +4,7 @@
 # Exit code 1 if the run did not finish, logged an exception, or produced no screenshots.
 # Usage:  powershell -File tools\smoke-test.ps1 [-TimeoutSeconds 60]
 param(
-    [int]$TimeoutSeconds = 100,   # 19 garage models and five phases
+    [int]$TimeoutSeconds = 300,   # 19 garage models, the phases and Hot Chrome (100 s was too short from 0.4.10)
     [int]$Width = 1280,
     [int]$Height = 720,
     [switch]$Touch,

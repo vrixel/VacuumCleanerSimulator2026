@@ -395,6 +395,27 @@ Everything is created from code at runtime; there are no prefabs, no art, no aud
   mid-chase left the cockpit reading OFF for the powder chapter), `GameManager.ClearBanners` hides a splash before
   a capture, and `*.mp4` is on git LFS. Achievements are exactly 22: the copy says so everywhere.
 
+- Hot Chrome (`ChromeMode`, merged into 0.4.10 on 2026-10-19 on his go, battery kept green): one glowing plutonium
+  battery lies in the house; swallowing it flips the whole game, HUD included, to the pink Hot Chrome look for 20 s
+  with double points, then a new battery turns up 45 s later (`-pink` keeps the look on for good). Smoke-run
+  lessons from the 0.4.10 store captures: the vacuum swallowed the level's own battery during the phone cat chase
+  and every later picture came out pink, so the smoke run sets `ChromeMode.NoNaturalBattery` and spawns its own
+  battery (`DebugSpawn`) only for the battery phase, with the camera settled first (`Cam.SetView(24, 3.2)`) and the
+  capture taken with `Time.timeScale = 0` right after the spawn (even 0.1 s of play let the vacuum swallow it and
+  the shot was the pink flash); the cat shot waits until the cat sits inside the uncaptioned part of the viewport
+  (`SmokeRunner.CatInFrame`, logged `[VCS] Cat shot: in frame`), or "CHASE THE CAT" showed no cat; the chase pays out more than 22 m of cord, so
+  `PowerCord.MaxLength` is 80 m from the turbo phase and the plug goes back into the nearest socket after the
+  rewind (otherwise the cockpit reads OFF in the bin and powder shots). The smoke default timeout is 300 s.
+- Conversion pass of 0.4.10 (his "do not forget the weak marketplace copy and icons and materials that give weak
+  conversion", icon pick "Cat"): the icon is `icon_gag_cat` (the red canister chasing a terrified cat; the navy
+  one is kept as `icon_navy.png`), the store pictures lead with the gags (Hot Chrome, cat, the house, turbo,
+  gallery, battery, cord, bin, powder, garage; captions 7.5 % of the height), the Play feature graphic, the
+  Microsoft super hero, hero and og_image are cut from the cat action scene, and `marketing.py` composes the
+  Microsoft poster from the icon (`poster_from_icon`: corner colour, white ray burst, the icon feathered at its top
+  edge, the wordmark on top) and the box art from the icon. `store_shots.py` deletes a set's stale numbered files
+  before writing, so a reordered list leaves no orphans. The kie balance was 11 credits that day: everything was
+  composed locally from existing art.
+
 Input: `GameInput` wraps the legacy Input Manager. Axes live in `ProjectSettings/InputManager.asset` (Horizontal,
 Vertical, CamX, CamY, DPadX, DPadY, TriggerL, TriggerR); buttons are read with `KeyCode.JoystickButtonN`
 (Xbox: A=0 B=1 X=2 Y=3 LB=4 RB=5 Back=6 Start=7). Do not add the Input System package: it needs
@@ -453,6 +474,8 @@ Unity 6 API names in use: `Rigidbody.linearVelocity`, `linearDamping`, `angularD
   with "the term 'dotnet' is not recognized" while Unity builds kept working. Restored on 2026-09-10 by unzipping
   `dotnet-sdk-10.0.400-win-x64.zip` over that folder, no admin needed. If the fast check ever dies that way again,
   look for the missing host before doubting the script.
+  Another SDK may come first on PATH in a PowerShell session: `$env:PATH = "D:\Program Files\dotnet;" + $env:PATH`
+  before `compile-check.ps1` if it complains about the target framework.
 - App icon: `Assets/Icon/icon.png` (512, cut by `tools/marketing.py` from the kie icon) is applied to the Standalone
   and default icon slots by `ProjectSetup.ApplyIcon` on every batch build; the exe shows it.
 - The game page on cosnuau.com is `public/vacuum.html` (a flat file: CloudFront serves the home page for folder URLs, assets in `public/vacuum/`) in `D:\Cloclo\Projects\cosnuau.com` (web-sized JPEGs

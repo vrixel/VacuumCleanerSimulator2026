@@ -29,7 +29,7 @@ a competitor's trademark, and the other two consoles gain nothing from it).
 | Big picture | super hero 1920 x 1080 `ms_superhero_1920x1080.png`, poster 720 x 1080, box art 1080 | feature graphic 1024 x 500 `marketing/play/feature_1024x500.png` | none (the first screenshots are the big picture) |
 | Video | trailer MP4 1920 x 1080, under 60 s: `marketing/video/trailer_1920x1080.mp4`, poster `trailer_poster.png` | the same trailer on YouTube (unlisted is enough), link in the listing | App Preview: device-size footage only, no other platform named; NOT this trailer, a later job |
 | Privacy | policy URL, mandatory for a runFullTrust package | policy URL, data safety "nothing collected" | policy URL, App Privacy "Data Not Collected" |
-| Live version (2026-09-26) | 0.4.9.0; submission 8 (blueprint trailer) in certification | 409 on internal + closed "Alpha", listing live; production access applied 2026-09-26 | 1.0 (409) Waiting for Review since 2026-09-22 |
+| Live version (2026-09-26, superseded by the 0.4.10 submissions of 2026-10-19) | 0.4.9.0; submission 8 (blueprint trailer) in certification | 409 on internal + closed "Alpha", listing live; production access applied 2026-09-26 | 1.0 (409) Waiting for Review since 2026-09-22 |
 | Next click (his) | none | the YouTube trailer (his channel, unlisted) for the empty video field; the production release once Google grants access | none until Apple answers |
 
 Where a store has no field (Play has no keywords, the Microsoft Store has no promo text), nothing is lost: the
@@ -41,21 +41,23 @@ facts of that field are already inside **D**.
 
     Vacuum Cleaner Simulator 2026
 
-### S1, Microsoft Store short description (200 max, 188)
+### S1, Microsoft Store short description (200 max, 190; rewritten 2026-10-19 for conversion: the gags first, an action verb, the new mode)
 
-    You are the vacuum cleaner. The house is filthy. Eat crumbs, socks, chairs and eventually the toilet, then blow it all back out. Nineteen machines, one cat, a suspiciously serious cockpit.
+    Be the vacuum cleaner. Swallow socks, chairs, the couch and the toilet, chase the screaming cat, then blow it all back out. Nineteen machines, a cord that fights back, and a Hot Chrome mode.
 
-### S2, Google Play short description (80 max, 76)
+### S2, Google Play short description (80 max, 77; rewritten 2026-10-19)
 
-    You are the vacuum. The house is filthy. Eat socks, chairs, even the toilet.
+    Be the vacuum! Swallow socks, the couch, even the toilet. Then chase the cat.
 
-### S3, App Store subtitle (30 max, 22)
+### S3, App Store subtitle (30 max, 27; rewritten 2026-10-19: the old "Suck it up. All of it." carried no word anyone searches, and Apple indexes the subtitle)
 
-    Suck it up. All of it.
+    Funny cleaning physics game
+
+The old line stays the trailer's title-card subline: it is a tagline, not a search field.
 
 ### D, the description (all three; swap the platform paragraph)
 
-    You are the vacuum cleaner. The house is filthy. Eat crumbs, socks, chairs and eventually the toilet, then blow it all back out.
+    Be the vacuum cleaner. Swallow socks, chairs, the couch and the toilet, chase the screaming cat, then blow it all back out.
 
     Vacuum Cleaner Simulator 2026 is a comedy physics sandbox where you are the machine and the mess is not going to clean itself. Drive through a six-room house, suck up crumbs, dust bunnies, socks, toy bricks and coins, then level up until chairs, the couch, the fridge and the toilet fit in the nozzle. When the bag is full, empty it into the bin, or blow everything back out at high speed and start again.
 
@@ -64,6 +66,9 @@ facts of that field are already inside **D**.
 
     A CORD THAT FIGHTS BACK
     Corded models drag a real simulated cable. It straightens as you go, pulls tight around corners, and at the end it holds you like a leash. Keep pulling and the plug pops out of the wall. Rewind it from across the house and watch the plug whip through the furniture. Cordless models worry about their battery instead.
+
+    HOT CHROME
+    A glowing green plutonium battery hides somewhere in the house. Swallow it and everything turns pink chrome with neon outlines for 20 seconds, and every point counts double. Then it hides again.
 
     A CAT WITH OPINIONS
     Chase it through the living room. It steers around the furniture, panics, hops sideways and yowls. It can never be vacuumed, but it does not know that.
@@ -91,13 +96,13 @@ facts of that field are already inside **D**.
 
     All vacuum names are parodies; no real product names or logos are used. The eleven realistic meshes are Creative Commons models, credited at github.com/vrixel/VacuumCleanerSimulator2026/blob/main/docs/CREDITS.md.
 
-### PROMO, App Store promotional text (170 max, 162)
+### PROMO, App Store promotional text (170 max, 163; 0.4.10)
 
-    Nineteen vacuums, one filthy house, one cat with opinions. Drive, boost, suck it all up, then blow it back out. New: a one-minute tutorial, and the cat now yowls.
+    New: Hot Chrome! Swallow the glowing battery and the whole house turns pink chrome for 20 seconds, with double points. Plus real slurps when things go up the hose.
 
-### KW, App Store keywords (100 max, 97; never a word of the title, Apple indexes the title already)
+### KW, App Store keywords (100 max, 100; never a word of the title or the subtitle, Apple indexes both already)
 
-    physics,sandbox,funny,silly,cleaning,house,chaos,family,offline,cat,hoover,robot,arcade,kids,mess
+    sandbox,silly,hoover,chaos,cat,family,offline,robot,arcade,kids,mess,messy,prank,casual,toilet,house
 
 ### WN, What's new (0.4.10, the same three stores, 2026-10-19)
 
@@ -120,20 +125,32 @@ order on every store, so someone who sees the PC page and then the phone page se
 
 | # | Subject | Headline | What it shows |
 |---|---|---|---|
-| 01 | Gameplay | YOU ARE THE VACUUM | the run, the cockpit (PC) or the domed buttons (touch) |
-| 02 | Gallery | NINETEEN MACHINES | the nineteen models side by side, the wordmark |
-| 03 | The cat | CHASE THE CAT | the cat fleeing across the living room |
-| 04 | The boost | HOLD THE BOOST | dust plume, sparks, speed lines |
-| 05 | The cord | A CORD THAT FIGHTS BACK | the cable taut to the socket, the plug about to pop |
-| 06 | The bag | BAG FULL? FIND THE BIN | the bag at 86 %, the BIN marker, the bin |
-| 07 | The powder | LEAVE YOUR MARK | the cocoa trail from above |
-| 08 | The garage / tutorial | PICK YOUR MACHINE / LEARN IT IN SIX STEPS | the garage (PC), the first-run tutorial (touch) |
+Order since 0.4.10 (2026-10-19, his "do not forget the weak marketplace copy and icons and materials that give
+weak conversion"): the gags first, the inventory later. A store visitor decides on the first two or three
+pictures, and the old 01 (a distant view of the cockpit) and 02 (a grid of machines) showed neither a joke nor
+the hook. The captures are shot from a closer, lower camera now (`SmokeRunner`, 32 degrees at 6.5 m instead of
+the play view's 42 at 9) and the captions are bigger (7.5 % of the height).
 
-PC adds 09 the plug yanked and 10 the rewind. The captions sit above the cockpit on PC, and on touch they sit low
+| # | Subject | Headline | What it shows |
+|---|---|---|---|
+| 01 | Hot Chrome | HOT CHROME MODE | the house in pink chrome after the battery, double points |
+| 02 | The cat | CHASE THE CAT | the cat fleeing across the living room |
+| 03 | Gameplay | EAT THE WHOLE HOUSE | the run, the cockpit (PC) or the domed buttons (touch) |
+| 04 | The boost | HOLD THE BOOST | dust plume, sparks, speed lines |
+| 05 | Gallery | NINETEEN MACHINES | the nineteen models side by side, the wordmark |
+| 06 | The battery | FIND THE BATTERY (PC, App Store) | the glowing green battery at the nozzle |
+| 07 | The cord | A CORD THAT FIGHTS BACK | the cable taut to the socket, the plug about to pop |
+| 08 | The bag | BAG FULL? FIND THE BIN | the bag at 86 %, the BIN marker, the bin |
+| 09 | The powder | LEAVE YOUR MARK | the cocoa trail from above |
+| 10 | The garage | PICK YOUR MACHINE (PC) | the garage |
+
+Play keeps eight (no battery, no garage); the rewind and the tutorial are still rendered but no longer listed. The captions sit above the cockpit on PC, and on touch they sit low
 in a zone that never covers the REWIND button (`CAPTION_ZONE` in `store_shots.py`).
 
 The wordmark (`marketing/logo/wordmark.png`, transparent, and `wordmark-line.png`) is the same on the gallery,
-the feature graphic, the trailer cards and the site. The icon is `sled_navy_clean` (his pick of 2026-09-22 after
+the feature graphic, the trailer cards and the site. Since 0.4.10 the icon is `icon_gag_cat` (his pick of 2026-10-19 from the fourth round,
+`marketing/icon-candidates/icon_gag_*.png`: the red canister chasing a terrified orange cat on a bright cyan burst;
+the navy one is kept as `marketing/source/icon_navy.png`). Before that it was `sled_navy_clean` (his pick of 2026-09-22 after
 three kie rounds, `marketing/icon-candidates/sheet.png`: the red canister of his own photo, edited once more to
 keep only the machine and a wisp of dust on a deep navy studio with an electric-blue burst; no text, since a
 badge is unreadable at 64 px). Every other picture follows it ("ensure other marketplace graphic assets follow
