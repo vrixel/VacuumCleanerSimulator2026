@@ -31,13 +31,20 @@ namespace VCS.Core
             new StepDef { Id = "blow", Key = "Hold E / (B) to blow things away", Touch = "Hold BLOW to blast things away" },
         };
 
-        readonly HudController hud;
+        HudController hud;
         int step;
         float travelled, looked, held, gap;
         Vector3 lastPos;
         bool hasPos, pending;
 
         public Tutorial(HudController hud) { this.hud = hud; }
+
+        /// <summary>The HUD was rebuilt (Hot Chrome switch): point at the new one and put the current step back up.</summary>
+        public void Rebind(HudController h)
+        {
+            hud = h;
+            if (Active && !pending && step < Steps.Length) Show();
+        }
 
         /// <summary>Starts the walkthrough for a new run; with force = false it only runs until it has been completed once.</summary>
         public void Begin(bool force)

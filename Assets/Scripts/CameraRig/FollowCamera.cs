@@ -37,6 +37,9 @@ namespace VCS.CameraRig
             return fc;
         }
 
+        /// <summary>Walls back to their own materials: call before anything swaps level materials (Hot Chrome).</summary>
+        public void ClearFades() => fader.Clear();
+
         public void SetFollow(Transform t)
         {
             fader.Clear();

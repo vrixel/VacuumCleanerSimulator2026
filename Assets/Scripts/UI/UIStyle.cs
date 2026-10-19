@@ -37,20 +37,33 @@ namespace VCS.UI
         public static Font Fourteen => Load("Fonts/DSEG14");
         public static Font Body => Load("Fonts/Exo2");
 
-        public static readonly Color Yellow = new Color(1f, 0.84f, 0f);
-        public static readonly Color Blue = new Color(0f, 0.66f, 1f);
-        public static readonly Color Red = new Color(1f, 0.22f, 0.16f);
-        public static readonly Color Green = new Color(0.3f, 1f, 0.35f);
-        public static readonly Color Amber = new Color(1f, 0.62f, 0f);
+        // Exploration (explore/hot-chrome): "-pink" swaps the palette and reads UI/HudPink before UI/Hud. Settable
+        // (explore/chrome-battery): the plutonium battery flips it live, then the HUD is rebuilt (HudController.Rebuild).
+        public static bool PinkLook { get; set; } = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-pink") >= 0;
+
+        public static Color Yellow => PinkLook ? new Color(1f, 0.18f, 0.54f) : new Color(1f, 0.84f, 0f);
+        public static Color Blue => PinkLook ? new Color(1f, 0.74f, 0.88f) : new Color(0f, 0.66f, 1f);
+        public static Color Red => PinkLook ? new Color(1f, 0.08f, 0.28f) : new Color(1f, 0.22f, 0.16f);
+        public static Color Green => PinkLook ? new Color(0.55f, 1f, 0.82f) : new Color(0.3f, 1f, 0.35f);
+        public static Color Amber => PinkLook ? new Color(1f, 0.46f, 0.72f) : new Color(1f, 0.62f, 0f);
         public static readonly Color White = Color.white;
-        public static readonly Color Ink = new Color(0.04f, 0.04f, 0.06f);
-        public static readonly Color Panel = new Color(0.08f, 0.09f, 0.12f, 0.97f);
-        public static readonly Color Screen = new Color(0.02f, 0.03f, 0.04f, 0.98f);
-        public static readonly Color Steel = new Color(0.78f, 0.83f, 0.9f);
-        public static readonly Color Dim = new Color(0.42f, 0.45f, 0.52f);
+        public static Color Ink => PinkLook ? new Color(0.07f, 0f, 0.03f) : new Color(0.04f, 0.04f, 0.06f);
+        public static Color Panel => PinkLook ? new Color(0.12f, 0.02f, 0.06f, 0.97f) : new Color(0.08f, 0.09f, 0.12f, 0.97f);
+        public static Color Screen => PinkLook ? new Color(0.04f, 0f, 0.02f, 0.98f) : new Color(0.02f, 0.03f, 0.04f, 0.98f);
+        public static Color Steel => PinkLook ? new Color(0.96f, 0.84f, 0.91f) : new Color(0.78f, 0.83f, 0.9f);
+        public static Color Dim => PinkLook ? new Color(0.58f, 0.36f, 0.47f) : new Color(0.42f, 0.45f, 0.52f);
+
+        /// <summary>A generated HUD sprite: UI/HudPink first under -pink, then UI/Hud.</summary>
+        public static Sprite HudSprite(string name)
+        {
+            Sprite s = PinkLook ? Resources.Load<Sprite>("UI/HudPink/" + name) : null;
+            return s != null ? s : Resources.Load<Sprite>("UI/Hud/" + name);
+        }
 
         static Font Load(string path)
         {
+            // Hot Chrome: one face everywhere, the chunky italic of the first boards (Russo One).
+            if (PinkLook) path = "Fonts/RussoOne";
             if (fonts.TryGetValue(path, out var f) && f != null) return f;
             f = Resources.Load<Font>(path);
             if (f == null) f = UIFactory.Font;
@@ -76,6 +89,7 @@ namespace VCS.UI
         public static Text Edge(Text t, float shadow = 2f)
         {
             ClearEffects(t);
+            if (PinkLook) { t.fontStyle = FontStyle.Italic; return PinkEdge(t, shadow); }
             var o = t.gameObject.AddComponent<Outline>();
             o.effectColor = new Color(0f, 0f, 0f, 1f);
             o.effectDistance = new Vector2(1.2f, -1.2f);
@@ -96,6 +110,7 @@ namespace VCS.UI
             t.font = Arcade;
             t.fontStyle = italic ? FontStyle.Italic : FontStyle.Normal;
             t.color = fill;
+            if (PinkLook) return PinkChrome(t, shadow);
             var o = t.gameObject.AddComponent<Outline>();
             o.effectColor = new Color(0f, 0f, 0f, 1f);
             o.effectDistance = new Vector2(2f, -2f);
@@ -111,6 +126,40 @@ namespace VCS.UI
             return t;
         }
 
+        static readonly Color Cherry = new Color(0.30f, 0f, 0.11f, 1f);
+        static readonly Color CherryDeep = new Color(0.12f, 0f, 0.04f, 1f);
+
+        static Shadow AddShadow(Text t, Color c, float x, float y, bool outline = false)
+        {
+            Shadow s = outline ? t.gameObject.AddComponent<Outline>() : t.gameObject.AddComponent<Shadow>();
+            s.effectColor = c;
+            s.effectDistance = new Vector2(x, y);
+            s.useGraphicAlpha = true;
+            return s;
+        }
+
+        /// <summary>Hot Chrome headline, as on the first boards: chrome face cut by a horizon (ChromeText), a cherry
+        /// outline, a solid cherry extrusion stepped down-right, a near-black base and a soft pink halo, all in one effect.</summary>
+        static Text PinkChrome(Text t, float depth)
+        {
+            var c = t.GetComponent<ChromeText>();
+            if (c == null) c = t.gameObject.AddComponent<ChromeText>();
+            c.depth = Mathf.Max(3f, depth);
+            t.fontStyle = FontStyle.Italic;
+            t.color = Color.white;
+            // Below ChromeText.MinSize the chrome is skipped, so small headlines get the plain pink edge.
+            if (t.fontSize < ChromeText.MinSize) PinkEdge(t, 2f);
+            return t;
+        }
+
+        /// <summary>Hot Chrome small text: flat colour, cherry edge and a short cherry drop.</summary>
+        static Text PinkEdge(Text t, float shadow)
+        {
+            AddShadow(t, Cherry, 1.2f, -1.2f, true);
+            AddShadow(t, CherryDeep, shadow, -shadow);
+            return t;
+        }
+
         /// <summary>Kept for old callers.</summary>
         public static Text Jackpot(Text t, Color fill, Color shadowColor, float shadow = 5f) => ArcadeText(t, fill, shadowColor, shadow);
         public static Text Neon(Text t, Color c) => ArcadeText(t, Color.Lerp(c, Color.white, 0.6f), c, 3f, false);
@@ -123,6 +172,7 @@ namespace VCS.UI
             var font = fourteen ? Fourteen : Seven;
             var ghost = UIFactory.Text(parent, name + "Ghost", ghostPattern, size, new Color(color.r, color.g, color.b, 0.14f), anchor, aMin, aMax, oMin, oMax, false, FontStyle.Normal);
             ghost.font = font;
+            if (PinkLook) ghost.enabled = false; // no segment ghost behind a proportional face
             var live = UIFactory.Text(parent, name, "", size, color, anchor, aMin, aMax, oMin, oMax, false, FontStyle.Normal);
             live.font = font;
             var s = live.gameObject.AddComponent<Shadow>();
@@ -157,9 +207,9 @@ namespace VCS.UI
         /// <summary>A generated frame plate from Resources/UI/Hud, nine-sliced with a border of the given fraction. Null if missing.</summary>
         public static Sprite PlateSprite(string name, float borderFrac = 0.24f)
         {
-            string key = name + "|" + borderFrac.ToString("F2");
+            string key = name + "|" + borderFrac.ToString("F2") + (PinkLook ? "|pink" : "");
             if (plates.TryGetValue(key, out var s) && s != null) return s;
-            var src = Resources.Load<Sprite>("UI/Hud/" + name);
+            var src = HudSprite(name);
             if (src == null) return null;
             float b = Mathf.Floor(Mathf.Min(src.rect.width, src.rect.height) * borderFrac);
             s = Sprite.Create(src.texture, src.rect, new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(b, b, b, b));
@@ -229,7 +279,7 @@ namespace VCS.UI
         /// <summary>A generated sprite stretched whole over the rectangle (readouts with a chevron, bar fills), tinted.</summary>
         public static Image Simple(Transform parent, string name, string sprite, Color tint, Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax, Color fallback, bool keepAspect = false)
         {
-            var sp = Resources.Load<Sprite>("UI/Hud/" + sprite);
+            var sp = HudSprite(sprite);
             var img = UIFactory.Panel(parent, name, sp != null ? tint : fallback, aMin, aMax, oMin, oMax);
             if (sp != null)
             {
@@ -240,7 +290,7 @@ namespace VCS.UI
             return img;
         }
 
-        public static bool Has(string sprite) => Resources.Load<Sprite>("UI/Hud/" + sprite) != null;
+        public static bool Has(string sprite) => HudSprite(sprite) != null;
 
         /// <summary>A dark veil that is darker at the edges (title and pause backdrops), never a flat rectangle.</summary>
         public static Image Veil(Transform parent, string name, float alpha)

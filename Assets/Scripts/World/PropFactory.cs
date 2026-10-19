@@ -46,6 +46,7 @@ namespace VCS.World
             { DebrisKind.Bed,       new DebrisSpec(5, 1500, 80f, 120f, false) },
             { DebrisKind.Toilet,    new DebrisSpec(5, 800, 30f, 40f, false) },
             { DebrisKind.Bathtub,   new DebrisSpec(5, 1200, 70f, 80f, false) },
+            { DebrisKind.PlutoniumBattery, new DebrisSpec(1, 250, 0f, 0.25f, false) },
         };
 
         static readonly Color[] Brights = { Palette.Red, Palette.Blue, Palette.Yellow, Palette.Green, Palette.Orange, Palette.Pink, Palette.Purple, Palette.Teal };
@@ -283,6 +284,26 @@ namespace VCS.World
                     Prim(PrimitiveType.Cube, t, new Vector3(0f, 0.5f, 0f), new Vector3(0.65f, 0.14f, 1.6f), water, "Water", false);
                     Prim(PrimitiveType.Cylinder, t, new Vector3(0f, 0.75f, -0.85f), new Vector3(0.05f, 0.2f, 0.05f), Palette.Gray, "Tap", false);
                     return water;
+                }
+                case DebrisKind.PlutoniumBattery:
+                {
+                    // A chunky cartoon power cell lying on its side: glowing green core, chrome caps and terminal,
+                    // black bands. Size class 1, so any vacuum can take it; it never goes into the bag.
+                    var glow = new Color(0.35f, 1f, 0.35f);
+                    var side = Quaternion.Euler(0f, 0f, 90f);
+                    var core = Prim(PrimitiveType.Cylinder, t, new Vector3(0f, 0.13f, 0f), new Vector3(0.24f, 0.2f, 0.24f), glow, "Core", true, side);
+                    core.GetComponent<MeshRenderer>().sharedMaterial = Palette.Led(glow);
+                    var chrome = Palette.Mat(new Color(0.85f, 0.87f, 0.9f), 0.9f, 0.85f);
+                    foreach (float x in new[] { -0.2f, 0.2f })
+                    {
+                        var cap = Prim(PrimitiveType.Cylinder, t, new Vector3(x, 0.13f, 0f), new Vector3(0.26f, 0.03f, 0.26f), Palette.Gray, "Cap", false, side);
+                        cap.GetComponent<MeshRenderer>().sharedMaterial = chrome;
+                    }
+                    var tip = Prim(PrimitiveType.Cylinder, t, new Vector3(0.245f, 0.13f, 0f), new Vector3(0.1f, 0.025f, 0.1f), Palette.Gray, "Terminal", false, side);
+                    tip.GetComponent<MeshRenderer>().sharedMaterial = chrome;
+                    foreach (float x in new[] { -0.09f, 0.09f })
+                        Prim(PrimitiveType.Cylinder, t, new Vector3(x, 0.13f, 0f), new Vector3(0.25f, 0.018f, 0.25f), Palette.Black, "Band", false, side);
+                    return glow;
                 }
             }
             Prim(PrimitiveType.Cube, t, new Vector3(0f, 0.15f, 0f), Vector3.one * 0.3f, Palette.Gray, "Unknown");

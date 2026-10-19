@@ -36,7 +36,7 @@ namespace VCS.UI
         float[] sparklePhase;
         Cockpit cockpit;
         RadarView radar;
-        GameObject playerMarker;
+        GameObject playerMarker, noseMarker;
         Image bagFill, binMarkerArrow;
         Text bagText, binMarkerText;
         RectTransform binMarker;
@@ -50,7 +50,7 @@ namespace VCS.UI
         bool lastBinPrompt, thirdIsBattery;
         float bannerT, bannerDur, hintT, hintDur, objectivesTimer, scorePunch, sparkleBurst;
         readonly List<Objective> objBuffer = new List<Objective>();
-        static readonly Color[] PowerColors = { UIStyle.Green, UIStyle.Blue, UIStyle.Yellow, UIStyle.Amber, UIStyle.Red };
+        static Color[] PowerColors => new[] { UIStyle.Green, UIStyle.Blue, UIStyle.Yellow, UIStyle.Amber, UIStyle.Red };
 
         public static HudController Create()
         {
@@ -352,11 +352,12 @@ namespace VCS.UI
             thirdIsBattery = spec.Cordless;
             tapeThird.SetColor(thirdIsBattery ? UIStyle.Green : UIStyle.Blue);
             if (playerMarker != null) Destroy(playerMarker);
+            if (noseMarker != null) Destroy(noseMarker);
             if (player != null)
             {
                 playerMarker = RadarView.Marker(player, UIStyle.Green, 1.6f);
-                var nose = RadarView.Marker(player, UIStyle.Green, 0.7f);
-                nose.transform.localPosition = new Vector3(0f, 25f, 1.1f);
+                noseMarker = RadarView.Marker(player, UIStyle.Green, 0.7f);
+                noseMarker.transform.localPosition = new Vector3(0f, 25f, 1.1f);
             }
             if (!touch) radar.SetActive(true);
             if (bagIconEmpty != null)
@@ -411,6 +412,21 @@ namespace VCS.UI
                 tapeThird.Set(tm.CordLength / tm.CordMax * 100f, tm.CordLength.ToString("0.0"));
                 tapeThird.SetColor(tm.CordTaut ? UIStyle.Red : (!tm.Powered ? UIStyle.Dim : UIStyle.Blue));
             }
+        }
+
+        /// <summary>After a rebuild: show the running score at once instead of counting up from zero.</summary>
+        public void SnapScore(int score)
+        {
+            targetScore = score;
+            displayScore = score;
+            scoreText.text = score.ToString("N0");
+        }
+
+        void OnDestroy()
+        {
+            // the radar markers ride on the vacuum, outside this canvas
+            if (playerMarker != null) Destroy(playerMarker);
+            if (noseMarker != null) Destroy(noseMarker);
         }
 
         public void SetScore(int score)

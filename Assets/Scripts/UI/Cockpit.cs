@@ -14,11 +14,11 @@ namespace VCS.UI
     {
         public const float Height = 250f;
 
-        static readonly Color LabelColor = UIStyle.Steel;
-        static readonly Color DimColor = UIStyle.Dim;
-        static readonly Color AlarmColor = UIStyle.Red;
-        static readonly Color OkColor = UIStyle.Green;
-        static readonly Color WarnColor = UIStyle.Amber;
+        static Color LabelColor => UIStyle.Steel;
+        static Color DimColor => UIStyle.Dim;
+        static Color AlarmColor => UIStyle.Red;
+        static Color OkColor => UIStyle.Green;
+        static Color WarnColor => UIStyle.Amber;
 
         public GameObject Root { get; private set; }
 
@@ -234,7 +234,7 @@ namespace VCS.UI
         public void Bind(VacuumSpec s, int serial)
         {
             spec = s;
-            accent = s.Accent;
+            accent = UIStyle.PinkLook ? UIStyle.Blue : s.Accent;
             suctionValue.color = accent;
             for (int i = 0; i < motorValues.Length; i++) motorValues[i].color = accent;
             containerValue.color = accent;

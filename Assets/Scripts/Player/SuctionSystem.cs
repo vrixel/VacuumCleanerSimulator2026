@@ -155,7 +155,7 @@ namespace VCS.Player
                 bool inCone = dist < 1.0f || Vector3.Angle(nf, -to) <= HalfAngle;
                 if (!inCone) continue;
 
-                bool edible = d.SizeClass <= maxClass && !BagFull;
+                bool edible = d.SizeClass <= maxClass && (!BagFull || d.Kind == DebrisKind.PlutoniumBattery);
                 if (edible && dist < absorb * (1f + d.SizeClass * 0.12f))
                 {
                     Absorb(gm, d);
@@ -174,6 +174,14 @@ namespace VCS.Player
 
         void Absorb(GameManager gm, Debris d)
         {
+            if (d.Kind == DebrisKind.PlutoniumBattery)
+            {
+                // the bonus goes to the motor, not the bag: a blow-out must not spit it back
+                gm.OnDebrisAbsorbed(d);
+                vac.Visuals.Punch(0.35f);
+                Destroy(d.gameObject);
+                return;
+            }
             Bag.Add(new BagItem { Kind = d.Kind, ColorSeed = d.ColorSeed, Volume = d.Volume, Mess = d.CountsAsMess });
             BagFill += d.Volume;
             gm.OnDebrisAbsorbed(d);
