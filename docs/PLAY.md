@@ -242,4 +242,6 @@ by DOM: the listing is `/store-listings/default/edit` (not `main-store-listing`,
 Graphics go through the asset library: the "Add assets" buttons sit in DOM order icon, feature, phone; one opens a
 panel with an `input[type=file]` (set it with a DataTransfer and fire `change`), wait for "Selected asset <name>",
 then click "Add"; the slot order is the order of the Add clicks. "Submit 6 changes for review" on the Publishing
-overview opens a confirmation dialog, which a hidden tab never renders: that click is the owner's.
+overview opens a confirmation dialog, which a hidden tab never renders: that click is the owner's. With the PC
+locked, the quickest way is his phone: Play Console in the mobile browser, Publishing overview, Submit, Confirm
+(done that way on 2026-10-19 at 12:30; App Store 1.1 went in the same day through iris, see APPSTORE.md).
