@@ -133,9 +133,11 @@ jobs:
           # 2026-09-08). Unity's export already writes the right per-target identifier (the app from
           # PlayerSettings.applicationIdentifier, UnityFramework as com.unity3d.framework); DEVELOPMENT_TEAM
           # is safe to force because every target shares the team, only the bundle ID must not be shared.
-          # CODE_SIGN_IDENTITY: left to itself the archive signs with an Apple Development certificate, and a
-          # fresh runner has none, so Xcode minted one per run until the account hit its certificate limit
-          # ("Choose a certificate to revoke", 2026-10-19). The imported distribution certificate signs instead.
+          # CODE_SIGNING_ALLOWED=NO: left to itself the archive signs with an Apple Development certificate, and
+          # a fresh runner has none, so Xcode minted one per run until the account hit its certificate limit
+          # ("Choose a certificate to revoke", 2026-10-19). Forcing CODE_SIGN_IDENTITY="Apple Distribution" is
+          # refused under automatic signing ("conflicting provisioning settings"). So the archive stays unsigned
+          # and the export below signs it for the App Store with the imported distribution certificate.
           xcodebuild -project Unity-iPhone.xcodeproj -scheme Unity-iPhone \
             -configuration Release -archivePath "$RUNNER_TEMP/app.xcarchive" \
             -destination "generic/platform=iOS" \
@@ -144,7 +146,7 @@ jobs:
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
             CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGNING_ALLOWED=NO \
             DEVELOPMENT_TEAM="$TEAM_ID" \
             archive | tee "$RUNNER_TEMP/archive.log" | grep -E "error|warning: .*sign|Signing Identity|\*\* ARCHIVE" || true
           test -d "$RUNNER_TEMP/app.xcarchive"
